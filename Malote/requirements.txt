@@ -1,0 +1,4 @@
+certifi==14.5.14
+requests==2.6.0
+requests-futures==0.9.5
+tornado==3.2.2

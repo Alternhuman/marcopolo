@@ -1,0 +1,27 @@
+<div class="col-xs-6">
+  <h2>Templates</h2>
+  <div class="template-cards">
+    <div class="card template-card" ng-repeat="template in templates" draggable="true">
+      <input type="text" placeholder="Template title"
+      ng-model="template.title" class="template-title"
+      db-focus="template.needsFocus" ng-focus="template.needsFocus = false">
+      <div class="template-row" ng-repeat="task in template.tasksWithTail">
+        <div class="command-input">
+          <input type="text" ng-model="task.command" placeholder="Command to run..."
+          ng-blur="template.deleteTaskIfEmpty($index)">
+        </div>
+        <button ng-show="!template.isTail($index)" ng-click="template.deleteTask($index)"
+          tabindex="-1"><span class="fa fa-trash-o"></span></button>
+      </div>
+      <div class="card-bottom-controls">
+        <button ng-click="cloneTemplate($index)"><span
+            class="fa fa-files-o"></span></button
+        ><button ng-click="deleteTemplate($index)"><span
+            class="fa fa-trash-o"></span></button>
+      </div>
+    </div>
+    <button ng-click="addTemplate()" class="card template-card add-template-card">
+      <span>Add new template</span>
+    </button>
+  </div>
+</div>

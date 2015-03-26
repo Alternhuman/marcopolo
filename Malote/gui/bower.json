@@ -1,0 +1,14 @@
+{
+  "name": "i_dont_care",
+  "dependencies": {
+    "angular": "1.3",
+    "angular-resource": "1.3",
+    "angular-mocks": "1.3",
+    "angular-animate": "1.3",
+    "angular-cookies": "1.3",
+    "bootstrap": "latest",
+    "lodash": "~2.4.1",
+    "animate.css": "~3.1.0",
+    "font-awesome": "~4.0.3"
+  }
+}
