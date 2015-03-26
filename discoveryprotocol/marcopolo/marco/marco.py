@@ -14,6 +14,14 @@ def marco():
 
     time.sleep(2)
 
+def marcocast():
+  s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+  s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+  while 1:
+    data = bytes(str(time.time()), 'utf-8')
+    s.sendto(data, (conf.MULTICAST_ADDR, conf.PORT))
+    time.sleep(2)
+
 if __name__ == "__main__":
-    marco()
+    marcocast()
 

@@ -1,12 +1,3 @@
-\begin{thebibliography}{1}
-
-\bibitem{marzullo84}
-K.~A. Marzullo, ``Maintaining the time in a distributed system: An example of a
-  loosely-coupled distributed service,'' {\em Ph.D. dissertation, Stanford
-  University Department of Electrical Engineering}, February 1984.
-
-\bibitem{tomcatnative}
-A.~S. Foundation, ``Apache tomcat native library.''
-  \url{http://tomcat.apache.org/native-doc/}.
+\begin{thebibliography}{}
 
 \end{thebibliography}

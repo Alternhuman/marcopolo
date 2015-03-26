@@ -1,1 +1,8 @@
 *.out
+.*tmp/*
+tmp/
+*.pyc
+*.aux
+*.blg
+*.fls
+*.log
