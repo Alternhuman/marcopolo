@@ -3,25 +3,39 @@ __author__ = 'martin'
 import socket, sys, struct
 from marco_conf import conf
 
-def polo():
-  s = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-  s.bind(('', conf.PORT))
+class Polo:
+    def __init__(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) #socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        mreq = struct.pack("4sl", socket.inet_aton(conf.MULTICAST_ADDR), socket.INADDR_ANY) # WAT?
+        self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-  while 1:
-    m=s.recvfrom(4096)
 
-    #print(isinstance(m[0].decode('utf-8'), str))
-    print(m[0].decode('utf-8'), file=sys.stderr)
+        self.socket.bind(('', conf.PORT))
+        """
+        https://docs.python.org/2/library/struct.html#format-characters
+        struct.pack interpreta cadenas de caracteres como conjuntos de datos binarios
+        4sl especifica el formato de conversión s = char[], l = signed long = 4 four-letter string plus long
 
-def polocast():
-  s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-  s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-  s.bind(('', conf.PORT))
-  mreq = struct.pack("4sl", socket.inet_aton(conf.MULTICAST_ADDR), socket.INADDR_ANY) # WAT?
-  s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        El objetivo es empaquetar esta estructura:
+        struct ip_mreq {
+            struct in_addr imr_multiaddr;   /* IP multicast address of group */
+            struct in_addr imr_interface;   /* local IP address of interface */
+        };
+        http://stackoverflow.com/a/16419856
+        """
 
-  while 1:
-      print(s.recv(4096))
+    def polo(self):
+        while 1:
+            data,address = self.socket.recvfrom(4096)
+
+            print(data.decode('utf-8'), file=sys.stderr)
+
+            self.socket.sendto(bytes("Hola", 'utf-8'), address)
+
+    def getservices(self):
+        return ''
+
 
 if __name__ == "__main__":
-  polocast()
+  Polo().polo()
