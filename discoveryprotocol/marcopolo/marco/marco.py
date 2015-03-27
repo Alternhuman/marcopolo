@@ -32,16 +32,11 @@ class Marco:
         for node in self.nodes:
             print(node.address)
 
-        """while 1:
-            data = bytes(str(time.time()), 'utf-8')
-            self.socket_mcast.sendto(data, (conf.MULTICAST_ADDR, conf.PORT))
-            time.sleep(2)"""
-
 
 if __name__ == "__main__":
     Marco().marcocast()
 
-def marco():
+"""def marco():
   s = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM) #TODO: IPv6?
   s.bind(('', 0))
   s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -58,6 +53,6 @@ def marcocast():
   while 1:
     data = bytes(str(time.time()), 'utf-8')
     s.sendto(data, (conf.MULTICAST_ADDR, conf.PORT))
-    time.sleep(2)
+    time.sleep(2)"""
 
 

@@ -7,8 +7,8 @@ class Polo:
     def __init__(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) #socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        mreq = struct.pack("4sl", socket.inet_aton(conf.MULTICAST_ADDR), socket.INADDR_ANY) # WAT?
-        self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        self.mreq = struct.pack("4sl", socket.inet_aton(conf.MULTICAST_ADDR), socket.INADDR_ANY) # WAT?
+        self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, self.mreq)
 
 
         self.socket.bind(('', conf.PORT))
@@ -27,14 +27,17 @@ class Polo:
 
     def polo(self):
         while 1:
-            data,address = self.socket.recvfrom(4096)
+            try:
+                data,address = self.socket.recvfrom(4096)
 
-            print(data.decode('utf-8'), file=sys.stderr)
+                print(data.decode('utf-8'), file=sys.stderr)
 
-            self.socket.sendto(bytes("Hola", 'utf-8'), address)
+                self.socket.sendto(bytes("Hola", 'utf-8'), address)
+            except KeyboardInterrupt:
+                self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, self.mreq)
+                self.socket.close()
+                sys.exit(0)
 
-    def getservices(self):
-        return ''
 
 
 if __name__ == "__main__":
