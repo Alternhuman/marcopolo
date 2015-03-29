@@ -2,6 +2,7 @@ __author__ = 'martin'
 
 import socket, sys, struct
 from marco_conf import conf
+import json
 
 class Polo:
     def __init__(self):
@@ -32,7 +33,8 @@ class Polo:
 
                 print(data.decode('utf-8'), file=sys.stderr)
 
-                self.socket.sendto(bytes("Hola", 'utf-8'), address)
+                self.socket.sendto(bytes(json.dumps(conf.SERVICES, separators=(',',':')), 'utf-8'), address) #http://stackoverflow.com/a/4342219
+
             except KeyboardInterrupt:
                 self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, self.mreq)
                 self.socket.close()

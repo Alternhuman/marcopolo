@@ -6,3 +6,4 @@ tmp/
 *.blg
 *.fls
 *.log
+.idea/*

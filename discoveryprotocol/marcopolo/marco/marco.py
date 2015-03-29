@@ -3,17 +3,15 @@ from marco_conf import conf
 import sys, time, string
 import socket
 from marco_conf import utils
-
+import json
+from io import StringIO
 class Marco:
     def __init__(self):
         self.socket_mcast = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.socket_mcast.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
         self.socket_mcast.bind(('', 0)) # Usaremos el mismo socket para recibir los datos de cada nodo
-        self.socket_mcast.settimeout(2.0) #https://docs.python.org/2/library/socket.html#socket.socket.settimeout
+        self.socket_mcast.settimeout(0.5) #https://docs.python.org/2/library/socket.html#socket.socket.settimeout
         self.nodes = set()
-
-        #self.socket_recv = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        #self.socket_recv.bind(('', conf.PORT))
 
     def marcocast(self):
         data = bytes(str(time.time()), 'utf-8')
@@ -27,10 +25,16 @@ class Marco:
 
             n = utils.Node()
             n.address = address
+            n.services = json.load(StringIO(data.decode('utf-8')))
             self.nodes.add(n)
-            print(data.decode('utf-8'), file=sys.stderr)
+        print("Lista de nodos")
         for node in self.nodes:
-            print(node.address)
+            print(str.format("Nodo en {0}:{1} con los servicios:", node.address[0], node.address[1]), file=sys.stdout)
+            #print(node.address, node.services)
+            for key in node.services:
+                #print(node.services[key])
+                print(str.format("{0} v{1}", node.services[key]['id'], node.services[key]['version']))
+                #print(str.format("{0} v{1}", service, service))
 
 
 if __name__ == "__main__":

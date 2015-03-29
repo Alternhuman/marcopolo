@@ -1,0 +1,39 @@
+Request for services
+Request for service with copy (P2P network)
+Bindings gethostby-style
+Broadcast for groups
+Multigroup support
+Bindings for Java, Python, Node, C/C++ (hopefully not) and any other used language
+Proofs of concept with:
+	MPI
+	NTPServer
+
+   DHCPDISCOVER -  Client broadcast to locate available servers.
+
+   DHCPOFFER    -  Server to client in response to DHCPDISCOVER with
+                   offer of configuration parameters.
+
+   DHCPREQUEST  -  Client message to servers either (a) requesting
+                   offered parameters from one server and implicitly
+                   declining offers from all others, (b) confirming
+                   correctness of previously allocated address after,
+                   e.g., system reboot, or (c) extending the lease on a
+                   particular network address.
+
+   DHCPACK      -  Server to client with configuration parameters,
+                   including committed network address.
+
+   DHCPNAK      -  Server to client indicating client's notion of network
+                   address is incorrect (e.g., client has moved to new
+                   subnet) or client's lease as expired
+
+   DHCPDECLINE  -  Client to server indicating network address is already
+                   in use.
+
+   DHCPRELEASE  -  Client to server relinquishing network address and
+                   cancelling remaining lease.
+
+   DHCPINFORM   -  Client to server, asking only for local configuration
+                   parameters; client already has externally configured
+                   network address.
+

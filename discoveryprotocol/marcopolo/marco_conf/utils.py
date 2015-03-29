@@ -16,7 +16,7 @@ class Node:
 
     @property
     def services(self):
-        return self.services
+        return self._services
 
     @services.setter
     def services(self, value):
