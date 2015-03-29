@@ -12,6 +12,21 @@ class Polo:
         self.mreq = struct.pack("4sl", socket.inet_aton(conf.MULTICAST_ADDR), socket.INADDR_ANY) # See comment at bottom
         self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, self.mreq)
         self.socket.bind(('', conf.PORT))
+
+        from os import listdir
+        from os.path import isfile, join
+
+        self.services = []
+
+        servicefiles = [ f for f in listdir('/etc/marcopolo/polo/services') if isfile(join('/etc/marcopolo/polo/services',f)) ]
+        for service in servicefiles:
+
+            try:
+                with open(join(conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
+                    self.services.append(json.load(f))
+            except ValueError:
+                print(str.format("El archivo {0} no cuenta con una estructura JSON válida", conf.SERVICES_DIR+service))
+
         """
         https://docs.python.org/2/library/struct.html#format-characters
         struct.pack interpreta cadenas de caracteres como conjuntos de datos binarios
@@ -29,10 +44,9 @@ class Polo:
         response_dict = {}
         response_dict["node_alive"]= True
         response_dict["multicast_group"] = conf.MULTICAST_ADDR
-        response_dict["services"] = conf.SERVICES
+        response_dict["services"] = self.services#conf.SERVICES
         json_msg = json.dumps(response_dict, separators=(',',':'))
         msg = bytes(json_msg, 'utf-8')
-        #msg=bytes(str('Node-Alive'), 'ascii')
         self.socket.sendto(msg, address)
 
     def polo(self):
@@ -50,21 +64,6 @@ class Polo:
                     self.services(command, address)
                 else:
                     print("Unknown command")
-
-            except KeyboardInterrupt:
-                self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, self.mreq)
-                self.socket.close()
-                sys.exit(0)
-
-
-    def polo2(self):
-        while 1:
-            try:
-                data,address = self.socket.recvfrom(4096)
-
-                print(data.decode('utf-8'), file=sys.stderr)
-
-                self.socket.sendto(bytes(json.dumps(conf.SERVICES, separators=(',',':')), 'utf-8'), address) #http://stackoverflow.com/a/4342219
 
             except KeyboardInterrupt:
                 self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, self.mreq)

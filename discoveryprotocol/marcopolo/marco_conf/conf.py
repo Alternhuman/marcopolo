@@ -12,4 +12,6 @@ SERVICES=[
     {'id':'NTPServer', 'type':'tomcat', 'version':'1', 'port':8080, 'path':'/NTPServer/rest'}
 ]
 
-TIMEOUT = 2
+TIMEOUT = 2000.0
+CONF_DIR = '/etc/marcopolo/'
+SERVICES_DIR = CONF_DIR + 'polo/services/'

@@ -1,0 +1,17 @@
+http://www.jbox.dk/sanos/source/sys/os/netdb.c.html
+http://stackoverflow.com/questions/2157592/how-does-getaddrinfo-do-dns-lookup
+http://cvs.savannah.gnu.org/viewvc/glibc-bsd/
+http://www.freesoft.org/CIE/Topics/77.htm
+http://man7.org/linux/man-pages/man3/getaddrinfo.3.html
+http://en.wikipedia.org/wiki/Getaddrinfo
+http://tools.ietf.org/html/rfc3493.html#section-6.1
+http://lxr.free-electrons.com/source/net/socket.c
+http://lxr.free-electrons.com/source/include/linux/socket.h
+http://www.opensource.apple.com/source/Libinfo/Libinfo-406.17/lookup.subproj/netdb.h
+https://gcc.gnu.org/ml/gcc-help/2006-02/msg00152.html
+http://ftp.netbsd.org/pub/pkgsrc/current/pkgsrc/net/tnftp/files/libnetbsd/getaddrinfo.c
+http://users.sosdg.org/~qiyong/mxr/source/lib/libc/net/getaddrinfo.c#L761
+This
+https://www.freebsd.org/cgi/man.cgi?query=resolv.conf&sektion=5&apropos=0&manpath=FreeBSD+10.1-RELEASE
+https://www.freebsd.org/cgi/man.cgi?query=resolver&sektion=3&apropos=0&manpath=FreeBSD+10.1-RELEASE
+
