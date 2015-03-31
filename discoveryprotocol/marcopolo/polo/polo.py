@@ -27,6 +27,10 @@ class Polo:
             except ValueError:
                 print(str.format("El archivo {0} no cuenta con una estructura JSON válida", conf.SERVICES_DIR+service))
 
+        for s in self.services:
+                print(s['id'])
+
+        print(len(self.services))
         """
         https://docs.python.org/2/library/struct.html#format-characters
         struct.pack interpreta cadenas de caracteres como conjuntos de datos binarios
@@ -42,6 +46,7 @@ class Polo:
 
     def response_discover(self, command, address):
         response_dict = {}
+        response_dict["Command"] = "Polo"
         response_dict["node_alive"]= True
         response_dict["multicast_group"] = conf.MULTICAST_ADDR
         response_dict["services"] = self.services#conf.SERVICES
@@ -49,21 +54,32 @@ class Polo:
         msg = bytes(json_msg, 'utf-8')
         self.socket.sendto(msg, address)
 
+    def response_request_for(self, command, param, address):
+        match = next((s for s in self.services if s['id'] == param), None)
+
+        command_msg = bytes(json.dumps({'Command':'OK', 'Params':json.dumps(match)}), 'utf-8')
+
+        self.socket.sendto(command_msg, address)
+
     def polo(self):
         while True:
             try:
-                command, address = self.socket.recvfrom(4096)
+                message, address = self.socket.recvfrom(4096)
 
-                command = command.decode('utf-8')
+                message = message.decode('utf-8')
 
-                command = json.load(StringIO(command))["command"]
+                command = json.load(StringIO(message))["Command"]
 
                 if command == 'Discover':
                     self.response_discover(command, address)
+
+                elif command == 'Request-for':
+                    self.response_request_for(command, json.load(StringIO(message))["Params"], address)
+
                 elif command == 'Services':
                     self.services(command, address)
                 else:
-                    print("Unknown command")
+                    print("Unknown command", file=sys.stderr)
 
             except KeyboardInterrupt:
                 self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, self.mreq)

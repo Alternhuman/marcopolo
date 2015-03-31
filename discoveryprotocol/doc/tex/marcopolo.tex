@@ -142,10 +142,38 @@ El protocolo surge de la necesidad de minimizar la configuración manual que deb
 \section{Descripción de la interacción entre partes}
 
 \begin{itemize}
+  \item\texttt{Discover} (Marco) Descubrimiento de todos los nodos en un grupo multicast concreto
+  \item\texttt{Node-Alive} (Polo) Envío de toda la información sobre un nodo en respuesta a un mensaje \texttt{Discover}
   \item\texttt{Request-for: <información>} Servicios, coordinador, etc
   \item\texttt{Offer: <Servicio>} Un nodo puede indicar los servicios que ofrece
   \item\texttt{OK-For: <Servicio>} Comando diseñado para aquellos servicios que necesiten conocer los nodos interesados en los mismos (opcional) 
+  \item\texttt{Request-Service}
+  \item\texttt{Need-Copy-Of} Los nodos pueden conseguir copias de los paquetes \texttt{.mp} que posea otro nodo, evitando la necesidad de copiar uno a otro 
+  \item\texttt{Bye} Un nodo se desconecta de la red y notifica este cambio
 \end{itemize}
+
+Todo el tráfico se realiza por \textit{multicast}, permitiendo que varios sistemas trabajen sobre la misma red de forma solapada.
+
+\section{Seguridad}
+
+\nombre trabaja con certificados que permiten verificar la confianza de un nodo dado. Mediante la directiva \texttt{Accept-Cert-Only} es posible aceptar únicamente nodos fiables
+
+\section{Integración}
+
+El protocolo es integrable en código mediante \textit{bindings} que se comunican con la instancia de \textbf{\nombre} en la máquina.
+Existen \textit{bindings} con Python, C/C++ y Java.
+
+\section{Utilidades}
+
+Se incluyen diferentes utilidades para trabajar con \nombre desde una consola.
+
+\begin{itemize}
+  \item marcodiscover [-s service] para descubrir nodos
+  \item marcodig <ip> para encontrar información sobre un nodo
+  \item poloregister para añadir un nuevo servicio a la oferta sin tener que crear un fichero de configuración
+\end{itemize}
+
+
 
 
 
@@ -157,7 +185,7 @@ El protocolo surge de la necesidad de minimizar la configuración manual que deb
 
 \bibliographystyle{ieeetr}
 %
-\bibliography{ntpserver}
+\bibliography{marcopolo}
 %%----------------------------------------------------------------------------------------
 %
 

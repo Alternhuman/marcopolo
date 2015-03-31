@@ -1,0 +1,8 @@
+{
+//All commands shall start with capital letter
+//Words shall be split with '-'
+//JSON keys comply with the same rules
+
+"Command":"command_name",
+"Params":"command_params"
+}

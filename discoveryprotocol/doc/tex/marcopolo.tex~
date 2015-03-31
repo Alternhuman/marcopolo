@@ -1,0 +1,191 @@
+% !TEX encoding = UTF-8 Unicode
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Requisitos del protocolo de descubrimiento de servicios a crear
+% 
+% Autoría original:
+% Linux and Unix Users Group at Virginia Tech Wiki 
+% (https://vtluug.org/wiki/Example_LaTeX_chem_lab_report)
+% Proporcionada por http://www.LaTeXTemplates.com
+%
+% Licencia:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass{article}
+\newcommand{\nombre}{MarcoPolo}
+\newcommand{\titulo}{\nombre{}: Protocolo de descubrimiento de servicios}
+\newcommand{\autor}{Diego Martín Arroyo}
+
+
+
+\usepackage{graphicx} % Requerido para la inclusión de imágenes
+\usepackage{listings} % Requerido para la inserción de código
+\usepackage[numbers]{natbib} % Requerido para cambiar el estilo de la bibliografía a APA. [numbers] para eliminar problemas de compatibilidad. Ver http://www.multiasking.com/blog/package-natbib-error-bibliography-not-compatible-with-author-year-citation/
+
+
+\usepackage[T1]{fontenc} % Codificación de las fuentes utilizadas
+%\usepackage[utf8]{inputenc} % Codificación de caracterers de entrada en UTF-8 (necesario para los caraceteres propios del español). Comentado dado que es ignorado con el compilador de XeLaTeX
+\usepackage[spanish]{babel} % Español como idioma principal del texto (permite hyphenation de palabras al final de una línea)
+
+\usepackage{courier} % Requerido para el uso de la fuente Courier en los listings y demás código incluido
+\usepackage[usenames,dvipsnames]{color} % Requerido para el uso de colores
+
+%Metadatos del PDF e inclusión de referencias "clicables"
+\usepackage[pdfauthor={\autor},
+            pdftitle={\titulo},
+            pdfproducer={XeLaTeX with hyperref},
+            pdfcreator={XeLaTeX}]{hyperref}
+
+\usepackage{url}
+\usepackage{float} % Requerido para el posicionamiento absoluto de las imágenes. Ver http://en.wikibooks.org/wiki/LaTeX/Floats,_Figures_and_Captions
+\usepackage[raggedright]{titlesec} % Evita la unión con guión de los \(sub)*section. Ver http://tex.stackexchange.com/questions/24777/how-to-disable-hyphenation-in-all-section-and-subsection-titles
+%And if You used titleformat from titlesec to style titles -- You can do it explicitly: \titleformat{\section}{\color{teal}\LARGE\raggedright}{\hspace{0.5cm}\thetitle\‌​hspace{0.5cm}}{0cm}{} (note the \raggedright)
+
+%\usepackage{titlesec}
+%\newcommand{\sectionbreak}{\clearpage} % See http://tex.stackexchange.com/questions/9497/start-new-page-with-each-section
+
+% Márgenes
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=8.5in
+\headsep=0.25in
+
+\graphicspath{{./img/}}
+\selectlanguage{spanish}
+
+\newcommand*\lstinputpath[1]{\lstset{inputpath=#1}}
+
+%\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+%\renewcommand{\labelenumi}{\alph{enumi}.} % Descomentar para que la enumeración en el entorno enumerate sea mediante letras en vez de números
+
+
+
+
+%Lenguajes de los que mostrar código
+\lstloadlanguages{Java,XML,Python,JavaScript}
+
+%Ajustes para Java
+\lstset{
+    language=java,
+    frame=single, % Un marco simple alrededor del código
+    basicstyle=\small\ttfamily, % Utilizar fuente true type pequeña
+    keywordstyle=[1]\color{Blue}\bf, % Funciones en negrita y azul
+    keywordstyle=[2]\color{Purple}, % Argumentos en morado
+    keywordstyle=[3]\color{Blue}\underbar, % Funciones personalizadas subrayadas en azul
+    identifierstyle=, % Nada especial acerca de identificadores
+    commentstyle=\usefont{T1}{pcr}{m}{sl}\color{Green}\small, % Los comentarios se renderizan en fuente pequeña verde
+    stringstyle=\color{Purple}, % Cadenas en morado
+    showstringspaces=false, % No se muestran los espacios entre cadenas
+    tabsize=5, % 5 espacios por tabulado
+    %
+    % Put standard Perl functions not included in the default language here
+    %morekeywords={rand},
+    %
+    % Put Perl function parameters here
+    %morekeywords=[2]{on, off, interp},
+    %
+    % Put user defined functions here
+    %morekeywords=[3]{test},
+   	%
+    morecomment=[l][\color{Blue}]{...}, % Line continuation (...) like blue comment
+    numbers=left, % Número de línea a la izquierda
+    firstnumber=1, % Número de línea comienza en 1
+    numberstyle=\tiny\color{Blue}, % Los números de línea son azules y pequeños
+    stepnumber=5, % Los números de línea van de 5 en 5
+    breaklines=true % Salto de línea si el texto no entra. See http://stackoverflow.com/a/1875803
+}
+
+%\usepackage{times} % Uncomment to use the Times New Roman font
+
+%----------------------------------------------------------------------------------------
+%	DOCUMENT INFORMATION
+%----------------------------------------------------------------------------------------
+
+\title{\titulo}
+\author{\autor}
+\date{\today} % Fecha
+
+%\lstinputpath{../../src/}
+
+\newcommand{\javacode}[4]{
+	\lstinputlisting[caption=#2,label=#1, firstline=#3, lastline=#4]{#1.java}
+}
+
+\newcommand{\txtcode}[4]{
+	\lstinputlisting[caption=#2, label=#1, firstline=#3, lastline=#4]{#1.txt}
+}
+
+\newcommand{\pythoncode}[4]{
+	\lstinputlisting[caption=#2, label=#1, firstline=#3, lastline=#4]{#1.py}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+El protocolo \nombre{} permite el descubrimiento de máquinas ofreciendo una serie de servicios consumibles por el sistema distribuido, permitiendo publicar y solicitar nodos, obtener información del estado de nodos y una serie de funcionalidades de diagnóstico.
+\end{abstract}
+
+\section{Motivación}
+
+El protocolo surge de la necesidad de minimizar la configuración manual que debe realizar un administrador en cada nodo y las ventajas que ofrece la integración automática de un equipo en la red de nodos
+
+\section{Descripción de la interacción entre partes}
+
+\begin{itemize}
+  \item\texttt{Discover} (Marco) Descubrimiento de todos los nodos en un grupo multicast concreto
+  \item\texttt{Node-Alive} (Polo) Envío de toda la información sobre un nodo en respuesta a un mensaje \texttt{Discover}
+  \item\texttt{Request-for: <información>} Servicios, coordinador, etc
+  \item\texttt{Offer: <Servicio>} Un nodo puede indicar los servicios que ofrece
+  \item\texttt{OK-For: <Servicio>} Comando diseñado para aquellos servicios que necesiten conocer los nodos interesados en los mismos (opcional) 
+  \item\texttt{Request-Service}
+  \item\texttt{Need-Copy-Of} Los nodos pueden conseguir copias de los paquetes \texttt{.mp} que posea otro nodo, evitando la necesidad de copiar uno a otro 
+\end{itemize}
+
+Todo el tráfico se realiza por \textit{multicast}, permitiendo que varios sistemas trabajen sobre la misma red de forma solapada.
+
+\section{Seguridad}
+
+\nombre trabaja con certificados que permiten verificar la confianza de un nodo dado. Mediante la directiva \texttt{Accept-Cert-Only} es posible aceptar únicamente nodos fiables
+
+\section{Integración}
+
+El protocolo es integrable en código mediante \textit{bindings} que se comunican con la instancia de \textbf{\nombre} en la máquina.
+Existen \textit{bindings} con Python, C/C++ y Java.
+
+\section{Utilidades}
+
+Se incluyen diferentes utilidades para trabajar con \nombre desde una consola.
+
+\begin{itemize}
+  \item marcodiscover [-s service] para descubrir nodos
+  \item marcodig <ip> para encontrar información sobre un nodo
+  \item poloregister para añadir un nuevo servicio a la oferta sin tener que crear un fichero de configuración
+\end{itemize}
+
+
+
+
+
+
+
+%%	BIBLIOGRAPHY
+%%----------------------------------------------------------------------------------------
+%
+
+\bibliographystyle{ieeetr}
+%
+\bibliography{marcopolo}
+%%----------------------------------------------------------------------------------------
+%
+
+\end{document}

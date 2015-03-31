@@ -1,6 +1,6 @@
 __author__ = 'martin'
 
-
+DEBUG = True
 PORT = 1337
 MULTICAST_ADDR = '224.0.0.112'
 IFACE = 'eth0'
