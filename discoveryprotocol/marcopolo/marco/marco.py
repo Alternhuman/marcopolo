@@ -5,20 +5,39 @@ import json
 from io import StringIO
 import asyncore
 
-class Marcod(asyncore.dispatcher):
+class Marcod:#(asyncore.dispatcher):
+    ##TODO: Make async
     def __init__(self):
         asyncore.dispatcher.__init__(self)
-        self.create_socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.connect(('127.0.1.1', 1338)) #conffile
+        self.socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.socket.bind(('127.0.1.1', 1338)) #conffile
+        self.marco = Marco()
+
+        while True:
+            print("Receiving")
+            data, address = self.socket.recvfrom(4096)
+            print(data.decode('utf-8'))
+
+            nodes_with_service = self.marco.request_service(data.decode('utf-8'))
+            #nodes_with_service = self.marco.request_service("tomcat")
+
+            nodes = []
+            for service in nodes_with_service:
+                nodes.append(service.address)
+            print(nodes)
+            self.socket.sendto(bytes(json.dumps(nodes), 'utf-8'), address)
+
+
 
     def readable(self): return True
+    def writable(self): return False
 
     def handle_read(self):
         print('Recv', self.recv(2048))
         #self.handle_close()
 
     def start(self):
-        asyncore.loop()
+        pass
 
 
 class Marco:
@@ -169,6 +188,8 @@ class InvalidURLException(Exception):
 
 if __name__ == "__main__":
     #Marco().marcocast()
+    marcod = Marcod()
+    #asyncore.loop()
     marco = Marco()
     #marco.discover()
     """nodes = marco.request_service("tomcat")
