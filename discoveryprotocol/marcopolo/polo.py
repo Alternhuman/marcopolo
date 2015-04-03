@@ -58,7 +58,7 @@ class Polo:
         match = next((s for s in self.services if s['id'] == param), None)
         if match:
             command_msg = bytes(json.dumps({'Command':'OK', 'Params':json.dumps(match)}), 'utf-8')
-
+            
             self.socket.sendto(command_msg, address)
 
     def polo(self):
