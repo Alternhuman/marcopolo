@@ -1,5 +1,0 @@
-\select@language {spanish}
-\contentsline {chapter}{\numberline {1}Fundamentals}{3}{chapter.1}
-\contentsline {chapter}{\numberline {2}Configuration}{5}{chapter.2}
-\contentsline {section}{\numberline {2.1}Services}{5}{section.2.1}
-\contentsline {chapter}{\numberline {3}Indices and tables}{7}{chapter.3}

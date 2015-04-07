@@ -7,3 +7,5 @@ tmp/
 *.fls
 *.log
 .idea/*
+doc/build/*
+*__pycache__/*
