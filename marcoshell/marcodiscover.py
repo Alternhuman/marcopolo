@@ -6,7 +6,7 @@ import argparse
 parser = argparse.ArgumentParser(description="Discovery of MarcoPolo nodes in the subnet")
 
 parser.add_argument('-d', '--discover', dest="address", help="Multicast group where to discover", nargs='?', default="224.0.0.1")
-parser.add_argument('-s', '--service0', dest="service", help="Name of the service to look for", nargs='?')
+parser.add_argument('-s', '--service', dest="service", help="Name of the service to look for", nargs='?')
 args = parser.parse_args()
 
 print(args)
