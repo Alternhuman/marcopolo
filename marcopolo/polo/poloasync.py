@@ -7,35 +7,54 @@ from twisted.internet import reactor
 from os import listdir
 from os.path import isfile, join
 from io import StringIO
-import sys, signal
-import json
+
+import sys, signal, json
 
 from marco_conf import conf
 
 __author__ = 'Diego Martín'
 
 class Polo(DatagramProtocol):
+	"""
+	Twisted inherited class in charge of listening on the multicast group
+	"""
+	
 	def startProtocol(self):
-		#self.transport.setTTL(2) Para salir más allá de la subred
-		self.transport.joinGroup(conf.MULTICAST_ADDR)
+		"""
+		Operations to be performed before starting to listen
+		"""
 		self.services = []
 
-		servicefiles = [ f for f in listdir('/etc/marcopolo/polo/services') if isfile(join('/etc/marcopolo/polo/services',f)) ]
+		#List all files in the service directory
+		servicefiles = [ f for f in listdir(conf.CONFDIR + SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
 		
 		for service in servicefiles:
 			try:
 			    with open(join(conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
 			        self.services.append(json.load(f))
 			except ValueError:
-			    print(str.format("El archivo {0} no cuenta con una estructura JSON válida", conf.SERVICES_DIR+service))
+			    if conf.DEBUG: print(str.format("El archivo {0} no cuenta con una estructura JSON válida", conf.SERVICES_DIR+service), file=sys.stderr)
 
-		for s in self.services:
-		    print(s['id'])
+		if conf.DEBUG:
+			for s in self.services:
+				print(s['id'])
 
-		print("Ofreciendo " + str(len(self.services)) + " servicios")
+			print("Ofreciendo " + str(len(self.services)) + " servicios", file=sys.stderr)
+
+		#self.transport.setTTL(2) Para salir más allá de la subred
+		self.transport.joinGroup(conf.MULTICAST_ADDR)
+		self.transport.setTTL(conf.HOPS) #Go beyond the network
 
 	def datagramReceived(self, datagram, address):
-		message_dict = json.load(StringIO(datagram.decode('utf-8')))
+		"""
+		When a datagram is received the command is parsed and a response is generated
+		"""
+		
+		try:
+			message_dict = json.loads(datagram.decode('utf-8'))
+		except ValueError:
+			return
+		
 		command = message_dict["Command"]
 
 		if command == 'Discover' or command == 'Marco':
@@ -45,7 +64,7 @@ class Polo(DatagramProtocol):
 		elif command == 'Services':
 			self.services(command, address)
 		else:
-			print("Unknown command", file=sys.stderr)
+			print("Unknown command: " + datagram, file=sys.stderr)
 
 	def response_discover(self, command, address):
 		response_dict = {}

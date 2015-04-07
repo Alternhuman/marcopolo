@@ -15,4 +15,4 @@ SERVICES=[
 
 TIMEOUT = 2000.0
 CONF_DIR = '/etc/marcopolo/'
-SERVICES_DIR = CONF_DIR + 'polo/services/'
+SERVICES_DIR = 'polo/services/'

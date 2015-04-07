@@ -6,8 +6,7 @@ from twisted.internet import reactor, defer
 from marco_conf import utils, conf
 
 import socket, sys, json #time, string were necessary
-from io import StringIO
-
+import copy
 
 class Marco:
 	def __init__(self):
@@ -33,6 +32,7 @@ class Marco:
 		self.socket_ucast.close()
 
 	def discover(self):
+		#discover_msg = bytes(json.dumps({'Command': 'Marco'}), 'utf-8') For the fun of it
 		discover_msg = bytes(json.dumps({'Command': 'Discover'}), 'utf-8')
 		self.socket_mcast.sendto(discover_msg, (conf.MULTICAST_ADDR, conf.PORT))
 
@@ -42,7 +42,10 @@ class Marco:
 			except socket.timeout:
 				break
 
-			json_data = json.load(StringIO(msg.decode('utf-8')))
+			try:
+				json_data = json.loads(msg.decode('utf-8'))
+			except ValueError:
+				return set()
 
 			if json_data["Command"] == "Polo":
 
@@ -59,7 +62,7 @@ class Marco:
 				for service in n.services:
 					print(str.format("{0}. Version: {1} ", service["id"], service["version"]))
 		
-		import copy
+		
 		return copy.copy(self.nodes)
 
 	def services(self, addr, port=conf.PORT):
@@ -88,17 +91,22 @@ class Marco:
 			except socket.timeout:
 				break
 
-			json_data = json.load(StringIO(msg.decode('utf-8')))
-
+			try:
+				json_data = json.loads(msg.decode('utf-8'))
+			except ValueError:
+				continue
+			
 			n = utils.Node()
 			n.address = address
 			n.multicast_group = str(json_data["multicast_group"])
-			n.services = json.loads(json_data["services"])
+			n.services = json.loads(json_data["services"]) ##TODO: Is a reparse really necessary?
 			self.nodes.add(n)
 
 			if conf.DEBUG:
 				for node in n:
 					print("There's a node at {0} joining the multicast group")
+
+		return copy.copy(self.nodes)
 
 
 	def request_service(self, service, node=None):
@@ -133,8 +141,10 @@ class Marco:
 			n = utils.Node()
 			n.address = node
 			n.services = []
-			n.services.add(json.load(StringIO(response.decode('utf-8'))))
-
+			try:
+				n.services.add(json.loads(response.decode('utf-8')))
+			except ValueError:
+				return set()
 			nodes.add(n)
 
 		else:
@@ -147,16 +157,18 @@ class Marco:
 				except socket.timeout:
 					break
 
-			response = json.load(StringIO(response.decode('utf-8')))
+				try:
+					response = json.loads(response.decode('utf-8'))
+				except ValueError:
+					continue
+				if response["Command"] == 'OK':
 
-			if response["Command"] == 'OK':
+					n = utils.Node()
+					n.address = address
+					n.services = []
+					n.services.append(json.loads(response["Params"])) ##TODO
 
-				n = utils.Node()
-				n.address = address
-				n.services = []
-				n.services.append(json.load(StringIO(response["Params"])))
-
-				nodes.add(n)
+					nodes.add(n)
 
 		return nodes
 
