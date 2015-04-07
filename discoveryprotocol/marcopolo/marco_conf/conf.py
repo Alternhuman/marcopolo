@@ -3,6 +3,7 @@ __author__ = 'martin'
 DEBUG = True
 PORT = 1337
 MULTICAST_ADDR = '224.0.0.112'
+HOPS = 1
 IFACE = 'eth0'
 
 SERVICES=[

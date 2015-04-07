@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -7,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Index &mdash; marcopolo 1 documentation</title>
+    <title>Configuration &mdash; marcopolo 1 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -25,6 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="marcopolo 1 documentation" href="index.html" />
+    <link rel="prev" title="Fundamentals" href="Fundamentals.html" />
    
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
@@ -35,8 +35,11 @@
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="#" title="General Index"
+          <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="Fundamentals.html" title="Fundamentals"
+             accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">marcopolo 1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -46,11 +49,19 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- 
+  <div class="section" id="configuration">
+<span id="toctree-directive"></span><h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<p>The standard configuration allows MarcoPolo to run pretty much in any small network. However, there are a certain conditions which will require a little configuration by the end-user:</p>
+<ul class="simple">
+<li>Different grids on the same network: MarcoPolo is bound to a certain default multicast group (224.0.0.112). In the event that this group is already on use on the system by other MarcoPolo grid or any other application some problems may occur. Particularly on the first case, since MarcoPolo simply does not reply to any bad-formatted message (and the odds of a JSON-based multicast application running on the same address are quite small). On the file /etc/marcopolo/marcopolo.conf the parameter MULTICAST_ADDR can be set to any compatible IPv4 multicast address. (See <a class="footnote-reference" href="#id2" id="id1">[1]</a> for a reference).</li>
+<li>Multiple local-area networks: Multicast packets can be routed up to a global level (if the selected group is allowed for such task). The parameter HOPS sets the TTL (Time To Live) of the package to distribute the package beyond the local designated router. <strong>Important</strong>: use only with a supported MULTICAST_ADDR value.</li>
+</ul>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>IANA Guidelines for IPv4 Multicast Address Assignments <a class="reference external" href="http://tools.ietf.org/html/rfc5771#page-4">http://tools.ietf.org/html/rfc5771#page-4</a></td></tr>
+</tbody>
+</table>
 </div>
 
 
@@ -59,9 +70,16 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-
-   
-
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Fundamentals.html"
+                        title="previous chapter">Fundamentals</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Configuration.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -86,6 +104,9 @@
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
       
+      |
+      <a href="_sources/Configuration.txt"
+          rel="nofollow">Page source</a></li>
     </div>
 
     

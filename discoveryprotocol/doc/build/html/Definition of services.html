@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -7,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Index &mdash; marcopolo 1 documentation</title>
+    <title>Services &mdash; marcopolo 1 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -35,7 +34,7 @@
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="#" title="General Index"
+          <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="nav-item nav-item-0"><a href="index.html">marcopolo 1 documentation</a> &raquo;</li> 
       </ul>
@@ -46,11 +45,26 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- 
+  <div class="section" id="services">
+<h1>Services<a class="headerlink" href="#services" title="Permalink to this headline">¶</a></h1>
+<p>The offered services may be configured in two ways:</p>
+<ul class="simple">
+<li>A file in the services/ directory with the following skeleton:</li>
+</ul>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+ <span class="s2">&quot;id&quot;</span><span class="o">:</span><span class="s2">&quot;&lt;unique identifier&gt;&quot;</span><span class="p">,</span>
+ <span class="s2">&quot;version&quot;</span><span class="o">:</span><span class="s2">&quot;&lt;version&gt;&quot;</span>
+ <span class="s2">&quot;startup-command&quot;</span><span class="o">:</span> <span class="s2">&quot;&lt;command&gt;&quot;</span>
+ <span class="s2">&quot;shared-only&quot;</span><span class="o">:</span> <span class="s2">&quot;&lt;list of multicast groups separated by commas&gt;&quot;</span>
+ <span class="s2">&quot;allows-copy&quot;</span><span class="o">:</span> <span class="s2">&quot;&lt;yes/no&gt;&quot;</span> <span class="c1">//Allows copy of the .mar file</span>
+ <span class="s2">&quot;requires-auth&quot;</span><span class="o">:</span> <span class="s2">&quot;&lt;yes/no&gt;&quot;</span> <span class="c1">// Some services will only be shown to authenticated requests</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The script <a href="#id1"><span class="problematic" id="id2">`</span></a>poloservice&#8217; offers an interactive method to create a service file and publish it.</p>
+<ul class="simple">
+<li>By using the <cite>register()</cite> and <cite>deregister()</cite> functions during execution time.</li>
+</ul>
 </div>
 
 
@@ -59,9 +73,13 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-
-   
-
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Definition of services.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -86,6 +104,9 @@
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
       
+      |
+      <a href="_sources/Definition of services.txt"
+          rel="nofollow">Page source</a></li>
     </div>
 
     

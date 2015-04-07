@@ -5,11 +5,21 @@
 
 Welcome to marcopolo's documentation!
 =====================================
-
 Contents:
 
 .. toctree::
    :maxdepth: 2
+   
+   Index
+   Fundamentals
+   Configuration
+     Definition of Services <services>
+   Protocol commands <commands>
+   Bindings
+   	Python
+   	Java
+   	C/C++
+   CLI
 
 
 
