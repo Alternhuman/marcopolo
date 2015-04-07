@@ -1,0 +1,4 @@
+http://twistedmatrix.com/documents/current/web/howto/
+https://media.readthedocs.org/pdf/twisted/latest/twisted.pdf
+https://twistedmatrix.com/trac/wiki/Documentation
+
