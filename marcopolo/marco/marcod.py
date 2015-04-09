@@ -60,6 +60,7 @@ class Marco:
 				self.nodes.add(n)
 
 		if conf.DEBUG:
+			debstr = ""
 			for node in self.nodes:
 				debstr = str.format("There's a node at {0} joining the multicast group {1} with the services: ", node.address, node.multicast_group)
 				
@@ -208,7 +209,7 @@ class MarcoBinding(DatagramProtocol):
 		
 		if command["Command"] == "Marco":
 			nodes = self.marco.discover()
-			self.transport.write(bytes(json.dumps(nodes), 'utf-8'), address)
+			self.transport.write(bytes(json.dumps([n.address for n in nodes]), 'utf-8'), address)
 
 		if command["Command"] == "Request-For":
 			nodes = self.marco.request_service(command["Params"])
@@ -217,7 +218,7 @@ class MarcoBinding(DatagramProtocol):
 			services = self.marco.services(command["Params"])
 
 		else:
-			self.transport.write(bytes(json.dumps({Error: True})), 'utf-8', address)
+			self.transport.write(bytes(json.dumps({"Error": True}), 'utf-8'), address)
 		
 		nodes_with_service = self.marco.request_service(data.decode('utf-8'))
 		nodes = []
