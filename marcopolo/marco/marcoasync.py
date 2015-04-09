@@ -5,7 +5,7 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor, defer
 from marco_conf import utils, conf
 
-import socket, sys, json #time, string were necessary
+import socket, sys, json, logging #time, string were necessary
 import copy
 
 class Marco:
@@ -23,7 +23,7 @@ class Marco:
 		self.socket_ucast = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM, proto=socket.IPPROTO_UDP)
 		self.socket_ucast.settimeout(conf.TIMEOUT/1000.0) #https://docs.python.org/2/library/socket.html#socket.socket.settimeout
 		self.socket_ucast.bind(('',0))
-
+		#TODO binding exception
 		self.nodes = set()
 
 	def __del__(self):
@@ -58,9 +58,12 @@ class Marco:
 
 		if conf.DEBUG:
 			for node in self.nodes:
-				print(str.format("There's a node at {0} joining the multicast group {1} with the services: ", node.address, node.multicast_group),file=sys.stderr)
+				debstr = str.format("There's a node at {0} joining the multicast group {1} with the services: ", node.address, node.multicast_group)
+				
 				for service in n.services:
-					print(str.format("{0}. Version: {1} ", service["id"], service["version"]))
+					debstr += str.format("{0}. Version: {1} ", service["id"], service["version"])
+
+			logging.debug(debstr)
 		
 		
 		return copy.copy(self.nodes)
@@ -75,11 +78,13 @@ class Marco:
 
 		#Validation of addr
 		if addr == None or addr == '':
+			logging.error('Address cannot be empty: %s', addr)
 			raise InvalidAddrException
 
 		try:
 			socket.gethostbyname(addr) # Gethostbyname throws a gaierror if neither a valid IP address or DNS name is passed. Easiest way to perform both checks
 		except socket.gaierror:
+			logging.error('Invalid address or DNS name: %s', addr)
 			raise InvalidAddrException
 
 		discover_msg = bytes(json.dumps({'command': 'Services'}), 'utf-8')
@@ -104,7 +109,7 @@ class Marco:
 
 			if conf.DEBUG:
 				for node in n:
-					print("There's a node at {0} joining the multicast group")
+					logging.debug("There's a node at {0} joining the multicast group")
 
 		return copy.copy(self.nodes)
 
@@ -121,6 +126,7 @@ class Marco:
 		command_msg = bytes(json.dumps({'Command':'Request-for', 'Params':service}), 'utf-8')
 
 		if not isinstance(service, str):
+			logging.info('Bad formatted request')
 			raise InvalidServiceName
 
 		if(node): ##If node is defined only that node is requested
@@ -128,6 +134,7 @@ class Marco:
 			try: #Validation
 				socket.gethostbyname(addr) # Gethostbyname throws a gaierror if neither a valid IP address or DNS name is passed. Easiest way to perform both checks
 			except socket.gaierror:
+				logging.info('Bad address')
 				raise InvalidAddrException
 
 			self.socket_ucast.sendto(command_msg, node)
@@ -187,6 +194,7 @@ class MarcoBinding(DatagramProtocol):
 
 	def __init__(self):
 		self.marco = Marco() #Own instance of Marco
+		logging.info("Starting marcod service")
 
 	def datagramReceived(self, data, address):
 		
@@ -207,19 +215,19 @@ class MarcoBinding(DatagramProtocol):
 		
 		for service in nodes_with_service:
 			nodes.append(service.address)
-		print(nodes)
+		#print(nodes)
 		
 		self.transport.write(bytes(json.dumps(nodes), 'utf-8'), address)
 
-	def stopService():
-		del self.marco
+		
 
 
 @defer.inlineCallbacks
 def graceful_shutdown():
-    yield server.stopService()
+	yield logging.info('Stopping service marcod')
 
 if __name__ == "__main__":
-	server = reactor.listenUDP(1338, MarcoBinding(), interface='127.0.1.1')
-	reactor.run()
+	logging.basicConfig(filename="foo.log", level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
+	server = reactor.listenUDP(conf.MARCOPORT, MarcoBinding(), interface='127.0.1.1')
 	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
+	reactor.run()

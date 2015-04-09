@@ -1,7 +1,8 @@
 __author__ = 'martin'
 
 DEBUG = True
-PORT = 1337
+PORT = 1337 # CHANGE TO POLOPORT
+MARCOPORT = 1338
 MULTICAST_ADDR = '224.0.0.112'
 HOPS = 1
 IFACE = 'eth0'
