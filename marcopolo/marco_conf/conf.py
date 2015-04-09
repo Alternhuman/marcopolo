@@ -17,3 +17,7 @@ SERVICES=[
 TIMEOUT = 2000.0
 CONF_DIR = '/etc/marcopolo/'
 SERVICES_DIR = 'polo/services/'
+
+LOGGING_LEVEL = 'DEBUG'
+LOGGING_FORMAT = '%(asctime)s:%(levelname)s:%(message)s'
+LOGGING_DIR = '/var/log/marcopolo/'

@@ -5,7 +5,7 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor, defer
 from marco_conf import utils, conf
 
-import socket, sys, json, logging #time, string were necessary
+import socket, sys, json, logging, os #time, string were necessary
 import copy
 
 class Marco:
@@ -194,7 +194,7 @@ class MarcoBinding(DatagramProtocol):
 
 	def __init__(self):
 		self.marco = Marco() #Own instance of Marco
-		logging.info("Starting marcod service")
+		logging.info("Starting service marcod")
 
 	def datagramReceived(self, data, address):
 		
@@ -227,7 +227,12 @@ def graceful_shutdown():
 	yield logging.info('Stopping service marcod')
 
 if __name__ == "__main__":
-	logging.basicConfig(filename="foo.log", level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
+	#Closing std(in|out|err)
+	os.close(0)
+	os.close(1)
+	os.close(2)
+
+	logging.basicConfig(filename=conf.LOGGING_DIR+'marcod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 	server = reactor.listenUDP(conf.MARCOPORT, MarcoBinding(), interface='127.0.1.1')
 	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
 	reactor.run()

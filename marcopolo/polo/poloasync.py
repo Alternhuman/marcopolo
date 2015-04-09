@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from twisted.internet.protocol import DatagramProtocol
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 
+import os
 from os import listdir
 from os.path import isfile, join
 from io import StringIO
 
-import sys, signal, json
+import sys, signal, json, logging
 
 from marco_conf import conf
 
@@ -23,6 +24,7 @@ class Polo(DatagramProtocol):
 		"""
 		Operations to be performed before starting to listen
 		"""
+		logging.info("Starting service polod")
 		self.services = []
 
 		#List all files in the service directory
@@ -33,13 +35,12 @@ class Polo(DatagramProtocol):
 			    with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
 			        self.services.append(json.load(f))
 			except ValueError:
-			    if conf.DEBUG: print(str.format("El archivo {0} no cuenta con una estructura JSON válida", conf.SERVICES_DIR+service), file=sys.stderr)
+			    logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
 
-		if conf.DEBUG:
-			for s in self.services:
-				print(s['id'])
-
-			print("Ofreciendo " + str(len(self.services)) + " servicios", file=sys.stderr)
+		#if conf.DEBUG:
+		#	for s in self.services:
+		#		print(s['id'])
+		logging.info("Offering " + str(len(self.services)) + " services")
 
 		#self.transport.setTTL(2) Para salir más allá de la subred
 		self.transport.joinGroup(conf.MULTICAST_ADDR)
@@ -90,7 +91,17 @@ def sigint_handler(signal, frame):
     reactor.stop()
     sys.exit(0)
 
+@defer.inlineCallbacks
+def graceful_shutdown():
+	yield logging.info('Stopping service polod')
+
 if __name__ == "__main__":
 	#signal.signal(signal.SIGINT, sigint_handler)
+	#Closing std(in|out|err)
+	os.close(0)
+	os.close(1)
+	os.close(2)
+	logging.basicConfig(filename=conf.LOGGING_DIR+'polod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 	reactor.listenMulticast(conf.PORT, Polo(), listenMultiple=True)
+	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
 	reactor.run()
