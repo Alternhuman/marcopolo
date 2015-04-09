@@ -11,7 +11,7 @@ from io import StringIO
 
 import sys, signal, json, logging
 
-sys.path.append('/home/martin/TFG/workspaces/discovery/marcopolo')
+sys.path.append('/opt/marcopolo')
 from marco_conf import conf
 
 __author__ = 'Diego Martín'
@@ -127,7 +127,7 @@ if __name__ == "__main__":
 	if not path.exists('/var/run/marcopolo'):
 		makedirs('/var/run/marcopolo')
 	
-	f = open(conf.PIDFILE, 'w')
+	f = open(conf.PIDFILE_POLO, 'w')
 	f.write(str(pid))
 	f.close()
 

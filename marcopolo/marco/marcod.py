@@ -4,12 +4,11 @@
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor, defer
 
-
-
-import socket, sys, json, logging, os #time, string were necessary
+import socket, sys, json, logging, os, signal #time, string were necessary
+from os import path, makedirs, listdir
 import copy
 
-sys.path.append('/home/martin/TFG/workspaces/discovery/marcopolo')
+sys.path.append('/opt/marcopolo')
 from marco_conf import utils, conf
 
 class Marco:
@@ -232,6 +231,16 @@ def graceful_shutdown():
 
 if __name__ == "__main__":
 	signal.signal(signal.SIGHUP, signal.SIG_IGN)
+	
+	pid = os.getpid()
+	
+	if not path.exists('/var/run/marcopolo'):
+		makedirs('/var/run/marcopolo')
+	
+	f = open(conf.PIDFILE_MARCO, 'w')
+	f.write(str(pid))
+	f.close()
+
 	#Closing std(in|out|err)
 	os.close(0)
 	os.close(1)
