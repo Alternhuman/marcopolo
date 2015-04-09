@@ -12,6 +12,7 @@ Contents:
    
    Index
    Fundamentals
+   The daemons <daemons>
    Configuration
      Definition of Services <services>
    Protocol commands <commands>

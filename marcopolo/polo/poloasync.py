@@ -26,11 +26,11 @@ class Polo(DatagramProtocol):
 		self.services = []
 
 		#List all files in the service directory
-		servicefiles = [ f for f in listdir(conf.CONFDIR + SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
+		servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
 		
 		for service in servicefiles:
 			try:
-			    with open(join(conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
+			    with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
 			        self.services.append(json.load(f))
 			except ValueError:
 			    if conf.DEBUG: print(str.format("El archivo {0} no cuenta con una estructura JSON válida", conf.SERVICES_DIR+service), file=sys.stderr)

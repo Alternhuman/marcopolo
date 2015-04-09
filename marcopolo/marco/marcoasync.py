@@ -190,6 +190,18 @@ class MarcoBinding(DatagramProtocol):
 
 	def datagramReceived(self, data, address):
 		
+		command = json.loads(data.decode('utf-8'))
+
+		if command["Command"] == "Marco":
+			nodes = self.marco.discover()
+			self.transport.write(bytes(json.dumps(nodes), 'utf-8'), address)
+
+		if command["Command"] == "Request-For":
+			nodes = self.marco.request_service(command["Params"])
+
+		if command["Command"] == "Services":
+			services = self.marco.services(command["Params"])
+
 		nodes_with_service = self.marco.request_service(data.decode('utf-8'))
 		nodes = []
 		
