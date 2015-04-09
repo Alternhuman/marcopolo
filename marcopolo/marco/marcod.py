@@ -8,7 +8,7 @@ import socket, sys, json, logging, os, signal #time, string were necessary
 from os import path, makedirs, listdir
 import copy
 
-sys.path.append('/opt/marcopolo')
+sys.path.append('/home/martin/TFG/workspaces/discovery/marcopolo/')
 from marco_conf import utils, conf
 
 class Marco:
@@ -201,8 +201,11 @@ class MarcoBinding(DatagramProtocol):
 
 	def datagramReceived(self, data, address):
 		
-		command = json.loads(data.decode('utf-8'))
-
+		try:
+			command = json.loads(data.decode('utf-8'))
+		except ValueError:
+			return
+		
 		if command["Command"] == "Marco":
 			nodes = self.marco.discover()
 			self.transport.write(bytes(json.dumps(nodes), 'utf-8'), address)
@@ -213,6 +216,9 @@ class MarcoBinding(DatagramProtocol):
 		if command["Command"] == "Services":
 			services = self.marco.services(command["Params"])
 
+		else:
+			self.transport.write(bytes(json.dumps({Error: True})), 'utf-8', address)
+		
 		nodes_with_service = self.marco.request_service(data.decode('utf-8'))
 		nodes = []
 		
@@ -242,9 +248,9 @@ if __name__ == "__main__":
 	f.close()
 
 	#Closing std(in|out|err)
-	os.close(0)
-	os.close(1)
-	os.close(2)
+	#os.close(0)
+	#os.close(1)
+	#os.close(2)
 
 	logging.basicConfig(filename=conf.LOGGING_DIR+'marcod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 	server = reactor.listenUDP(conf.MARCOPORT, MarcoBinding(), interface='127.0.1.1')

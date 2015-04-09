@@ -1,4 +1,10 @@
 http://twistedmatrix.com/documents/current/web/howto/
 https://media.readthedocs.org/pdf/twisted/latest/twisted.pdf
 https://twistedmatrix.com/trac/wiki/Documentation
+TO READ:
+http://www.jejik.com/articles/2007/02/a_simple_unix_linux_daemon_in_python/
+https://wiki.archlinux.org/index.php/Systemd#Writing_unit_files
+https://github.com/nicholasdavidson/pybit
+http://blog.frd.mn/how-to-set-up-proper-startstop-services-ubuntu-debian-mac-windows/
+http://0pointer.de/blog/projects/why.html
 
