@@ -5,7 +5,7 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor, defer
 
 import os
-from os import listdir
+from os import listdir, makedirs, path
 from os.path import isfile, join
 from io import StringIO
 
@@ -99,6 +99,15 @@ def graceful_shutdown():
 if __name__ == "__main__":
 	#signal.signal(signal.SIGINT, sigint_handler)
 	#Closing std(in|out|err)
+	pid = os.getpid()
+	
+	if not path.exists('/var/run/marcopolo'):
+		makedirs('/var/run/marcopolo')
+	
+	f = open(conf.PIDFILE, 'w')
+	f.write(str(pid))
+	f.close()
+
 	signal.signal(signal.SIGHUP, signal.SIG_IGN)
 	os.close(0)
 	os.close(1)
