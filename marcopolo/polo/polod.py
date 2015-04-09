@@ -11,6 +11,7 @@ from io import StringIO
 
 import sys, signal, json, logging
 
+sys.path.append('/home/martin/TFG/workspaces/discovery/marcopolo')
 from marco_conf import conf
 
 __author__ = 'Diego Martín'
@@ -98,6 +99,7 @@ def graceful_shutdown():
 if __name__ == "__main__":
 	#signal.signal(signal.SIGINT, sigint_handler)
 	#Closing std(in|out|err)
+	signal.signal(signal.SIGHUP, signal.SIG_IGN)
 	os.close(0)
 	os.close(1)
 	os.close(2)

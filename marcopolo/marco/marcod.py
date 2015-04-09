@@ -3,10 +3,14 @@
 
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor, defer
-from marco_conf import utils, conf
+
+
 
 import socket, sys, json, logging, os #time, string were necessary
 import copy
+
+sys.path.append('/home/martin/TFG/workspaces/discovery/marcopolo')
+from marco_conf import utils, conf
 
 class Marco:
 	def __init__(self):
@@ -227,6 +231,7 @@ def graceful_shutdown():
 	yield logging.info('Stopping service marcod')
 
 if __name__ == "__main__":
+	signal.signal(signal.SIGHUP, signal.SIG_IGN)
 	#Closing std(in|out|err)
 	os.close(0)
 	os.close(1)

@@ -1,0 +1,15 @@
+[Unit]
+Description=A simple service discovery protocol advertiser
+
+[Service]
+#ExecStart=/usr/bin/python3 /opt/marcopolo/daemon/polostart.py &> /dev/null
+#ExecStop=/usr/bin/python3 /opt/marcopolo/daemon/polostop.py
+ExecStart=/usr/bin/python3 /opt/marcopolo/polo/polod.py &> /dev/null
+#ExecReload # Send signal
+Type=simple
+User=root
+Group=root
+#PIDFile=/var/pid/pid.log
+
+[Install]
+WantedBy=multi-user.target
