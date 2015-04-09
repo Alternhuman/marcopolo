@@ -5,8 +5,8 @@ Description=A simple service discovery protocol advertiser
 
 ExecStart=/usr/bin/python3 /opt/marcopolo/polo/polod.py &> /dev/null
 ExecStop=/usr/bin/python3 /opt/marcopolo/daemon/polostop.py &> /dev/null
+ExecReload=/usr/bin/python3 /opt/marcopolo/daemon/poloreload.py &> /dev/null
 
-#ExecReload # Send signal
 Type=simple
 User=root
 Group=root

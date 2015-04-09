@@ -16,6 +16,26 @@ from marco_conf import conf
 
 __author__ = 'Diego Martín'
 
+offered_services = []
+
+def reload_services(signal, frame):
+	signal.signal(signal.SIGUSR1, signal.SIG_IGN)
+	global offered_services
+	offered_services = []
+	logging.info("Reloading services")
+	
+	servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
+
+	for service in servicefiles:
+		try:
+		    with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
+		        offered_services.append(json.load(f))
+		except ValueError:
+		    logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
+
+	logging.info("Reloaded: Offering " + str(len(offered_services)) + " services")
+	signal.signal(signal.SIGUSR1, reload_services)
+
 class Polo(DatagramProtocol):
 	"""
 	Twisted inherited class in charge of listening on the multicast group
@@ -26,7 +46,8 @@ class Polo(DatagramProtocol):
 		Operations to be performed before starting to listen
 		"""
 		logging.info("Starting service polod")
-		self.services = []
+		global offered_services
+		#offered_services = []
 
 		#List all files in the service directory
 		servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
@@ -34,14 +55,14 @@ class Polo(DatagramProtocol):
 		for service in servicefiles:
 			try:
 			    with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
-			        self.services.append(json.load(f))
+			        offered_services.append(json.load(f))
 			except ValueError:
 			    logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
 
 		#if conf.DEBUG:
-		#	for s in self.services:
+		#	for s in offered_services:
 		#		print(s['id'])
-		logging.info("Offering " + str(len(self.services)) + " services")
+		logging.info("Offering " + str(len(offered_services)) + " services")
 
 		#self.transport.setTTL(2) Para salir más allá de la subred
 		self.transport.joinGroup(conf.MULTICAST_ADDR)
@@ -51,7 +72,7 @@ class Polo(DatagramProtocol):
 		"""
 		When a datagram is received the command is parsed and a response is generated
 		"""
-		
+		global offered_services
 		try:
 			message_dict = json.loads(datagram.decode('utf-8'))
 		except ValueError:
@@ -64,16 +85,17 @@ class Polo(DatagramProtocol):
 		elif command == 'Request-for':
 			self.response_request_for(command, message_dict["Params"], address)
 		elif command == 'Services':
-			self.services(command, address)
+			offered_services(command, address)
 		else:
 			print("Unknown command: " + datagram, file=sys.stderr)
 
 	def response_discover(self, command, address):
+		global offered_services
 		response_dict = {}
 		response_dict["Command"] = "Polo"
 		response_dict["node_alive"]= True
 		response_dict["multicast_group"] = conf.MULTICAST_ADDR
-		response_dict["services"] = self.services#conf.SERVICES
+		response_dict["services"] = offered_services#conf.SERVICES
 		
 		json_msg = json.dumps(response_dict, separators=(',',':'))
 		msg = bytes(json_msg, 'utf-8')
@@ -82,7 +104,8 @@ class Polo(DatagramProtocol):
 
 
 	def response_request_for(self, command, param, address):
-		match = next((s for s in self.services if s['id'] == param), None)
+		global offered_services
+		match = next((s for s in offered_services if s['id'] == param), None)
 		command_msg = json.dumps({'Command':'OK', 'Params':json.dumps(match)})
 
 		self.transport.write(bytes(command_msg, 'utf-8'), address)
@@ -109,6 +132,7 @@ if __name__ == "__main__":
 	f.close()
 
 	signal.signal(signal.SIGHUP, signal.SIG_IGN)
+	signal.signal(signal.SIGUSR1, reload_services)
 	os.close(0)
 	os.close(1)
 	os.close(2)
