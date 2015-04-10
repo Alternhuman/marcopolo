@@ -8,8 +8,8 @@ TIMEOUT = 4000
 
 parser = argparse.ArgumentParser(description="Discovery of MarcoPolo nodes in the subnet")
 
-parser.add_argument('-d', '--discover', dest="address", type=str help="Multicast group where to discover", nargs='?', default="224.0.0.1")
-parser.add_argument('-s', '--service', dest="service", type=str	 help="Name of the service to look for", nargs='?')
+parser.add_argument('-d', '--discover', dest="address", type=str, help="Multicast group where to discover", nargs='?', default="224.0.0.1")
+parser.add_argument('-s', '--service', dest="service", type=str,	 help="Name of the service to look for", nargs='?')
 parser.add_argument('-S', '--services', dest="services", help="Discover all services in a node", nargs='?')
 parser.add_argument('-n', '--node', dest="node", help="Perform the discovery on only one node, identified by its ip/dns name", nargs="?")
 #parser.add_argument('-v', '--verbose', dest="verbose", help="Verbose mode")
@@ -54,7 +54,6 @@ if __name__ == "__main__":
     if len(nodes) > 0:
       for node in nodes:
         cadena += node + "\n"
-        print(cadena)
-    
+      print(cadena[:-1])
     else:
       print("There are no nodes available for the requested query")

@@ -35,10 +35,9 @@ class Marco:
 		self.socket_ucast.close()
 
 	def discover(self):
-		#discover_msg = bytes(json.dumps({'Command': 'Marco'}), 'utf-8') For the fun of it
-		discover_msg = bytes(json.dumps({'Command': 'Discover'}), 'utf-8')
+		discover_msg = bytes(json.dumps({'Command': 'Marco'}), 'utf-8')
 		self.socket_mcast.sendto(discover_msg, (conf.MULTICAST_ADDR, conf.PORT))
-
+		nodos = set()
 		while True:
 			try:
 				msg, address = self.socket_mcast.recvfrom(4096)
@@ -57,11 +56,11 @@ class Marco:
 				n.multicast_group = str(json_data["multicast_group"])
 				n.services = json_data["services"]
 
-				self.nodes.add(n)
+				nodos.add(n)
 
 		if conf.DEBUG:
 			debstr = ""
-			for node in self.nodes:
+			for node in nodos:
 				debstr = str.format("There's a node at {0} joining the multicast group {1} with the services: ", node.address, node.multicast_group)
 				
 				for service in n.services:
@@ -70,7 +69,7 @@ class Marco:
 			logging.debug(debstr)
 		
 		
-		return copy.copy(self.nodes)
+		return copy.copy(nodos)
 
 	def services(self, addr, port=conf.PORT):
 		"""
@@ -209,7 +208,7 @@ class MarcoBinding(DatagramProtocol):
 		
 		if command["Command"] == "Marco":
 			nodes = self.marco.discover()
-			self.transport.write(bytes(json.dumps([n.address for n in nodes]), 'utf-8'), address)
+			self.transport.write(bytes(json.dumps([n.address[0] for n in nodes]), 'utf-8'), address)
 
 		if command["Command"] == "Request-For":
 			nodes = self.marco.request_service(command["Params"])
