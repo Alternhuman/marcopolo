@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
   if args.service:
     
-    service_socket.sendto(bytes(json.dumps({"Command": "Request-for", "Params":args.service})), ('127.0.1.1', 1338))
+    service_socket.sendto(bytes(json.dumps({"Command": "Request-for", "Params":args.service}), 'utf-8'), ('127.0.1.1', 1338))
     try:
       data = service_socket.recv(4096)
     except socket.timeout:

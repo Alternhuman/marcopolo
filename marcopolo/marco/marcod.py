@@ -205,17 +205,15 @@ class MarcoBinding(DatagramProtocol):
 			command = json.loads(data.decode('utf-8'))
 		except ValueError:
 			return
-		
 		if command["Command"] == "Marco":
 			nodes = self.marco.discover()
 			self.transport.write(bytes(json.dumps([n.address[0] for n in nodes]), 'utf-8'), address)
 
-		if command["Command"] == "Request-For":
+		elif command["Command"] == "Request-for":
 			nodes = self.marco.request_service(command["Params"])
-
-		if command["Command"] == "Services":
+			self.transport.write(bytes(json.dumps([{"Address": n.address, "Params": n.services} for n in nodes]), 'utf-8'), address)
+		elif command["Command"] == "Services":
 			services = self.marco.services(command["Params"])
-
 		else:
 			self.transport.write(bytes(json.dumps({"Error": True}), 'utf-8'), address)
 		
