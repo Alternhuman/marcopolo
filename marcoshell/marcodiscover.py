@@ -12,6 +12,7 @@ parser.add_argument('-d', '--discover', dest="address", type=str, help="Multicas
 parser.add_argument('-s', '--service', dest="service", type=str,	 help="Name of the service to look for", nargs='?')
 parser.add_argument('-S', '--services', dest="services", help="Discover all services in a node", nargs='?')
 parser.add_argument('-n', '--node', dest="node", help="Perform the discovery on only one node, identified by its ip/dns name", nargs="?")
+parser.add_argument('--sh', '--shell', dest="shell", help="Print output so it can be used as an interable list in a shell", nargs='?')
 #parser.add_argument('-v', '--verbose', dest="verbose", help="Verbose mode")
 args = parser.parse_args()
 
@@ -46,14 +47,17 @@ if __name__ == "__main__":
     try:
       data = service_socket.recv(4096)
     except socket.timeout:
-      print("No response from resolver")
+      if args.shell:
+        print("")
+      else:
+        print("No response from resolver")
       exit(1)
     nodes = json.loads(data.decode('utf-8'))
     
     cadena = ""
     if len(nodes) > 0:
       for node in nodes:
-        cadena += node + "\n"
+        cadena += node + "\n" if not args.shell else " "
       print(cadena[:-1])
     else:
       print("There are no nodes available for the requested query")
