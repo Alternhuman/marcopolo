@@ -41,8 +41,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 do_start()
 {
 	echo "Starting service $NAME"
-	$DAEMON 
-#&> /dev/null
+	$DAEMON &> /dev/null
 	return 0
 	# Return
 	#   0 if daemon has been started
