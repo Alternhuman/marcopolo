@@ -32,7 +32,7 @@ case $key in
 	shift
 	;;
 	-u)
-	USUARIO="$2@ "
+	USUARIO="$2@"
 	shift
 	;;
     *)
