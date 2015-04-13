@@ -62,8 +62,7 @@ do_start()
 #
 do_stop()
 {
-	/opt/marcopolo/daemon/polostop.py 
-#&> /dev/null
+	/opt/marcopolo/daemon/polostop.py &> /dev/null
 	return 0
 	# Return
 	#   0 if daemon has been stopped
