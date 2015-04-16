@@ -8,7 +8,7 @@ import socket, sys, json, logging, os, signal #time, string were necessary
 from os import path, makedirs, listdir
 import copy
 
-sys.path.append('/home/martin/TFG/workspaces/discovery/marcopolo/')
+sys.path.append('/opt/marcopolo/')
 from marco_conf import utils, conf
 
 class Marco:
