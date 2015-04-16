@@ -35,7 +35,7 @@ do
 esac
 
 done
-echo "Here"
+
 lista=$(marcodiscover.py  --shell)
 
 for i in $lista; do
