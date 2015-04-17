@@ -12,7 +12,6 @@ from io import StringIO
 import sys, signal, json, logging
 
 sys.path.append('/opt/marcopolo')
-#sys.path.append('/home/martin/TFG/workspaces/discovery/marcopolo')
 from marco_conf import conf
 
 __author__ = 'Diego Martín'
