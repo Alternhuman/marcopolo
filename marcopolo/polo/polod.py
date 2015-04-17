@@ -17,7 +17,7 @@ from marco_conf import conf
 __author__ = 'Diego Martín'
 
 offered_services = []
-
+temporal_services = []
 def reload_services(signal, frame):
 	signal.signal(signal.SIGUSR1, signal.SIG_IGN)
 	global offered_services
@@ -35,6 +35,25 @@ def reload_services(signal, frame):
 
 	logging.info("Reloaded: Offering " + str(len(offered_services)) + " services")
 	signal.signal(signal.SIGUSR1, reload_services)
+
+class PoloBinding(DatagramProtocol):
+	def startProtocol(self):
+		pass
+
+	def datagramReceived(self, datagram, address):
+		datos = datagram.decode('utf-8')
+		datos_dict = json.loads(datos)
+		if datos_dict['Command'] == 'Register':
+			self.register_service(datos['Params'])
+
+	def register_service(self, service_id):
+		global temporal_services
+		temporal_services.add({'Params':service_id})
+
+	def remove_service(self, service_id):
+		global temporal_services
+		temporal_services = [service for service in temporal_services if not service['Params'] == service_id]
+
 
 class Polo(DatagramProtocol):
 	"""
@@ -106,9 +125,19 @@ class Polo(DatagramProtocol):
 	def response_request_for(self, command, param, address):
 		global offered_services
 		match = next((s for s in offered_services if s['id'] == param), None)
-		command_msg = json.dumps({'Command':'OK', 'Params':json.dumps(match)})
+		if match:
+			command_msg = json.dumps({'Command':'OK', 'Params':json.dumps(match)})
 
-		self.transport.write(bytes(command_msg, 'utf-8'), address)
+			self.transport.write(bytes(command_msg, 'utf-8'), address)
+			return
+
+		global temporal_services
+		match = next((s for s in temporal_services if s['id'] == param), None)
+		if match:
+			command_msg = json.dumps({'Command':'OK', 'Params':json.dumps(match)})
+
+			self.transport.write(bytes(command_msg, 'utf-8'), address)
+			return
 
 #TODO
 def sigint_handler(signal, frame):
@@ -138,5 +167,6 @@ if __name__ == "__main__":
 	#os.close(2)
 	logging.basicConfig(filename=conf.LOGGING_DIR+'polod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 	reactor.listenMulticast(conf.PORT, Polo(), listenMultiple=True)
+	reactor.listenUDP(conf.PORT, PoloBinding(), host='127.0.1.1')
 	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
 	reactor.run()
