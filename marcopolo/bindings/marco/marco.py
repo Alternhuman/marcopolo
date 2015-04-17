@@ -1,6 +1,6 @@
 import json, socket, sys
 
-sys.path.append('/home/martin/TFG/workspaces/discovery/marcopolo/')
+sys.path.append('/opt/marcopolo/')
 from marco_conf.utils import Node
 
 TIMEOUT = 4000
