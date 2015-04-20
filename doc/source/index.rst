@@ -16,10 +16,7 @@ Contents:
    Configuration
      Definition of Services <services>
    Protocol commands <commands>
-   Bindings
-   	Python
-   	Java
-   	C/C++
+   Bindings <bindings>
    CLI
 
 
