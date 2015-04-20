@@ -31,6 +31,8 @@ class Marco(object):
 class MarcoTimeOutException(Exception):
   pass
 
+#Todo: see sphinx
+
 """if __name__ == "__main__":
   marco_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
   marco_socket.settimeout(TIMEOUT/1000.0)

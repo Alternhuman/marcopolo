@@ -1,5 +1,7 @@
 [Unit]
 Description=A simple service discovery protocol advertiser
+Requires=network-online.target
+After=network-online.target
 
 [Service]
 
@@ -14,3 +16,4 @@ PIDFile=/var/run/marcopolo/polod.pid
 
 [Install]
 WantedBy=multi-user.target
+
