@@ -167,6 +167,6 @@ if __name__ == "__main__":
 	#os.close(2)
 	logging.basicConfig(filename=conf.LOGGING_DIR+'polod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 	reactor.listenMulticast(conf.PORT, Polo(), listenMultiple=True)
-	reactor.listenUDP(conf.PORT, PoloBinding(), host='127.0.1.1')
+	#reactor.listenUDP(conf.PORT, PoloBinding(), interface='127.0.1.1')
 	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
 	reactor.run()
