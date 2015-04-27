@@ -3,6 +3,11 @@
 
 import argparse, socket, json
 from sys import exit
+import sys
+
+sys.path.append('/opt/marcopolo/')
+from bindings.marco import marco
+from marco_conf.utils import Node
 
 TIMEOUT = 4000
 
@@ -20,7 +25,7 @@ args = parser.parse_args()
 if __name__ == "__main__":
 
   service_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-  service_socket.settimeout(TIMEOUT/1000.0) 
+  service_socket.settimeout(TIMEOUT*2/1000.0) 
 
   if args.service:
     
@@ -35,24 +40,16 @@ if __name__ == "__main__":
     cadena = ""
     if len(addresses) > 0:
       for address in addresses:
-        cadena += address + "\n"
-      print(cadena)
+        cadena += address["Address"][0] + "\n"
+      print(cadena[:-1])
 
     else:
       print("There are no nodes available for the requested query")
-    print(nodes)
 
   else:
-    service_socket.sendto(bytes(json.dumps({"Command": "Marco"}), 'utf-8'), ('127.0.1.1', 1338))
-    try:
-      data = service_socket.recv(4096)
-    except socket.timeout:
-      if args.shell:
-        print("")
-      else:
-        print("No response from resolver")
-      exit(1)
-    nodes = json.loads(data.decode('utf-8'))
+
+    m = marco.Marco()
+    nodes = m.marco()
     
     cadena = ""
     if len(nodes) > 0:

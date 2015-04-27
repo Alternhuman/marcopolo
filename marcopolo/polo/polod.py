@@ -10,6 +10,8 @@ from os.path import isfile, join
 from io import StringIO
 
 import sys, signal, json, logging
+from twisted.internet.error import MulticastJoinError
+import time
 
 sys.path.append('/opt/marcopolo')
 from marco_conf import conf
@@ -18,7 +20,7 @@ __author__ = 'Diego Martín'
 
 offered_services = []
 temporal_services = []
-def reload_services(signal, frame):
+def reload_services(sig, frame):
 	signal.signal(signal.SIGUSR1, signal.SIG_IGN)
 	global offered_services
 	offered_services = []
@@ -83,8 +85,21 @@ class Polo(DatagramProtocol):
 		#		print(s['id'])
 		logging.info("Offering " + str(len(offered_services)) + " services")
 
-		#self.transport.setTTL(2) Para salir más allá de la subred
-		self.transport.joinGroup(conf.MULTICAST_ADDR)
+		
+		self.attempts = 0
+		def handler(arg):
+			logging.error("Error on joining the multicast group, %s. %d retries" % (conf.MULTICAST_ADDR, self.attempts))
+			self.attempts += 1
+			time.sleep(3)
+			if self.attempts < conf.RETRIES:
+				self.transport.joinGroup(conf.MULTICAST_ADDR).addErrback(handler)
+			else:
+				logging.error("Could not joing the multicast group after %d attempts. Leaving" % (conf.RETRIES))
+				reactor.stop()
+
+		
+		self.transport.joinGroup(conf.MULTICAST_ADDR).addErrback(handler)
+		
 		self.transport.setTTL(conf.HOPS) #Go beyond the network
 
 	def datagramReceived(self, datagram, address):
@@ -166,7 +181,10 @@ if __name__ == "__main__":
 	#os.close(1)
 	#os.close(2)
 	logging.basicConfig(filename=conf.LOGGING_DIR+'polod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
-	reactor.listenMulticast(conf.PORT, Polo(), listenMultiple=True)
-	#reactor.listenUDP(conf.PORT, PoloBinding(), interface='127.0.1.1')
+	
+	def start_multicast():
+		reactor.listenMulticast(conf.PORT, Polo(), listenMultiple=True)
 	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
+	reactor.callWhenRunning(start_multicast)
 	reactor.run()
+

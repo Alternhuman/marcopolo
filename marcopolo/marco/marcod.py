@@ -156,7 +156,7 @@ class Marco:
 			except ValueError:
 				return set()
 			nodes.add(n)
-
+			return nodes
 		else:
 			#Multicast request
 			self.socket_mcast.sendto(command_msg, (conf.MULTICAST_ADDR, conf.PORT))
@@ -179,7 +179,7 @@ class Marco:
 					n.services.append(json.loads(response["Params"])) ##TODO
 
 					nodes.add(n)
-
+			return nodes
 		return nodes
 
 #Own exceptions. Just for the name
@@ -194,11 +194,22 @@ class MarcoBinding(DatagramProtocol):
 	"""
 	Twisted class for an asynchronous socket server
 	"""
-
 	def __init__(self):
 		self.marco = Marco() #Own instance of Marco
 		logging.info("Starting service marcod")
 
+	def requestForInThread(self, command, address):
+		nodes = self.marco.request_service(command["Params"])
+		self.transport.write(bytes(json.dumps([{"Address": n.address, "Params": n.services} for n in nodes]), 'utf-8'), address)
+
+	def marcoInThread(self, address):
+		nodes = self.marco.discover()
+		self.transport.write(bytes(json.dumps([n.address[0] for n in nodes]), 'utf-8'), address)
+
+	def servicesInThread(self, command, address):
+		services = self.marco.services(command["Params"])
+		self.transport.write(bytes(json.dumps([service for service in services]), 'utf-8'), address)
+	
 	def datagramReceived(self, data, address):
 		
 		try:
@@ -206,28 +217,17 @@ class MarcoBinding(DatagramProtocol):
 		except ValueError:
 			return
 		if command["Command"] == "Marco":
-			nodes = self.marco.discover()
-			self.transport.write(bytes(json.dumps([n.address[0] for n in nodes]), 'utf-8'), address)
+			reactor.callInThread(self.marcoInThread, address)
 
 		elif command["Command"] == "Request-for":
-			nodes = self.marco.request_service(command["Params"])
-			self.transport.write(bytes(json.dumps([{"Address": n.address, "Params": n.services} for n in nodes]), 'utf-8'), address)
+			reactor.callInThread(self.requestForInThread, command, address)
+
 		elif command["Command"] == "Services":
-			services = self.marco.services(command["Params"])
+			reactor.callInThread(self.servicesInThread, command, address)
+		
 		else:
 			self.transport.write(bytes(json.dumps({"Error": True}), 'utf-8'), address)
 		
-		nodes_with_service = self.marco.request_service(data.decode('utf-8'))
-		nodes = []
-		
-		for service in nodes_with_service:
-			nodes.append(service.address)
-		#print(nodes)
-		
-		self.transport.write(bytes(json.dumps(nodes), 'utf-8'), address)
-
-		
-
 
 @defer.inlineCallbacks
 def graceful_shutdown():

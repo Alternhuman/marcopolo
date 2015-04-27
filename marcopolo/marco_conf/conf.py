@@ -14,7 +14,7 @@ SERVICES=[
     {'id':'NTPServer', 'type':'tomcat', 'version':'1', 'port':8080, 'path':'/NTPServer/rest'}
 ]
 
-TIMEOUT = 2000.0
+TIMEOUT = 4000.0
 CONF_DIR = '/etc/marcopolo/'
 SERVICES_DIR = 'polo/services/'
 
@@ -23,3 +23,5 @@ LOGGING_FORMAT = '%(asctime)s:%(levelname)s:%(message)s'
 LOGGING_DIR = '/var/log/marcopolo/'
 PIDFILE_POLO = '/var/run/marcopolo/polod.pid'
 PIDFILE_MARCO = '/var/run/marcopolo/marcod.pid'
+
+RETRIES = 10
