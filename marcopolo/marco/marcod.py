@@ -219,7 +219,7 @@ class MarcoBinding(DatagramProtocol):
 		if command["Command"] == "Marco":
 			reactor.callInThread(self.marcoInThread, address)
 
-		elif command["Command"] == "Request-for":
+		elif command["Command"] == "Request-for" or command["Command"] == "Request-For":
 			reactor.callInThread(self.requestForInThread, command, address)
 
 		elif command["Command"] == "Services":

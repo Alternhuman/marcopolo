@@ -38,11 +38,12 @@ class Marco(object):
     try:
       data = self.marco_socket.recv(4096)
     except socket.timeout:
-      if args.shell:
-        print("")
-      else:
-        print("No response from resolver")
-      exit(1)
+      return []
+      # if args.shell:
+      #   print("")
+      # else:
+      #   print("No response from resolver")
+      # exit(1)
     nodes = json.loads(data.decode('utf-8'))
 
     return nodes
