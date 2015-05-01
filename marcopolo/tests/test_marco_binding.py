@@ -7,9 +7,7 @@ from marco_conf.utils import Node
 from twisted.trial import unittest
 from mock import MagicMock, patch
 
-import json
-import socket
-import socket
+import json, socket
 
 def side_effect_timeout(self,arg):
 	raise socket.timeout()
