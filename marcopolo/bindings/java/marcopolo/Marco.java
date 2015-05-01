@@ -8,7 +8,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 
 public class Marco {
-	public static ArrayList<Nodo> getNodeByService(String serviceName){
+	public static ArrayList<Nodo> getNodeByService(String serviceName){ //public static ArrayList<Nodo> request_for(String service)
 		ArrayList<Nodo> nodos = new ArrayList<Nodo>();
 		try {
 			DatagramSocket s = new DatagramSocket();
