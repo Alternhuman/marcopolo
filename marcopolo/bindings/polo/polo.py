@@ -6,7 +6,7 @@ TIMEOUT = 4000
 class Polo(object):
 	def __init__(self):
 		self.polo_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.polo_socket = socket.settimeout(TIMEOUT/1000.0)
+		self.polo_socket.settimeout(TIMEOUT/1000.0)
 
 	def register_service(self, service, permanent=False):
 		"""
@@ -17,8 +17,33 @@ class Polo(object):
 		"""
 		if not permanent:
 			message = {'Command': 'Register', 'Params': service}
-			message_bytes = bytes(json.loads(message), 'utf-8')
-			self.polo_socket.sendto(message_bytes, ('127.0.1.1', 1337))
+			message_bytes = bytes(json.dumps(message).encode('utf-8'))
+			if -1 == self.polo_socket.sendto(message_bytes, ('127.0.1.1', 1337)):
+				raise PoloInternalException("Internal socket error")
+
+			try:
+				response_bytes = self.polo_socket.recv(4096)
+			except socket.timeout:
+				raise PoloInternalException("Error on comunication with the service")
+			
+			error = None
+			try:
+				response = json.loads(response_bytes.decode('utf-8'))
+			except ValueError:
+				error = True
+			if error:
+				raise PoloInternalException("Internal error on while parsing")
+
+			error = None
+			try:
+				if response["Return"] == "OK":
+					return (True, response["Args"])
+				elif response["Return"] == "Error":
+					return (False, response["Args"])
+			except TypeError:
+				error = True
+			if error: 
+				raise PoloInternalException("Wrong response format")
 
 	def remove_service(self, service, permanent=True):
 		"""
@@ -34,4 +59,5 @@ class Polo(object):
 		"""
 		pass
 
-
+class PoloInternalException(Exception):
+	pass
