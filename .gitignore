@@ -9,3 +9,5 @@ tmp/
 .idea/*
 doc/build/*
 *__pycache__/*
+_trial_temp/*
+*/_trial_temp/*
