@@ -35,26 +35,36 @@ class Marco:
 		self.socket_ucast.close()
 
 	def discover(self):
-		discover_msg = bytes(json.dumps({'Command': 'Marco'}), 'utf-8')
-		self.socket_mcast.sendto(discover_msg, (conf.MULTICAST_ADDR, conf.PORT))
+		if sys.version_info[0] < 3:
+			discover_msg = bytes(json.dumps({'Command': 'Marco'}).encode('utf-8'))
+		else:
+			discover_msg = bytes(json.dumps({'Command': 'Marco'}), 'utf-8')
+
+		if -1 == self.socket_mcast.sendto(discover_msg, (conf.MULTICAST_ADDR, conf.PORT)):
+			raise MarcoException("Error on multicast sending")
+
 		nodos = set()
 		while True:
 			try:
 				msg, address = self.socket_mcast.recvfrom(4096)
 			except socket.timeout:
 				break
-
+			error = None
+			
 			try:
 				json_data = json.loads(msg.decode('utf-8'))
 			except ValueError:
-				return set()
+				error = True
+			
+			if error:
+				raise MarcoException("Malformed message")
 
 			if json_data["Command"] == "Polo":
 
 				n = utils.Node()
 				n.address = address
-				n.multicast_group = str(json_data["multicast_group"])
-				n.services = json_data["services"]
+				#n.multicast_group = str(json_data["multicast_group"])
+				#n.services = json_data["services"]
 
 				nodos.add(n)
 
@@ -187,6 +197,9 @@ class InvalidAddrException(Exception):
     pass
 
 class InvalidServiceName(Exception):
+	pass
+
+class MarcoException(Exception):
 	pass
 
 
