@@ -91,40 +91,38 @@ class Marco:
 
 		#Validation of addr
 		if addr == None or addr == '':
-			logging.error('Address cannot be empty: %s', addr)
-			raise InvalidAddrException
+			logging.debug('Address cannot be empty: %s', addr)
+			raise MarcoException('Address cannot be empty: %s', addr)
 
 		try:
 			socket.gethostbyname(addr) # Gethostbyname throws a gaierror if neither a valid IP address or DNS name is passed. Easiest way to perform both checks
 		except socket.gaierror:
-			logging.error('Invalid address or DNS name: %s', addr)
-			raise InvalidAddrException
+			logging.debug('Invalid address or DNS name: %s', addr)
+			raise MarcoException('Invalid address or DNS name: %s', addr)
 
-		discover_msg = bytes(json.dumps({'command': 'Services'}), 'utf-8')
-		self.socket_mcast.sendto(discover_msg, (addr, conf.PORT))
+		discover_msg = bytes(json.dumps({'Command': 'Services'}))
+		if -1 == self.socket_mcast.sendto(discover_msg, (addr, conf.PORT)):
+			raise MarcoException("Error on multicast sending")
 
-		while True:
-			try:
-				msg, address = self.socket_mcast.recvfrom(4096)
-			except socket.timeout:
-				break
+		try:
+			msg, address = self.socket_mcast.recvfrom(4096)
+		except socket.timeout:
+			pass
 
-			try:
-				json_data = json.loads(msg.decode('utf-8'))
-			except ValueError:
-				continue
-			
-			n = utils.Node()
-			n.address = address
-			n.multicast_group = str(json_data["multicast_group"])
-			n.services = json.loads(json_data["services"]) ##TODO: Is a reparse really necessary?
-			self.nodes.add(n)
+		try:
+			json_data = json.loads(msg.decode('utf-8'))
+		except ValueError:
+			return
+		
+		if conf.DEBUG:
+			logging.debug("There's a node at {0} joining the multicast group", address)
 
-			if conf.DEBUG:
-				for node in n:
-					logging.debug("There's a node at {0} joining the multicast group")
-
-		return copy.copy(self.nodes)
+		n = utils.Node()
+		n.address = address
+		n.multicast_group = str(json_data["multicast_group"])
+		n.services = json.loads(json_data["services"]) ##TODO: Is a reparse really necessary?
+		
+		return n
 
 
 	def request_service(self, service, node=None):
@@ -136,35 +134,36 @@ class Marco:
 		"""
 		nodes = set()
 
-		command_msg = bytes(json.dumps({'Command':'Request-for', 'Params':service}), 'utf-8')
+		command_msg = bytes(json.dumps({'Command':'Request-For', 'Params':service}))
 
 		if not isinstance(service, str):
 			logging.info('Bad formatted request')
-			raise InvalidServiceName
+			raise MarcoException('Bad formatted request')
 
 		if(node): ##If node is defined only that node is requested
 			
 			try: #Validation
-				socket.gethostbyname(addr) # Gethostbyname throws a gaierror if neither a valid IP address or DNS name is passed. Easiest way to perform both checks
+				socket.gethostbyname(node) # Gethostbyname throws a gaierror if neither a valid IP address or DNS name is passed. Easiest way to perform both checks
 			except socket.gaierror:
 				logging.info('Bad address')
-				raise InvalidAddrException
+				raise MarcoException('Bad address')
 
-			self.socket_ucast.sendto(command_msg, node)
+			if -1 == self.socket_ucast.sendto(command_msg, node):
+				raise MarcoException("Error on multicast sending")
 
 			try:
 			    response = self.socket_ucast.recv(4096)
 			except socket.timeout:
 			    return
 
-
 			n = utils.Node()
 			n.address = node
 			n.services = []
+			
 			try:
 				n.services.add(json.loads(response.decode('utf-8')))
 			except ValueError:
-				return set()
+				raise MarcoException("Error on response")
 			nodes.add(n)
 			return nodes
 		else:
@@ -193,11 +192,11 @@ class Marco:
 		return nodes
 
 #Own exceptions. Just for the name
-class InvalidAddrException(Exception):
-    pass
+#class InvalidAddrException(Exception):
+#    pass
 
-class InvalidServiceName(Exception):
-	pass
+#class InvalidServiceName(Exception):
+#	pass
 
 class MarcoException(Exception):
 	pass
