@@ -191,13 +191,6 @@ class Marco:
 			return nodes
 		return nodes
 
-#Own exceptions. Just for the name
-#class InvalidAddrException(Exception):
-#    pass
-
-#class InvalidServiceName(Exception):
-#	pass
-
 class MarcoException(Exception):
 	pass
 
