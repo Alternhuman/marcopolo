@@ -115,28 +115,36 @@ class Polo(DatagramProtocol):
 		command = message_dict["Command"]
 
 		if command == 'Discover' or command == 'Marco':
-			self.response_discover(command, address)
+			self.polo(command, address)
 		elif command == 'Request-for':
 			self.response_request_for(command, message_dict["Params"], address)
 		elif command == 'Services':
-			offered_services(command, address)
+			response_services(command, address)
 		else:
 			print("Unknown command: " + datagram, file=sys.stderr)
 
-	def response_discover(self, command, address):
+	def polo(self, command, address):
 		global offered_services
 		response_dict = {}
 		response_dict["Command"] = "Polo"
-		response_dict["node_alive"]= True
-		response_dict["multicast_group"] = conf.MULTICAST_ADDR
-		response_dict["services"] = offered_services#conf.SERVICES
+		response_dirt["Params"] = ""
+		#response_dict["node_alive"]= True
+		#response_dict["multicast_group"] = conf.MULTICAST_ADDR
+		#response_dict["services"] = offered_services#conf.SERVICES
 		
 		json_msg = json.dumps(response_dict, separators=(',',':'))
 		msg = bytes(json_msg, 'utf-8')
 
 		self.transport.write(msg, address)
+	
+	def response_services(self, command, param, address):
+		global offered_services
+		response_services = []
+		for service in offered_services:
+			response_services.append(service['id'])
 
-
+		self.transport.write(json.dumps({'Command': 'OK', 'Services': response_services}))
+	
 	def response_request_for(self, command, param, address):
 		global offered_services
 		match = next((s for s in offered_services if s['id'] == param), None)

@@ -15,12 +15,13 @@ Python binding
 
 Marco functions
 
-.. py:function:: request_for(service, max_nodes=None, exclude=[], timeout=None)
+.. py:function:: request_for(service, node, max_nodes=None, exclude=[], timeout=None)
 	C: struct node * request_for(const char * service) 
 	C++: std::vector<std::string> request_for(wchar_t* service)
 	Java: ArrayList<Nodo> request_for(String service)
 
 	Returns a :py:func:`set` of nodes offering the requested *service*.
+	If node is defined, the function acts as a probe to check if the desired node has the service
 	Please note that the function will block the execution of the thread until the timeout in the Marco configuration file is triggered. Though this should not be a problem for most application, it is worth knowing.
 	If *timeout* is set to an integer, the resolver will override its local *timeout* parameter and use this instead for the resolving process.
 	It throws a MarcoTimeOutException in the event that no connection can be made to the local resolver (probably due a failure start of the daemon).
