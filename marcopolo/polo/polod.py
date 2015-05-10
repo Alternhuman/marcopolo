@@ -116,18 +116,18 @@ class Polo(DatagramProtocol):
 
 		if command == 'Discover' or command == 'Marco':
 			self.polo(command, address)
-		elif command == 'Request-for':
+		elif command == 'Request-for' or command == 'Request-For':
 			self.response_request_for(command, message_dict["Params"], address)
 		elif command == 'Services':
 			response_services(command, address)
 		else:
-			print("Unknown command: " + datagram, file=sys.stderr)
+			print("Unknown command: " + datagram.decode('utf-8'))#, file=sys.stderr)
 
 	def polo(self, command, address):
 		global offered_services
 		response_dict = {}
 		response_dict["Command"] = "Polo"
-		response_dirt["Params"] = ""
+		response_dict["Params"] = ""
 		#response_dict["node_alive"]= True
 		#response_dict["multicast_group"] = conf.MULTICAST_ADDR
 		#response_dict["services"] = offered_services#conf.SERVICES
