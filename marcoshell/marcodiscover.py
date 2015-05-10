@@ -49,7 +49,11 @@ if __name__ == "__main__":
   else:
 
     m = marco.Marco()
-    nodes = m.marco()
+    try:
+      nodes = m.marco()
+    except marco.MarcoTimeOutException:
+      print("No connection to the resolver")
+      sys.exit(1)
     
     cadena = ""
     if len(nodes) > 0:
