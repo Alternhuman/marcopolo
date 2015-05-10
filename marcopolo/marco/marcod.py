@@ -109,7 +109,7 @@ class Marco:
 		
 		return copy.copy(nodos)
 
-	def services(self, addr, port=conf.PORT, timeout=None):
+	def services(self, addr, timeout=None):
 		"""
 		Searches for the services available in a certain node identified by its address
 		@param addr Address of the node
@@ -176,8 +176,10 @@ class Marco:
 		@return an array with all the available nodes
 		"""
 		nodes = set()
-
-		command_msg = bytes(json.dumps({'Command':'Request-For', 'Params':service}))
+		if sys.version_info[0] < 3:
+			command_msg	= bytes(json.dumps({'Command':'Request-For', 'Params':service}).encode('utf-8'))
+		else:
+			command_msg = bytes(json.dumps({'Command':'Request-For', 'Params':service}), 'utf-8')
 
 		if not isinstance(service, str):
 			logging.info('Bad formatted request')
@@ -239,6 +241,7 @@ class Marco:
 			if exclude and not (isinstance(exclude, (list, tuple))):
 				raise MarcoException("Invalud exclude value. Must be instance of array or set()")
 
+			
 			self.socket_mcast.sendto(command_msg, (conf.MULTICAST_ADDR, conf.PORT))
 			counter = 0
 			while True:
@@ -283,33 +286,46 @@ class MarcoBinding(DatagramProtocol):
 
 	def requestForInThread(self, command, address):
 		nodes = self.marco.request_service(command["Params"])
-		self.transport.write(bytes(json.dumps([{"Address": n.address, "Params": n.services} for n in nodes]), 'utf-8'), address)
 
-	def marcoInThread(self, address):
-		nodes = self.marco.marco()
-		self.transport.write(bytes(json.dumps([n.address[0] for n in nodes]), 'utf-8'), address)
+		if len(nodes) > 0:
+			self.transport.write(bytes(json.dumps([{"Address": n.address, "Params": n.services} for n in nodes]).encode('utf-8')), address)
+		else:
+			self.transport.write(bytes(json.dumps([]), 'utf-8'), address)
+	def marcoInThread(self, address, command):
+
+		nodes = self.marco.marco(max_nodes=command.get("max_nodes", None), 
+								 exclude=command.get("exclude", []),
+								 timeout=command.get("timeout", None)
+								 )
+		self.transport.write(bytes(json.dumps([n.address[0] for n in nodes]).encode('utf-8')), address)
 
 	def servicesInThread(self, command, address):
-		services = self.marco.services(command["Params"])
-		self.transport.write(bytes(json.dumps([service for service in services]), 'utf-8'), address)
+		services = self.marco.services(addr=command.get("node", None), 
+									   timeout=command.get("timeout", 0)
+									   )
+		
+		self.transport.write(bytes(json.dumps([service for service in services]).encode('utf-8')), address)
 	
 	def datagramReceived(self, data, address):
-		
 		try:
 			command = json.loads(data.decode('utf-8'))
 		except ValueError:
 			return
-		if command["Command"] == "Marco":
-			reactor.callInThread(self.marcoInThread, address)
+		if command.get("Command", None) == None:
+			self.transport.write(bytes(json.dumps({"Error": True}).encode('utf-8')), address)
 
-		elif command["Command"] == "Request-for" or command["Command"] == "Request-For":
-			reactor.callInThread(self.requestForInThread, command, address)
-
-		elif command["Command"] == "Services":
-			reactor.callInThread(self.servicesInThread, command, address)
-		
 		else:
-			self.transport.write(bytes(json.dumps({"Error": True}), 'utf-8'), address)
+			if command["Command"] == "Marco":
+				reactor.callInThread(self.marcoInThread, address, command)
+
+			elif command["Command"] == "Request-for" or command["Command"] == "Request-For":
+				reactor.callInThread(self.requestForInThread, command, address)
+
+			elif command["Command"] == "Services":
+				reactor.callInThread(self.servicesInThread, command, address)
+			
+			else:
+				self.transport.write(bytes(json.dumps({"Error": True}).encode('utf-8')), address)
 		
 
 @defer.inlineCallbacks
@@ -328,12 +344,7 @@ if __name__ == "__main__":
 	f.write(str(pid))
 	f.close()
 
-	#Closing std(in|out|err)
-	#os.close(0)
-	#os.close(1)
-	#os.close(2)
 
 	logging.basicConfig(filename=conf.LOGGING_DIR+'marcod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 	server = reactor.listenUDP(conf.MARCOPORT, MarcoBinding(), interface='127.0.1.1')
-	#reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
 	reactor.run()
