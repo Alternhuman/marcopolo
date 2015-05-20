@@ -16,7 +16,7 @@ Contents:
    
    Fundamentals <fundamentals>
    The daemons <daemons>
-   Configuration
+   Configuration <configuration>
    Definition of Services <services>
    Protocol commands <commands>
    Bindings <bindings>
