@@ -135,7 +135,7 @@ class TestValidation(unittest.TestCase):
 	def test_error(self):
 		self.polo.polo_socket.recv = MagicMock(return_value=("{\"Error\": \"the service already exists\"}", '127.0.0.1'))
 
-		self.assertRaisesRegexp(polo.PoloException, "Error in publishing: .* '.*'", self.polo.publish_service, "dummy")
+		self.assertRaisesRegexp(polo.PoloException, "Error in publishing .*: '.*'", self.polo.publish_service, "dummy")
 
 	def test_malformed_response(self):
 		self.polo.polo_socket.recv = MagicMock(return_value=("{", '127.0.0.1'))
