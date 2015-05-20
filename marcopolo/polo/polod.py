@@ -12,6 +12,8 @@ from io import StringIO
 import sys, signal, json, logging
 from twisted.internet.error import MulticastJoinError
 import time
+import pwd
+import re
 
 sys.path.append('/opt/marcopolo')
 from marco_conf import conf
@@ -20,6 +22,38 @@ __author__ = 'Diego Martín'
 
 offered_services = []
 temporal_services = []
+user_services = {}
+
+verify = re.compile('^([\d\w]+):([\d\w]+)$')
+
+def reload_user_services(user):
+	try:
+		user = pwd.getpwnam(user)
+	except KeyError:
+		print("Username not found")
+		return
+	
+	if path.exists(user.pw_dir):
+		polo_dir = path.join(user.pw_dir,conf.POLO_USER_DIR)
+		username = user.pw_name
+		user_services[username] = [service for service in user_services.get(username, []) if service[1] == False]
+		
+		servicefiles = [ join(polo_dir, f) for f in listdir(polo_dir) if isfile(join(polo_dir,f)) ]
+		
+		fileservices = []
+		for service in servicefiles:
+			try:
+				with open(service, 'r', encoding='utf-8') as f:
+					s = json.load(f)
+					s["permanent"] = True
+					print(s)
+					if not verify.match(s['id']):
+						fileservices.append(s)
+			except ValueError:
+				logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
+
+		user_services[username] = user_services[username] + fileservices
+
 def reload_services(sig, frame):
 	signal.signal(signal.SIGUSR1, signal.SIG_IGN)
 	global offered_services
@@ -30,12 +64,18 @@ def reload_services(sig, frame):
 
 	for service in servicefiles:
 		try:
-		    with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
-		        offered_services.append(json.load(f))
+			with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
+				service = json.load(f)
+				service["permanent"] = True
+				offered_services.append(json.load(f))
 		except ValueError:
-		    logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
+			logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
+
+	for user in user_services:
+		reload_user_services(user)
 
 	logging.info("Reloaded: Offering " + str(len(offered_services)) + " services")
+	
 	signal.signal(signal.SIGUSR1, reload_services)
 
 class PoloBinding(DatagramProtocol):
@@ -44,9 +84,127 @@ class PoloBinding(DatagramProtocol):
 
 	def datagramReceived(self, datagram, address):
 		datos = datagram.decode('utf-8')
-		datos_dict = json.loads(datos)
-		if datos_dict['Command'] == 'Register':
-			self.register_service(datos['Params'])
+		try:
+			datos_dict = json.loads(datos)
+		except ValueError:
+			self.transport.write(json.dumps({"Error":"Malformed JSON"}).encode('utf-8'), address)
+
+		if datos_dict.get("Command") is None:
+			self.transport.write(json.dumps({"Error":"Unknown command"}).encode('utf-8'), address)
+			return
+		if datos_dict["Command"] == 'Register':
+			args = datos_dict["Args"];
+			self.publish_service(address,
+								args.get("service", ''), 
+								args.get("uid", -1),
+								multicast_groups=args.get("multicast_groups", set()),
+								permanent=args.get("permanent", False),
+								root=args.get("root", False))
+			return
+		self.transport.write(json.dumps({"Error":"Malformed request. Commands missing"}).encode('utf-8'), address)
+		
+	def write_error(self, error):
+		return json.dumps({"Error": error})
+
+	def publish_service(self, address, service, uid, multicast_groups=set(), permanent=False, root=False):
+		"""
+		Registers a service during execution time.
+		
+		:param string service: Indicates the unique identifier of the service.
+		
+			If `root` is true, the published service will have the same identifier as the value of the parameter. Otherwise, the name of the user will be prepended (`<user>:<service>`).
+		
+		:param set multicast_groups: Indicates the groups where the service shall be published.
+		
+			Note that the groups must be defined in the polo.conf file, or otherwise the method will throw an exception.
+		:param bool permanent: If set to true a file will be created and the service will be permanently offered until the file is deleted.
+		
+		:param bool root: Stores the file in the marcopolo configuration directory.
+		
+			This feature is only available to privileged users, by default root and users in the marcopolo group.
+		"""
+		error = False
+		if type(service) != type(''):
+			self.transport.write(self.write_error("The name of the service %s is invalid" % service).encode('utf-8'), address)
+			return
+
+		if service is None or len(service) < 1:
+			error = True
+
+		if error:
+			self.transport.write(self.write_error("The name of the service %s is invalid" % service).encode('utf-8'), address)
+			
+		error = False
+		faulty_ip = ''
+
+		for ip in multicast_groups:
+			if type(ip) != type(''):
+				error = True
+				faulty_ip = ip
+				break
+			try:
+				socket.inet_aton(ip)
+			except socket.error:
+				error = True
+				faulty_ip = ip
+				break
+			try:
+				first_byte = int(re.search("\d{3}", ip).group(0))
+				if first_byte < 224 or first_byte > 239:
+					error = True
+					faulty_ip = ip
+			except (AttributeError, ValueError):
+				error = True
+				faulty_ip = ip
+				break
+
+		if error:
+			self.transport.write(self.write_error("Invalid multicast group address '%s'" % str(faulty_ip)).encode('utf-8'), address)
+			return
+		if type(permanent) is not bool:
+			self.transport.write(self.write_error("permanent must be boolean").encode('utf-8'), address)
+			return
+		if type(root) is not bool:
+			return self.transport.write(self.write_error("root must be boolean").encode('utf-8'), address)
+
+		if uid < 0:
+			self.transport.write(self.write_error("wrong user").encode('utf-8'), address)
+			return
+
+		user = pwd.getpwuid(uid)
+
+		if user_services.get(user, None):
+			if service in user_services:
+				self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
+				
+		folder = user.pw_dir
+		deploy_folder = path.join(folder, conf.POLO_USER_DIR)
+		service_dict = {}
+		service_dict["id"] = service
+		
+		if permanent is False:
+			if not path.exists(deploy_folder):
+				makedirs(deploy_folder)
+			
+			if os.path.isfile(path.join(deploy_folder, service)) or (service in dict(user_services.get(user.pw_name, {}))):
+				self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
+				return
+		
+			try:
+				f = open(path.join(deploy_folder, service), 'w')
+				f.write(json.dumps(service_dict))
+				f.close()
+			except Exception:
+				self.transport.write(self.write_error("Could not write service file").encode('utf-8'), address)
+				return
+
+		if user_services.get(user.pw_name) is None:
+			user_services[user.pw_name] = []
+
+		user_services[user.pw_name].append({"id":service, "permanent":permanent})
+
+		self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
+
 
 	def register_service(self, service_id):
 		global temporal_services
@@ -76,7 +234,10 @@ class Polo(DatagramProtocol):
 		for service in servicefiles:
 			try:
 			    with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
-			        offered_services.append(json.load(f))
+			        s = json.load(f)
+			        s["permanent"] = True
+			        if not verify.match(s['id']):
+			        	offered_services.append(s)
 			except ValueError:
 			    logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
 
@@ -133,7 +294,7 @@ class Polo(DatagramProtocol):
 		#response_dict["services"] = offered_services#conf.SERVICES
 		
 		json_msg = json.dumps(response_dict, separators=(',',':'))
-		msg = bytes(json_msg, 'utf-8')
+		msg = json_msg.encode('utf-8')
 
 		self.transport.write(msg, address)
 	
@@ -143,24 +304,49 @@ class Polo(DatagramProtocol):
 		for service in offered_services:
 			response_services.append(service['id'])
 
-		self.transport.write(json.dumps({'Command': 'OK', 'Services': response_services}))
+		self.transport.write(json.dumps({'Command': 'OK', 'Services': response_services}).encode('utf-8'), address)
 	
+	def response_request_for_user(self, user, service, address):
+		if user_services.get(user, None) is None:
+			reload_user_services(user)
+
+		match = next((s for s in user_services.get(user, []) if s['id'] == service), None)
+		print(user_services.get(user, None))
+		print(user)
+		print(user_services)
+		if match:
+			print("Found")
+			command_msg = json.dumps({'Command':'OK', 'Params': json.dumps(match)})
+			self.transport.write(command_msg.encode('utf-8'), address)
+			return
+
 	def response_request_for(self, command, param, address):
+
+		if verify.match(param):
+			try:
+				user, service = verify.match(param).groups()
+			except (IndexError, ValueError):
+				return
+			self.response_request_for_user(user, service, address)
+			return
+
 		global offered_services
 		match = next((s for s in offered_services if s['id'] == param), None)
 		if match:
 			command_msg = json.dumps({'Command':'OK', 'Params':json.dumps(match)})
 
-			self.transport.write(bytes(command_msg, 'utf-8'), address)
+			self.transport.write(command_msg.encode('utf-8'), address)
 			return
 
-		global temporal_services
-		match = next((s for s in temporal_services if s['id'] == param), None)
-		if match:
-			command_msg = json.dumps({'Command':'OK', 'Params':json.dumps(match)})
 
-			self.transport.write(bytes(command_msg, 'utf-8'), address)
-			return
+
+		# global temporal_services
+		# match = next((s for s in temporal_services if s['id'] == param), None)
+		# if match:
+		# 	command_msg = json.dumps({'Command':'OK', 'Params':json.dumps(match)})
+
+		# 	self.transport.write(bytes(command_msg, 'utf-8'), address)
+		# 	return
 
 #TODO
 def sigint_handler(signal, frame):
@@ -191,8 +377,13 @@ if __name__ == "__main__":
 	logging.basicConfig(filename=conf.LOGGING_DIR+'polod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 	
 	def start_multicast():
-		reactor.listenMulticast(conf.PORT, Polo(), listenMultiple=True)
+		reactor.listenMulticast(conf.PORT, Polo(), listenMultiple=False)
+	
+	def start_binding():
+		reactor.listenUDP(conf.POLO_BINDING_PORT, PoloBinding(), interface="127.0.0.1") #, 
+
 	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
 	reactor.callWhenRunning(start_multicast)
+	reactor.callWhenRunning(start_binding)
 	reactor.run()
 

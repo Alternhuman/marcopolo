@@ -28,3 +28,5 @@ PIDFILE_POLO = '/var/run/marcopolo/polod.pid'
 PIDFILE_MARCO = '/var/run/marcopolo/marcod.pid'
 
 RETRIES = 10
+
+POLO_USER_DIR = ".polo"

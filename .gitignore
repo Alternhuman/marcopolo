@@ -10,4 +10,4 @@ tmp/
 doc/build/*
 *__pycache__/*
 _trial_temp/*
-*/_trial_temp/*
+marcopolo/tests/_trial_temp/*

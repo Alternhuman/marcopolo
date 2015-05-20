@@ -1,6 +1,7 @@
 import json, socket, sys
 
 sys.path.append('/opt/marcopolo/')
+import os
 from marco_conf import conf
 BINDING_PORT = conf.POLO_BINDING_PORT
 
@@ -79,7 +80,11 @@ class Polo(object):
 		
 		message_dict = {}
 		message_dict["Command"]= "Register"
-		message_dict["Args"] = {"name": service, "multicast_groups":[g for g in multicast_groups], "permanent": permanent, "root":root}
+		message_dict["Args"] = {"service": service, 
+								"multicast_groups":[g for g in multicast_groups], 
+								"permanent": permanent, 
+								"root":root,
+								"uid": os.geteuid()}
 		error = False
 		try:
 			message_str = json.JSONEncoder(allow_nan=False).encode(message_dict) # https://docs.python.org/2/library/json.html#infinite-and-nan-number-values
@@ -108,15 +113,24 @@ class Polo(object):
 
 		error = False
 		try:
-			data, address = self.polo_socket.recv(2048)
+			data, address = self.polo_socket.recvfrom(2048)
 		except socket.timeout:
 			error = True
 
 		if error or data == -1:
 			raise PoloInternalException("Error during internal communication")
+		error = False
+		
+		try:
+			data_dec = data.decode('utf-8')
+		except Exception:
+			error = True
+
+		if error:
+			raise PoloInternalException("Error during internal communication")
 
 		try:
-			parsed_data = json.loads(data)#json.JSONDecoder(parse_constant=False).decode(data)
+			parsed_data = json.loads(data_dec)#json.JSONDecoder(parse_constant=False).decode(data)
 		except ValueError:
 			error = True
 
@@ -127,7 +141,7 @@ class Polo(object):
 			return parsed_data.get("OK")
 
 		elif parsed_data.get("Error") is not None:
-			raise PoloException("Error in publishing: %s '%s'" % (service, parsed_data.get("Error")))
+			raise PoloException("Error in publishing %s: '%s'" % (service, parsed_data.get("Error")))
 		
 		else:
 			raise PoloInternalException("Error during internal communication")
