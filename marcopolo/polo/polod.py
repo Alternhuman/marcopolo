@@ -95,14 +95,14 @@ def validate_user(uid):
 	"""
 
 	if type(uid) != type(0):
-		return False
+		return None
 
 	if uid < 0:
-		return False
+		return None
 	try:
 		user = pwd.getpwuid(uid)
 	except KeyError:
-		return False
+		return None
 	return user
 
 class PoloBinding(DatagramProtocol):
@@ -144,9 +144,9 @@ class PoloBinding(DatagramProtocol):
 									delete_file=args.get("delete_file", False)
 									)
 			
-		
-		#If any of the previous conditions is satisfied, the request is considered malformed
-		self.transport.write(self.write_error("Malformed request. Commands missing").encode('utf-8'), address)
+		else:
+			#If any of the previous conditions is satisfied, the request is considered malformed
+			self.transport.write(self.write_error("Malformed request. Commands missing").encode('utf-8'), address)
 		
 	def write_error(self, error):
 		"""
@@ -228,7 +228,8 @@ class PoloBinding(DatagramProtocol):
 			return self.transport.write(self.write_error("root must be boolean").encode('utf-8'), address)
 
 		#UID verification
-		if validate_user(uid) is None:
+		user = validate_user(uid)
+		if user is None:
 			self.transport.write(self.write_error("wrong user").encode('utf-8'), address)
 			return
 		
@@ -291,6 +292,7 @@ class PoloBinding(DatagramProtocol):
 			service_file = sanitize_path(service)
 			if path.isfile(path.join(deploy_folder, service_file)):
 				self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
+				#TODO: if unpublished and not deleted, this will be true
 				return
 			
 			try:
@@ -310,7 +312,7 @@ class PoloBinding(DatagramProtocol):
 
 		self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
 
-	def unpublish_service(self, service, uid, multicast_groups=[], delete_file=False):
+	def unpublish_service(self, address, service, uid, multicast_groups=[], delete_file=False):
 		#Determine whether it is a root or a user service
 
 		user = validate_user(uid)
@@ -341,7 +343,11 @@ class PoloBinding(DatagramProtocol):
 						else:
 							self.transport.write(self.write_error("Could not find service file").encode('utf-8'), address)
 				
-					user_services[user].remove(match)
+					try:
+						user_services[user].remove(match)
+					except ValueError:
+						pass
+					
 					self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
 					return
 				else:
@@ -351,7 +357,32 @@ class PoloBinding(DatagramProtocol):
 				self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
 				return
 		else:
-			pass #user services
+			#root service
+
+			match = next((s for s in offered_services if s['id'] == service), None)
+			if match:
+				is_permanent = match.get("permanent", False)
+
+				if delete_file and is_permanent:
+					folder = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
+					
+					if path.exists(folder) and isfile(path.join(folder, service)):
+						try:
+							os.remove(path.join(folder, service))
+						except Exception as e:
+							print(e)
+					else:
+						self.transport.write(self.write_error("Could not find service file").encode('utf-8'), address)
+				
+				try:
+					offered_services.remove(match)
+					self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
+				except ValueError:
+					pass
+			else:
+				print("Here. No match")
+				self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
+				return
 		
 
 	def remove_service(self, service_id):

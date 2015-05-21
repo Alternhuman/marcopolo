@@ -310,5 +310,8 @@ class Polo(object):
 
 		"""
 
+	def reload_services(self):
+		pass
+
 class PoloInternalException(Exception):
 	pass
