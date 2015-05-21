@@ -56,8 +56,7 @@ class Polo(object):
 		self.polo_socket.settimeout(TIMEOUT/1000.0)
 
 	def publish_service(self, service, multicast_groups=set(), permanent=False, root=False):
-		"""
-		Registers a service during execution time.
+		"""Registers a service during execution time.
 		
 		:param string service: Indicates the unique identifier of the service.
 		
