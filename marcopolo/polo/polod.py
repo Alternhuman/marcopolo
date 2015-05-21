@@ -326,6 +326,7 @@ class PoloBinding(DatagramProtocol):
 			try:
 				user, service_name = verify.match(service).groups()
 			except (IndexError, ValueError):
+				self.transport.write(self.write_error("Invalid formatting").encode('utf-8'), address)
 				return
 			if user_services.get(user, None) is not None:
 				match = next((s for s in user_services[user] if s['id'] == service_name), None)
@@ -370,7 +371,7 @@ class PoloBinding(DatagramProtocol):
 						try:
 							os.remove(path.join(folder, service))
 						except Exception as e:
-							print(e)
+							self.transport.write(self.write_error("Internal error during processing of file").encode('utf-8'), address)
 					else:
 						self.transport.write(self.write_error("Could not find service file").encode('utf-8'), address)
 				
@@ -380,7 +381,16 @@ class PoloBinding(DatagramProtocol):
 				except ValueError:
 					pass
 			else:
-				print("Here. No match")
+				if delete_file:
+					folder = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
+					if path.exists(folder) and isfile(path.join(folder, service)):
+						try:
+							os.remove(path.join(folder, service))
+						except Exception as e:
+							self.transport.write(self.write_error("Internal error during processing of file").encode('utf-8'), address)
+						self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
+						return
+				
 				self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
 				return
 		
