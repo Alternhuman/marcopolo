@@ -56,7 +56,8 @@ class Polo(object):
 		self.polo_socket.settimeout(TIMEOUT/1000.0)
 
 	def publish_service(self, service, multicast_groups=set(), permanent=False, root=False):
-		"""Registers a service during execution time.
+		"""
+		Registers a service during execution time.
 		
 		:param string service: Indicates the unique identifier of the service.
 		
@@ -65,11 +66,21 @@ class Polo(object):
 		:param set multicast_groups: Indicates the groups where the service shall be published.
 		
 			Note that the groups must be defined in the polo.conf file, or otherwise the method will throw an exception.
+		
 		:param bool permanent: If set to true a file will be created and the service will be permanently offered until the file is deleted.
 		
 		:param bool root: Stores the file in the marcopolo configuration directory.
 		
 			This feature is only available to privileged users, by default root and users in the marcopolo group.
+		
+		:raise:
+			:PoloException: Raised if the input is not valid (the message of the exception describes where the problem is)
+
+			:PoloInternalException: Raised when internal problems occur. Such problems may be communication timeouts, malformed request/responses, encoding errors...
+		
+		:returns: The name of the service as offered. In case of `root` services, the name will be the value of `service`. If the service is a user service, it will be published as `username:service`
+		
+		:rvalue: str
 		"""
 		#Verify user input
 		error = False
@@ -186,7 +197,6 @@ class Polo(object):
 		else:
 			raise PoloInternalException("Error during internal communication")
 
-		return None
 
 
 

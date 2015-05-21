@@ -15,34 +15,8 @@ Python binding
 
 Marco functions
 
-.. py:function:: request_for(service, node, max_nodes=None, exclude=[], timeout=None)
-	C: struct node * request_for(const char * service) 
-	C++: std::vector<std::string> request_for(wchar_t* service)
-	Java: ArrayList<Nodo> request_for(String service)
-
-	Returns a :py:func:`set` of nodes offering the requested *service*.
-	If node is defined, the function acts as a probe to check if the desired node has the service
-	Please note that the function will block the execution of the thread until the timeout in the Marco configuration file is triggered. Though this should not be a problem for most application, it is worth knowing.
-	If *timeout* is set to an integer, the resolver will override its local *timeout* parameter and use this instead for the resolving process.
-	It throws a MarcoTimeOutException in the event that no connection can be made to the local resolver (probably due a failure start of the daemon).
-
-.. py:function:: marco(max_nodes=None, exclude=[], timeout=None)
-	C struct node * marco(int timeout)
-	C++ std::vector<node> marco(int timeout)
-	Java ArrayList<Node> marco(int timeout)
-
-	Sends a marco message to all nodes, which reply with a Polo message. Upon receiving all responses (those which arrived before the timeout), a collection of the response information is returned.
-
-.. py:function:: request_one_for(exclude=[], timeout=None)
-
-	Returns one node picked at random from the responses (more precisely, the first replying node) or the one which best satisfies the given exclusion criteria. This function is equivalent to request_for with max_nodes=1
-
-.. py:function:: services(node, timeout=None)
-
-	C struct service * services(char * node, int timeout)
-	C++ std::vector<service> services(std::string node, int timeout)
-	Java ArrayList<Service> services(string node, int timeout)
-	Returns all the services available in the node identified by the IP/DNS name. In the event that the node does not reply to the response, a exception will be raised.
+.. autoclass:: bindings.marco.marco.Marco
+	:members:
 
 .. py:function:: service_params(node, max_nodes=None, params=Node, timeout=None)
 
@@ -76,7 +50,8 @@ Polo functions
 
 	Returns True if the *service* is offered. Otherwise it returns *False*
 
-Here should be the method:
+.. autoclass:: bindings.polo.polo.Polo
+	:members:
 
 
-.. automethod:: bindings.polo.polo.Polo.publish_service
+..automethod: bindings.polo.polo.Polo.publish_service
