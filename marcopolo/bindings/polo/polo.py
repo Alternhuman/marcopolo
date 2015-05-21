@@ -1,13 +1,13 @@
-import json, socket, sys
+#!/usr/bin/env python
 
+import json, socket, sys, os
+import socket, re # Address validation
 sys.path.append('/opt/marcopolo/')
-import os
+
 from marco_conf import conf
 BINDING_PORT = conf.POLO_BINDING_PORT
 
 TIMEOUT = 4000
-
-import socket, re # Address validation
 
 class PoloException(Exception):
 	pass
@@ -178,19 +178,40 @@ class Polo(object):
 		# 	if error: 
 		# 		raise PoloInternalException("Wrong response format")
 
+
+
 	def remove_service(self, service, multicast_groups=[]):
 		"""
 		A service is removed. It the service is permanent permanently or temporarily
 		"""
 		pass
 
+	def service_info(self, service):
+		"""
+		Returns a dictionary with all the information from a service
+		:param string service: The name of the service
+
+		"""
+
 	def have_service(self, service):
 		"""
 		Returns true if the requested service is set to be offered
-		Note: the fact that a service is not offered does not imply that the service is
-		not on the configuration files
+		:param string service: The name of the service.
+
+			Please not that in order to check for an user service, it must be written as user:service
+
+
 		"""
 		pass
+
+	def set_permanent(self, service, permanent=True):
+		"""
+		Changes the status of a service (permanent/not permanent)
+		:param string service: The name of the service
+
+		:param bool permanent: Indicates whether the service must be permanent or not
+
+		"""
 
 class PoloInternalException(Exception):
 	pass
