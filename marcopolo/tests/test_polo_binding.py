@@ -7,7 +7,13 @@ from twisted.trial import unittest
 
 from mock import MagicMock, patch
 
+from unittest import skip
 
+class TestRegisterService(unittest.TestCase):
+	pass
+
+
+@skip
 class TestRegisterService(unittest.TestCase):
 	def setUp(self):
 		self.polo = polo.Polo()
@@ -38,7 +44,7 @@ class TestRemoveService(unittest.TestCase):
 	def setUp(self):
 		self.polo = polo.Polo()
 	
-	from unittest import skip
+	
 	@skip
 	def test_remove_success(self):
 		self.assertFalse(self.polo.remove_service("dummy"))

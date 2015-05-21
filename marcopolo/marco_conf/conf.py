@@ -2,7 +2,10 @@ __author__ = 'martin'
 
 DEBUG = True
 PORT = 1337 # CHANGE TO POLOPORT
+POLO_BINDING_PORT = 1390
+
 MARCOPORT = 1338
+
 MULTICAST_ADDR = '224.0.0.112'
 HOPS = 1
 IFACE = 'eth0'
@@ -25,3 +28,5 @@ PIDFILE_POLO = '/var/run/marcopolo/polod.pid'
 PIDFILE_MARCO = '/var/run/marcopolo/marcod.pid'
 
 RETRIES = 10
+
+POLO_USER_DIR = ".polo"
