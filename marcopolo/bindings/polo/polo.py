@@ -9,6 +9,44 @@ BINDING_PORT = conf.POLO_BINDING_PORT
 
 TIMEOUT = 4000
 
+def verify_parameters(service, multicast_groups):
+	error = False
+	if type(service) != type(''):
+		raise PoloException("The name of the service %s is invalid" % service)
+
+	if service is None or len(service) < 1:
+		error = True
+
+	if error:
+		raise PoloException("The name of the service %s is invalid" % service)
+
+	error = False
+	faulty_ip = ''
+
+	for ip in multicast_groups:
+		if type(ip) != type(''):
+			error = True
+			faulty_ip = ip
+			break
+		try:
+			socket.inet_aton(ip)
+		except socket.error:
+			error = True
+			faulty_ip = ip
+			break
+		try:
+			first_byte = int(re.search("\d{3}", ip).group(0))
+			if first_byte < 224 or first_byte > 239:
+				error = True
+				faulty_ip = ip
+		except (AttributeError, ValueError):
+			error = True
+			faulty_ip = ip
+			break
+
+	if error:
+		raise PoloException("Invalid multicast group address '%s'" % str(faulty_ip))
+
 class PoloException(Exception):
 	pass
 
@@ -85,6 +123,7 @@ class Polo(object):
 								"permanent": permanent, 
 								"root":root,
 								"uid": os.geteuid()}
+		
 		error = False
 		try:
 			message_str = json.JSONEncoder(allow_nan=False).encode(message_dict) # https://docs.python.org/2/library/json.html#infinite-and-nan-number-values
@@ -93,6 +132,8 @@ class Polo(object):
 
 		if error:
 			raise PoloInternalException("Error in JSON Encoder")
+		
+		error = False
 		try:
 			unicode_msg = message_str.encode('utf-8')
 		except UnicodeError:
@@ -148,43 +189,99 @@ class Polo(object):
 
 		return None
 
-		# if not permanent:
-		# 	message = {'Command': 'Register', 'Params': service}
-		# 	message_bytes = bytes(json.dumps(message).encode('utf-8'))
-		# 	if -1 == self.polo_socket.sendto(message_bytes, ('127.0.1.1', 1337)):
-		# 		raise PoloInternalException("Internal socket error")
-
-		# 	try:
-		# 		response_bytes = self.polo_socket.recv(4096)
-		# 	except socket.timeout:
-		# 		raise PoloInternalException("Error on comunication with the service")
-			
-		# 	error = None
-		# 	try:
-		# 		response = json.loads(response_bytes.decode('utf-8'))
-		# 	except ValueError:
-		# 		error = True
-		# 	if error:
-		# 		raise PoloInternalException("Internal error on while parsing")
-
-		# 	error = None
-		# 	try:
-		# 		if response["Return"] == "OK":
-		# 			return (True, response["Args"])
-		# 		elif response["Return"] == "Error":
-		# 			return (False, response["Args"])
-		# 	except TypeError:
-		# 		error = True
-		# 	if error: 
-		# 		raise PoloInternalException("Wrong response format")
 
 
-
-	def remove_service(self, service, multicast_groups=[]):
+	def unpublish_service(self, service, multicast_groups=[], delete_file=False):
 		"""
-		A service is removed. It the service is permanent permanently or temporarily
+		Removes a service. If the service is permanent, the file is only deleted if `delete_file` is set to `True`
+		
+		:param string service: Name of the service
+
+		:param list multicast_groups: List of the groups where the service is to be deleted. By default deletes the service from all groups
+
+		:param boolean delete_file: Removes the file service if the service is `permanent`. Otherwise it is ignored.
+		
 		"""
-		pass
+		verify_parameters(service, multicast_groups)
+
+		if type(delete_file) is not bool:
+			raise PoloException("delete_file must be boolean")
+
+		message_dict = {}
+		message_dict["Command"]= "Unpublish"
+		message_dict["Args"] = {"service": service, 
+								"multicast_groups":[g for g in multicast_groups], 
+								"delete_file": delete_file,
+								"uid": os.geteuid()}
+
+		error = False
+		try:
+			message_str = json.JSONEncoder(allow_nan=False).encode(message_dict) # https://docs.python.org/2/library/json.html#infinite-and-nan-number-values
+		except Exception:
+			error = True
+
+		if error:
+			raise PoloInternalException("Error in JSON Encoder")
+		error  = False
+		try:
+			unicode_msg = message_str.encode('utf-8')
+		except UnicodeError:
+			error = True
+
+		if error:
+			raise PoloInternalException("Error in codification")
+
+		error = False
+		
+		try:
+			if -1 == self.polo_socket.sendto(unicode_msg, ('127.0.0.1', BINDING_PORT)):
+				error = True
+		except Exception:
+			error = True
+
+		if error:
+			raise PoloInternalException("Error during internal communication")
+
+		error = False
+		try:
+			data, address = self.polo_socket.recvfrom(2048)
+		except socket.timeout:
+			error = True
+
+		if error or data == -1:
+			raise PoloInternalException("Error during internal communication")
+
+		try:
+			data_dec = data.decode('utf-8')
+		except Exception:
+			error = True
+
+		if error:
+			raise PoloInternalException("Error during internal communication")
+
+		try:
+			parsed_data = json.loads(data_dec)#json.JSONDecoder(parse_constant=False).decode(data)
+		except ValueError:
+			error = True
+
+		if error:
+			raise PoloInternalException("Error during internal communication")
+
+		if parsed_data.get("OK") is not None:
+			return parsed_data.get("OK")
+
+		elif parsed_data.get("Error") is not None:
+			raise PoloException("Error in publishing %s: '%s'" % (service, parsed_data.get("Error")))
+		
+		else:
+			raise PoloInternalException("Error during internal communication")
+
+		return None
+
+
+
+		return 0
+
 
 	def service_info(self, service):
 		"""

@@ -22,7 +22,6 @@ from marco_conf import conf
 __author__ = 'Diego Martín'
 
 offered_services = []
-temporal_services = []
 user_services = {}
 
 verify = re.compile('^([\d\w]+):([\d\w]+)$')
@@ -87,6 +86,25 @@ def is_superuser(user):
 	groups.append(grp.getgrgid(gid).gr_name)
 	return 'marcopolo' in groups or user.pw_uid == 0
 
+def validate_user(uid):
+	"""Returns a `pwd` structure if the uid is present in the passwd database.
+	Otherwise `None` is returned
+	
+	:param string uid: The user identifier of the service
+
+	"""
+
+	if type(uid) != type(0):
+		return False
+
+	if uid < 0:
+		return False
+	try:
+		user = pwd.getpwuid(uid)
+	except KeyError:
+		return False
+	return user
+
 class PoloBinding(DatagramProtocol):
 	def startProtocol(self):
 		pass
@@ -108,16 +126,24 @@ class PoloBinding(DatagramProtocol):
 			self.transport.write(json.dumps({"Error":"Missing command"}).encode('utf-8'), address)
 			logging.debug("Missing command")
 			return
-		
-		if datos_dict["Command"] == 'Register':
-			args = datos_dict.get("Args", {});
+		command = datos_dict["Command"];
+		if command == 'Register':
+			args = datos_dict.get("Args", {})
 			self.publish_service(address,
 								args.get("service", ''), 
 								args.get("uid", -1),
 								multicast_groups=args.get("multicast_groups", set()),
 								permanent=args.get("permanent", False),
 								root=args.get("root", False))
-			return
+		elif command == 'Unpublish':
+			args = datos_dict.get("Args", {})
+			self.unpublish_service(address,
+									args.get("service", ''),
+									args.get("uid", -1),
+									multicast_groups=args.get("multicast_groups", set()),
+									delete_file=args.get("delete_file", False)
+									)
+			
 		
 		#If any of the previous conditions is satisfied, the request is considered malformed
 		self.transport.write(self.write_error("Malformed request. Commands missing").encode('utf-8'), address)
@@ -151,7 +177,7 @@ class PoloBinding(DatagramProtocol):
 		
 		#Verification of services
 		if type(service) != type(''):
-			self.transport.write(self.write_error("The name of the service %s is invalid" % service).encode('utf-8'), address)
+			error=True
 			return
 		
 		#The service must be something larger than 1 character
@@ -160,7 +186,8 @@ class PoloBinding(DatagramProtocol):
 
 		if error:
 			self.transport.write(self.write_error("The name of the service %s is invalid" % service).encode('utf-8'), address)
-			
+			return
+		
 		error = False
 		faulty_ip = ''
 		#The IP addresses must be represented in valid dot notation and belong to the range 224-239
@@ -170,6 +197,7 @@ class PoloBinding(DatagramProtocol):
 				error = True
 				faulty_ip = ip
 				break
+			
 			#Instead of parsing we ask the socket module
 			try:
 				socket.inet_aton(ip)
@@ -178,7 +206,6 @@ class PoloBinding(DatagramProtocol):
 				faulty_ip = ip
 				break
 			
-
 			try:
 				first_byte = int(re.search("\d{3}", ip).group(0))
 				if first_byte < 224 or first_byte > 239:
@@ -201,24 +228,22 @@ class PoloBinding(DatagramProtocol):
 			return self.transport.write(self.write_error("root must be boolean").encode('utf-8'), address)
 
 		#UID verification
-		if uid < 0:
-			self.transport.write(self.write_error("wrong user").encode('utf-8'), address)
-			return
-
-		try:
-			user = pwd.getpwuid(uid)
-		except KeyError:
+		if validate_user(uid) is None:
 			self.transport.write(self.write_error("wrong user").encode('utf-8'), address)
 			return
 		
+		
+		#Final entry with all service parameters
 		service_dict = {}
 		service_dict["id"] = service
 
+		#Root service
 		if root is True:
 			if service in [s['id'] for s in offered_services]:
 				self.transport.write(self.write_error("Service %s already exists" % service).encode('utf-8'), address)
 				return
 
+			#Only root or members of the `marcopolo` group can publish root services
 			if not is_superuser(user):
 				self.transport.write(self.write_error("Permission denied").encode('utf-8'), address)
 				return
@@ -228,6 +253,7 @@ class PoloBinding(DatagramProtocol):
 				services_dir = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
 				if not path.exists(services_dir):
 					makedirs(services_dir)
+					os.chown(services_dir, 0, grp.getgrnam(name).gr_gid)
 
 				service_file = sanitize_path(service)
 				if path.isfile(path.join(services_dir, service_file)):
@@ -243,8 +269,7 @@ class PoloBinding(DatagramProtocol):
 					print(e)
 					self.transport.write(self.write_error("Could not write file").encode('utf-8'), address)
 					return
-				
-
+			
 			offered_services.append({"id":service, "permanent":permanent})
 			self.transport.write(json.dumps({"OK":service}).encode('utf-8'), address)
 			return
@@ -264,7 +289,7 @@ class PoloBinding(DatagramProtocol):
 				os.chown(deploy_folder, user.pw_uid, user.pw_gid)
 			
 			service_file = sanitize_path(service)
-			if path.isfile(path.join(deploy_folder, service_file)) or (service in dict(user_services.get(user.pw_name, {}))):
+			if path.isfile(path.join(deploy_folder, service_file)):
 				self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
 				return
 			
@@ -274,7 +299,7 @@ class PoloBinding(DatagramProtocol):
 				os.fchown(f.fileno(), user.pw_uid, user.pw_gid)
 				f.close()
 			except Exception as e:
-				print(e)
+				logging.debug(e)
 				self.transport.write(self.write_error("Could not write service file").encode('utf-8'), address)
 				return
 
@@ -285,15 +310,52 @@ class PoloBinding(DatagramProtocol):
 
 		self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
 
+	def unpublish_service(self, service, uid, multicast_groups=[], delete_file=False):
+		#Determine whether it is a root or a user service
 
-	#def register_service(self, service_id):
-	#	global temporal_services
-	#	temporal_services.add({'Params':service_id})
+		user = validate_user(uid)
+
+		if user is None:
+			self.transport.write(self.write_error("wrong user").encode('utf-8'), address)
+			return
+		
+		if verify.match(service):
+			#user service
+			try:
+				user, service_name = verify.match(service).groups()
+			except (IndexError, ValueError):
+				return
+			if user_services.get(user, None) is not None:
+				match = next((s for s in user_services[user] if s['id'] == service_name), None)
+				if match:
+					is_permanent = match.get("permanent", False)
+					
+					if delete_file and is_permanent:
+						folder = user.pw_dir
+						deploy_folder = path.join(folder, conf.POLO_USER_DIR)
+						if path.exists(deploy_folder) and isfile(path.join(deploy_folder, service_name)):
+							try:
+								os.remove(path.join(deploy_folder, service_name))
+							except Exception as e:
+								print(e)
+						else:
+							self.transport.write(self.write_error("Could not find service file").encode('utf-8'), address)
+				
+					user_services[user].remove(match)
+					self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
+					return
+				else:
+					self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
+					return
+			else:
+				self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
+				return
+		else:
+			pass #user services
+		
 
 	def remove_service(self, service_id):
-		global temporal_services
-		temporal_services = [service for service in temporal_services if not service['Params'] == service_id]
-
+		pass
 
 class Polo(DatagramProtocol):
 	"""
@@ -420,13 +482,7 @@ class Polo(DatagramProtocol):
 
 
 
-		# global temporal_services
-		# match = next((s for s in temporal_services if s['id'] == param), None)
-		# if match:
-		# 	command_msg = json.dumps({'Command':'OK', 'Params':json.dumps(match)})
-
-		# 	self.transport.write(bytes(command_msg, 'utf-8'), address)
-		# 	return
+		
 
 #TODO
 def sigint_handler(signal, frame):
