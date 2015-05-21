@@ -16,6 +16,14 @@ import sys
 import os
 import shlex
 
+
+root_folder = os.path.join("../", os.path.realpath(__file__))
+src_folder = os.path.join(root_folder, "marcopolo")
+sys.path.append("/opt/marcopolo/")
+#sys.path.append(src_folder)
+
+from bindings import polo
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -35,8 +43,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'sphinx.ext.autodoc',
-
 ]
 
 # Add any paths that contain templates here, relative to this directory.

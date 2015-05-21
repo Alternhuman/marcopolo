@@ -75,3 +75,8 @@ Polo functions
 .. py:function:: have_service(service)
 
 	Returns True if the *service* is offered. Otherwise it returns *False*
+
+Here should be the method:
+
+
+.. automethod:: bindings.polo.polo.Polo.publish_service
