@@ -1,11 +1,11 @@
 Configuration
 =============
 
-The standard configuration allows MarcoPolo to run pretty much in any small network without any more configuration than networking. However, in certain situations some configuration must be done prior any usage.
+The standard configuration allows MarcoPolo to run pretty much in any small network without any configuration. However, in certain situations some parameters must be modified prior any usage.
 
-- Different grids on the same network: MarcoPolo is bound to the multicast group 224.0.0.112 by default. In the event that this group is already in use by other MarcoPolo grid or any other application some problems may occur. Particularly on the first case, since MarcoPolo simply ignores any bad-formatted message (and the odds of a JSON-based mulicast application running on the same address are honestly quite small). The parameter MULTICAST_ADDR in the file /etc/marcopolo/marcopolo.conf can be set to any compatible IPv4 multicast address. (See [1]_ for reference).
+- Different grids on the same network: MarcoPolo is bound to the multicast group 224.0.0.112 by default. In the event that this group is already in use by other MarcoPolo grid or any other application some problems may arise. Particularly on the first case, since MarcoPolo simply ignores any bad-formatted message (and the odds of a JSON-based mulicast application running on the same address are honestly quite small). The parameter `MULTICAST_ADDR` in the file /etc/marcopolo/marcopolo.conf can be set to any compatible IPv4 multicast address. (See [1]_ for reference).
 
-- Multiple local-area networks: Multicast packets can be routed up to a global level (if the selected group is allowed to). The parameter HOPS in the marcopolo.conf file sets the TTL (Time To Live) of the package to distribute it beyond the local designated router. **Important**: use only with a supported MULTICAST_ADDR value, otherwise unexpected behaviour might occur.
+- Multiple local-area networks: Multicast packets can be routed up to a global level (if the selected group is allowed to). The parameter HOPS in the marcopolo.conf file sets the TTL (Time To Live) of the package to distribute it beyond the local designated router. **Important**: use only with a supported MULTICAST_ADDR value, otherwise unexpected behaviour might occur. This feature is however not well tested, and it is not guaranteed to work.
 
 .. [1] IANA Guidelines for IPv4 Multicast Address Assignments http://tools.ietf.org/html/rfc5771#page-4
 

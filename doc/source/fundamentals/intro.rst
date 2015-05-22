@@ -1,9 +1,9 @@
 Fundamentals
 ============
 
-MarcoPolo (named upon the swimming pool game [1]_) is a utility designed to allow hosts to publicly share their available resources (known as 'services') inside a local-area network. Multiple grids of nodes can work in the same net without any interference and hosts can work on different grids simultaneously.
+MarcoPolo (named upon the swimming pool game [1]_) is a utility designed to allow hosts to publicly share their available resources (known as *services*) inside a local-area network. Multiple grids of nodes can work in the same network without interferences and hosts can work on different grids simultaneously.
 
-MarcoPolo is built upon UDP low-level multicast sockets. The multicast approach reduces the neccesary bandwith compared to broadcast messaging and makes it possible to have multiple independent grids on the same subnet.
+MarcoPolo is built upon UDP multicast sockets. The multicast approach reduces the neccesary bandwith compared to broadcast messaging and makes it possible to have multiple independent grids on the same subnet.
 
 The underlying architecture of the proposed implementation is defined on two independent modules, inspired on the dynamics of the Marco Polo game:
 
@@ -13,10 +13,14 @@ The underlying architecture of the proposed implementation is defined on two ind
 
 - A set of configuration files for both roles.
 
-- A set of service configuration files were several parameters can be specified.
+- A set of service configuration files which describe the features of each service.
 
 - All messages are codified as JSON messages and sent encoded as UTF-8 strings.
 
-- A set of bindings for Python, C/C++ and Java. 
+- A set of bindings for Python, C/C++ and Java.
+
+The software is implemented on Python using Twisted as [2]_ the tool to manage the asynchronous sockets.
 
 .. [1] http://en.wikipedia.org/wiki/Marco_Polo_%28game%29
+
+.. [2] https://twistedmatrix.com/

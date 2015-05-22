@@ -1,7 +1,7 @@
 Services
 --------
 
-The offered services may be configured in two ways:
+The offered services may be configured in several ways:
 
 - A file in the services/ directory with the following skeleton:
  
@@ -9,13 +9,12 @@ The offered services may be configured in two ways:
 
    {
     "id":"<unique identifier>",
-    "version":"<version>"
-    "startup-command": "<command>"
-    "shared-only": "<list of multicast groups separated by commas>"
-    "allows-copy": "<yes/no>" //Allows copy of the .mar file
-    "requires-auth": "<yes/no>" // Some services will only be shown to authenticated requests
+    "version":"<version>" //optional
+    "startup-command": "<command>" //optional
+    "shared-only": "<list of multicast groups separated by commas>" //optional
+    "requires-auth": "<yes/no>" // Unimplemented. Some services will only be shown to authenticated requests
    }
 
-The script `poloservice' offers an interactive method to create a service file and publish it.
+- By using the :doc:`/bindings` of Polo during execution time.
 
-- By using the `register()` and `deregister()` functions during execution time.
+- The script `poloservice' offers an interactive method to create a service file and publish it (it uses the Python binding underneath).

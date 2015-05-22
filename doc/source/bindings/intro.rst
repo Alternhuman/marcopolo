@@ -52,6 +52,3 @@ Polo functions
 
 .. autoclass:: bindings.polo.polo.Polo
 	:members:
-
-
-..automethod: bindings.polo.polo.Polo.publish_service

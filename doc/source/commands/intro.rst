@@ -1,5 +1,5 @@
 Definition of commands
-======================
+----------------------
 
 MarcoPolo works through the passing of command-like message. The syntax of all commands is quite uniform, though several differences appear due to the particular nature of each one.
 
@@ -10,7 +10,7 @@ The basic structure (JSON-based) is the following:
 	{
 	  "Command": <name>,
 	  "Params": <optional, specific params>
-	  "Auth": <auth token (to be defined)>
+	  "Auth": <auth token (not yet implemented)>
 	}
 
 The (so far) implemented commands are:

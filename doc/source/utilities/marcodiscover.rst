@@ -3,7 +3,9 @@ Marcodiscover
 
 MarcoDiscover is a Python script that communicates with the Marco instance on the machine. It translates the user input to a MarcoPolo command and formats the response in several different styles.
 
-MarcoDiscover is able to execute every MarcoPolo command using arguments from the command line. For instance::
+MarcoDiscover is able to execute every MarcoPolo command using arguments from the command line. For instance
+
+::
 
 	> marcodiscover 
 
