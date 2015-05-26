@@ -24,27 +24,26 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
 
-  service_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-  service_socket.settimeout(TIMEOUT*2/1000.0) 
-
   if args.service:
     
-    service_socket.sendto(bytes(json.dumps({"Command": "Request-for", "Params":args.service}), 'utf-8'), ('127.0.1.1', 1338))
-    try:
-      data = service_socket.recv(4096)
-    except socket.timeout:
-      print("No response from resolver")
-      exit(1)
-    addresses = json.loads(data.decode('utf-8'))
-    
-    cadena = ""
-    if len(addresses) > 0:
-      for address in addresses:
-        cadena += address["Address"][0] + "\n"
-      print(cadena[:-1])
+    m = marco.Marco()
 
+    try:
+      nodes = m.request_for(args.service)
+    except marco.MarcoTimeOutException:
+      print("No connection to the resolver")
+      sys.exit(1)
+    if len(nodes) > 0:
+
+      cadena = ""
+      for node in nodes:
+        cadena += node.address[0] + "\n" if not args.shell else " "
+
+      print(cadena[:-1])
     else:
       print("There are no nodes available for the requested query")
+
+    sys.exit(0)
 
   else:
 

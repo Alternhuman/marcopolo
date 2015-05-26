@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function ayuda(){
-	printf 'Usage: %s [-h|-?|-n] [-i [identity_file]] [-p port] [[-o <ssh -o options>] ...] [-u user]\n' "$0" >&2
+	printf 'Usage: %s [-h|-n] [-i [identity_file]] [-p port] [[-o <ssh -o options>] ...] [-u user]\n' "$0" >&2
 }
 
 while [[ $# -ge 1 ]]
