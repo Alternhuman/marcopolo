@@ -45,9 +45,9 @@ def reload_user_services(user):
 				with open(service, 'r', encoding='utf-8') as f:
 					s = json.load(f)
 					s["permanent"] = True
-					print(s)
 					if not verify.match(s['id']):
 						fileservices.append(s)
+
 			except ValueError:
 				logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
 
@@ -81,13 +81,22 @@ def sanitize_path(path_str):
 	return path.normpath("/"+path_str).lstrip('/')
 
 def is_superuser(user):
+	"""
+	Returns `True` if the user is a 'superuser' (it is root or it a member of the `marcopolo` group)
+	
+	:param string user: `pwd` structure with all the information from the user
+	
+	"""
+	
 	groups = [g.gr_name for g in grp.getgrall() if user.pw_name in g.gr_mem]
 	gid = user.pw_gid
 	groups.append(grp.getgrgid(gid).gr_name)
+	
 	return 'marcopolo' in groups or user.pw_uid == 0
 
 def validate_user(uid):
-	"""Returns a `pwd` structure if the uid is present in the passwd database.
+	"""
+	Returns a `pwd` structure if the uid is present in the passwd database.
 	Otherwise `None` is returned
 	
 	:param string uid: The user identifier of the service
@@ -398,6 +407,9 @@ class PoloBinding(DatagramProtocol):
 	def remove_service(self, service_id):
 		pass
 
+	def reload(self):
+		pass
+
 class Polo(DatagramProtocol):
 	"""
 	Twisted-inherited class in charge of receiving Marco requests on the defined multicast groups
@@ -465,16 +477,16 @@ class Polo(DatagramProtocol):
 		elif command == 'Services':
 			response_services(command, address)
 		else:
-			print("Unknown command: " + datagram.decode('utf-8'))#, file=sys.stderr)
+			logging.info("Unknown command: " + datagram.decode('utf-8'))
 
 	def polo(self, command, address):
+		"""
+		Replies to `Polo` requests
+		"""
 		global offered_services
 		response_dict = {}
 		response_dict["Command"] = "Polo"
-		response_dict["Params"] = ""
-		#response_dict["node_alive"]= True
-		#response_dict["multicast_group"] = conf.MULTICAST_ADDR
-		#response_dict["services"] = offered_services#conf.SERVICES
+		response_dict["Params"] = conf.POLO_PARAMS
 		
 		json_msg = json.dumps(response_dict, separators=(',',':'))
 		msg = json_msg.encode('utf-8')
@@ -482,6 +494,11 @@ class Polo(DatagramProtocol):
 		self.transport.write(msg, address)
 	
 	def response_services(self, command, param, address):
+		"""
+		Replies to `Services` requests
+		"""
+		#TODO: User services
+
 		global offered_services
 		response_services = []
 		for service in offered_services:
@@ -498,8 +515,7 @@ class Polo(DatagramProtocol):
 		print(user)
 		print(user_services)
 		if match:
-			print("Found")
-			command_msg = json.dumps({'Command':'OK', 'Params': json.dumps(match)})
+			command_msg = json.dumps({'Command':'OK', 'Params': match.get("Params", {})})
 			self.transport.write(command_msg.encode('utf-8'), address)
 			return
 
@@ -521,9 +537,6 @@ class Polo(DatagramProtocol):
 			self.transport.write(command_msg.encode('utf-8'), address)
 			return
 
-
-
-		
 
 #TODO
 def sigint_handler(signal, frame):
@@ -548,16 +561,14 @@ if __name__ == "__main__":
 
 	signal.signal(signal.SIGHUP, signal.SIG_IGN)
 	signal.signal(signal.SIGUSR1, reload_services)
-	#os.close(0)
-	#os.close(1)
-	#os.close(2)
+	
 	logging.basicConfig(filename=conf.LOGGING_DIR+'polod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 	
 	def start_multicast():
 		reactor.listenMulticast(conf.PORT, Polo(), listenMultiple=False)
 	
 	def start_binding():
-		reactor.listenUDP(conf.POLO_BINDING_PORT, PoloBinding(), interface="127.0.0.1") #, 
+		reactor.listenUDP(conf.POLO_BINDING_PORT, PoloBinding(), interface="127.0.0.1")
 
 	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
 	reactor.callWhenRunning(start_multicast)

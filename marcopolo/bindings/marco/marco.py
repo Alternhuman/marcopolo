@@ -68,7 +68,7 @@ class Marco(object):
     return nodes
 
 
-  def marco(self, max_nodes=None, exclude=[], timeout=None):
+  def marco(self, max_nodes=None, exclude=[], timeout=None, retries=0):
     """
     **C struct node * marco(int timeout)**
 
@@ -83,6 +83,8 @@ class Marco(object):
     :param list exclude: List of nodes to be excluded from the returned ValueError.
 
     :param int timeout: If set, overrides the default timeout value.
+
+    :param int retries: If set to a value greater than 0, retries the *retries* times if the first attempt is unsuccessful
 
     :returns: A list of all responding nodes.
     """

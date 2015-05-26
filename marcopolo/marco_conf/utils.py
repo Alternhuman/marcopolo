@@ -32,20 +32,10 @@ class Node:
     def multicast_group(self, value):
         self._multicast_group = value
 
+    @property
+    def params(self):
+        return self._params
 
-    """def get_address(self):
-        return self._address
-
-    def set_address(self, value):
-        self._address = value
-
-    def get_email(self):
-        return self._email;
-
-    def set_email(self, value):
-        self._email = value
-
-    def __init__(self):
-        self.address = property(get_address, set_address)
-        self.services = property(get_services, set_services)"""
-
+    @params.setter
+    def params(self, value):
+        self._params = value

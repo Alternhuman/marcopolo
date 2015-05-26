@@ -21,18 +21,21 @@ class TestMarco(unittest.TestCase):
 
 
 	def test_discover(self):
-		self.marco.socket_mcast.recvfrom = MagicMock(side_effect=[(bytes("{\"Command\":\"Polo\"}"), '1.1.1.1'), socket.timeout])
+		self.marco.socket_mcast.recvfrom = MagicMock(side_effect=[(bytes("{\"Command\":\"Polo\"}"), ('1.1.1.1', 1339)), socket.timeout])
+		#self.marco.socket_mcast.recvfrom.return_value = (bytes("{\"Command\":\"Polo\"}"), ('1.1.1.1', 1339))
+		#self.marco.socket_mcast.recvfrom.side_effect= [(bytes("{\"Command\":\"Polo\"}"), ('1.1.1.1', 1339)), socket.timeout]
 		
 		compare = set()
 		n = Node()
 		n.address = '1.1.1.1'
 		compare.add(n)
+		#print(self.marco.marco().pop())
 		self.assertEqual(self.marco.marco().pop().address, n.address)
 
 
 	def test_discover_multiple(self):
 		MAX = 10
-		side_effects = [(bytes("{\"Command\":\"Polo\"}"), '1.1.1.1')  for n in range(0,MAX+1) if n < MAX-2]
+		side_effects = [(bytes("{\"Command\":\"Polo\"}"), ('1.1.1.1', 1339))  for n in range(0,MAX+1) if n < MAX-2]
 
 		side_effects.append(socket.timeout())
 		self.marco.socket_mcast.recvfrom = MagicMock(side_effect=side_effects)
@@ -44,7 +47,7 @@ class TestMarco(unittest.TestCase):
 			self.assertEqual(node.address, n.address)
 
 	def test_service(self):
-		side_effects = [(bytes("{\"Address\":\"1.1.1.1\", \"multicast_group\":\"240.0.0.0\", \"Params\":\"[]\"}"), '1.1.1.1'), socket.timeout]
+		side_effects = [(bytes("{\"Address\":\"1.1.1.1\", \"multicast_group\":\"240.0.0.0\", \"Params\":\"[]\"}"), ('1.1.1.1', 1338)), socket.timeout]
 		self.marco.socket_ucast.recvfrom = MagicMock(side_effect=side_effects)
 
 		self.assertEqual(self.marco.services('1.1.1.1').address, '1.1.1.1')
@@ -64,19 +67,19 @@ class TestMarco(unittest.TestCase):
 		self.assertRaises(marcod.MarcoException, self.marco.services, 'node.wrong.address.1.')
 
 	def test_request_service_bad_request(self):
-		self.assertRaises(marcod.MarcoException, self.marco.request_service, 1495)
+		self.assertRaises(marcod.MarcoException, self.marco.request_for, 1495)
 
 	#def test_request_service_bad_address_2(self):
-	#	self.assertRaises(marcod.MarcoException, self.marco.request_service, service='dummy', node='1.1.1.1.')
+	#	self.assertRaises(marcod.MarcoException, self.marco.request_for, service='dummy', node='1.1.1.1.')
 
 	def test_request_service_sendto_error(self):
 		self.marco.socket_ucast.sendto = MagicMock(return_value=-1)
-		self.assertRaises(marcod.MarcoException, self.marco.request_service, service='dummy', node='1.1.1.1.')
+		self.assertRaises(marcod.MarcoException, self.marco.request_for, service='dummy', node='1.1.1.1.')
 
 	def test_request_service(self):
 		self.marco.socket_ucast.recv = MagicMock(return_value = bytes('{['.encode('utf-8')))
 
-		self.assertRaises(marcod.MarcoException, self.marco.request_service, service='dummy', node='1.1.1.1.')
+		self.assertRaises(marcod.MarcoException, self.marco.request_for, service='dummy', node='1.1.1.1.')
 	#testnodedefined
 		
 class TestParamsMarco(unittest.TestCase):
@@ -98,7 +101,7 @@ class TestParamsMarco(unittest.TestCase):
 		self.marco.socket_mcast.sendto = MagicMock(return_value=10)
 		
 		MAX = 40
-		side_effects = [(bytes("{\"Command\":\"Polo\"}"), '1.1.1.1')  for n in range(0,MAX) if n < MAX-1]
+		side_effects = [(bytes("{\"Command\":\"Polo\"}"), ('1.1.1.1', 1339))  for n in range(0,MAX) if n < MAX-1]
 		
 		side_effects.append(socket.timeout())
 		self.marco.socket_mcast.recvfrom= MagicMock(side_effect=side_effects)
@@ -115,13 +118,33 @@ class TestParamsMarco(unittest.TestCase):
 	def test_marco_exclude(self):
 		MAX = 40
 		side_effects = [(bytes("{\"Command\":\"Polo\"}"), '1.1.1.1')  for n in range(0,MAX) if n < MAX-1]
-		side_effects.append((bytes("{\"Command\":\"Polo\"}"), '2.2.2.2'))
+		side_effects.append((bytes("{\"Command\":\"Polo\"}"), ('2.2.2.2', 1338)))
 		side_effects.append(socket.timeout())
 		self.marco.socket_mcast.recvfrom= MagicMock(side_effect=side_effects)
 
 		self.assertEqual(len(self.marco.marco(exclude=['1.1.1.1'])), 1)
 
+	def test_marco_bad_retries(self):
+		MAX = 'a'
+		self.assertRaises(marcod.MarcoException, self.marco.marco, retries=MAX)
 
+	def test_marco_retries(self):
+		MAX = 3
+		side_effects = [socket.timeout  for n in range(0,MAX-1)]
+		side_effects.append((bytes("{\"Command\":\"Polo\"}"), ('2.2.2.2', 1338)))
+		side_effects.append(socket.timeout())
+		self.marco.socket_mcast.recvfrom= MagicMock(side_effect=side_effects)
+		
+		self.assertEqual(len(self.marco.marco(retries=MAX)), 1)
+
+	def test_marco_retries_2(self):
+		MAX = 3
+		side_effects = [socket.timeout  for n in range(0,MAX)]
+		side_effects.append(socket.timeout())
+
+		self.marco.socket_mcast.recvfrom= MagicMock(side_effect=side_effects)
+		
+		self.assertNotEqual(len(self.marco.marco(retries=MAX)), 1)
 
 class TestParamsRequestFor(unittest.TestCase):
 	def setUp(self):
@@ -131,15 +154,15 @@ class TestParamsRequestFor(unittest.TestCase):
 		self.marco.socket_ucast = MagicMock(name='socket', spec=socket.socket)
 
 	def test_request_for_bad_timeout(self):
-		self.assertRaises(marcod.MarcoException, self.marco.request_service,'dummy',timeout='a')
+		self.assertRaises(marcod.MarcoException, self.marco.request_for,'dummy',timeout='a')
 
 	def test_request_for_timeout(self):
 		self.marco.socket_mcast.recvfrom= MagicMock(side_effect=socket.timeout)
-		self.assertEqual(self.marco.request_service('dummy',timeout=1000), set())
+		self.assertEqual(self.marco.request_for('dummy',timeout=1000), set())
 
 	def test_request_for_bad_max_nodes(self):
 
-		self.assertRaises(marcod.MarcoException, self.marco.request_service, 'dummy', max_nodes='a')
+		self.assertRaises(marcod.MarcoException, self.marco.request_for, 'dummy', max_nodes='a')
 
 	def test_request_for_max_nodes(self):
 		self.marco.socket_mcast.sendto = MagicMock(return_value=10)
@@ -150,12 +173,12 @@ class TestParamsRequestFor(unittest.TestCase):
 		side_effects.append(socket.timeout())
 		self.marco.socket_mcast.recvfrom= MagicMock(side_effect=side_effects)
 		
-		nodes = self.marco.request_service('dummy',max_nodes=MAX/2)
+		nodes = self.marco.request_for('dummy',max_nodes=MAX/2)
 
 		self.assertEqual(MAX/2, len(nodes))
 
 	def test_request_for_bad_exclude(self):
-		self.assertRaises(marcod.MarcoException, self.marco.request_service,'dummy', exclude=1)
+		self.assertRaises(marcod.MarcoException, self.marco.request_for,'dummy', exclude=1)
 
 	def test_request_for_exclude(self):
 		MAX = 40
@@ -164,7 +187,7 @@ class TestParamsRequestFor(unittest.TestCase):
 		side_effects.append(socket.timeout())
 		self.marco.socket_mcast.recvfrom= MagicMock(side_effect=side_effects)
 
-		self.assertEqual(len(self.marco.request_service('dummy', exclude=['1.1.1.1'])), 1)
+		self.assertEqual(len(self.marco.request_for('dummy', exclude=['1.1.1.1'])), 1)
 
 
 class TestParametersRequestOne(unittest.TestCase):
