@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # marcopolo documentation build configuration file, created by
@@ -22,7 +23,9 @@ src_folder = os.path.join(root_folder, "marcopolo")
 sys.path.append("/opt/marcopolo/")
 #sys.path.append(src_folder)
 
-from bindings import polo
+from bindings import polo, marco
+from polo.polod import Polo
+from marco.marcod import Marco
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
