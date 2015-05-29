@@ -68,7 +68,7 @@ def reload_services(sig, frame):
 				service["permanent"] = True
 				offered_services.append(json.load(f))
 		except ValueError:
-			logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
+			logging.debug(str.format("The file {0} does not have a valid JSON structure", conf.SERVICES_DIR+service.get("id")))
 
 	for user in user_services:
 		reload_user_services(user)
