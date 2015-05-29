@@ -314,7 +314,7 @@ class Marco:
 				if response.get("Command", "") == 'OK' and address not in exclude:
 
 					n = utils.Node()
-					n.address = address
+					n.address = address[0]
 					n.params = response.get("Params", {})
 					#n.services = []
 					#n.services.append(json.loads(response["Params"])) ##TODO
@@ -355,7 +355,7 @@ class MarcoBinding(DatagramProtocol):
 								 exclude=command.get("exclude", []),
 								 timeout=command.get("timeout", None)
 								 )
-		self.transport.write(bytes(json.dumps([n.address[0] for n in nodes]).encode('utf-8')), address)
+		self.transport.write(bytes(json.dumps([n.address for n in nodes]).encode('utf-8')), address)
 
 	def servicesInThread(self, command, address):
 		services = self.marco.services(addr=command.get("node", None), 
