@@ -22,7 +22,7 @@ from polobinding import PoloBinding
 from polo import Polo
 __author__ = 'Diego Martín'
 
-offered_services = []
+offered_services = {}
 user_services = {}
 
 #verify = re.compile('^([\d\w]+):([\d\w]+)$')
@@ -30,8 +30,7 @@ user_services = {}
 polo_instances = {}
 polobinding_instances = {}
 
-polo = Polo(offered_services, user_services, conf.MULTICAST_ADDR)
-polobinding = PoloBinding(offered_services, user_services, conf.MULTICAST_ADDR)
+
 
 def reload_services(sig, frame):
 	signal.signal(signal.SIGUSR1, signal.SIG_IGN)
@@ -66,9 +65,16 @@ if __name__ == "__main__":
 	logging.basicConfig(filename=conf.LOGGING_DIR+'polod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 	
 	def start_multicast():
-		reactor.listenMulticast(conf.PORT, polo, listenMultiple=False)
+		for group in conf.MULTICAST_ADDRS:
+			offered_services[group] = []
+			user_services[group] = {}
+			polo = Polo(offered_services[group], user_services[group], group)
+			reactor.listenMulticast(conf.PORT, polo, listenMultiple=False, interface=group)
 	
 	def start_binding():
+		polobinding = PoloBinding(offered_services[conf.MULTICAST_ADDR], 
+									  user_services[conf.MULTICAST_ADDR], 
+									  conf.MULTICAST_ADDR)
 		reactor.listenUDP(conf.POLO_BINDING_PORT, polobinding, interface="127.0.0.1")
 
 	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)

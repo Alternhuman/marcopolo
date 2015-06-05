@@ -26,6 +26,7 @@ class Polo(DatagramProtocol):
 		self.user_services = user_services
 		self.verify = re.compile(verify_regexp)#re.compile('^([\d\w]+):([\d\w]+)$')
 		self.multicast_group = multicast_group
+		print(self.multicast_group)
 
 	def reload_services(self):
 		del self.offered_services[:] #http://stackoverflow.com/a/1400622/2628463
@@ -127,20 +128,26 @@ class Polo(DatagramProtocol):
 		logging.info("Offering " + str(len(self.offered_services)) + " services")
 		
 		self.attempts = 0
-		def handler(arg):
-			#TODO: http://stackoverflow.com/questions/808560/how-to-detect-the-physical-connected-state-of-a-network-cable-connector
-			logging.error("Error on joining the multicast group, %s. %d retries" % (conf.MULTICAST_ADDR, self.attempts))
-			self.attempts += 1
-			time.sleep(3)
-			if self.attempts < conf.RETRIES:
-				self.transport.joinGroup(conf.MULTICAST_ADDR).addErrback(handler)
-			else:
-				logging.error("Could not joing the multicast group after %d attempts. Leaving" % (conf.RETRIES))
-				reactor.stop()
-		
-		self.transport.joinGroup(conf.MULTICAST_ADDR).addErrback(handler)
+
+		#self.transport.setOutgoingInterface('172.20.1.16')
+		self.transport.joinGroup(self.multicast_group).addErrback(self.handler)
 		
 		self.transport.setTTL(conf.HOPS) #Go beyond the network. TODO
+	
+	def handler(self, arg):
+			#TODO: http://stackoverflow.com/questions/808560/how-to-detect-the-physical-connected-state-of-a-network-cable-connector
+		logging.error("Error on joining the multicast group, %s. %d retries" % (conf.MULTICAST_ADDR, self.attempts))
+		self.attempts += 1
+		reactor.callLater(3, self.retry)
+		
+	def retry(self):
+		if self.attempts < conf.RETRIES:
+			self.transport.joinGroup(conf.MULTICAST_ADDR).addErrback(self.handler)
+		else:
+			logging.error("Could not joing the multicast group after %d attempts. Leaving" % (conf.RETRIES))
+			#reactor.stop()
+		
+		
 
 	def datagramReceived(self, datagram, address):
 		"""
