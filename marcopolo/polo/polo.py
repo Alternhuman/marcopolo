@@ -29,7 +29,7 @@ class Polo(DatagramProtocol):
 
 
 	def reload_user_services(self, user):
-		print("Reloading here")
+		logging.info("Reloading user services")
 		try:
 			user = pwd.getpwnam(user)
 		except KeyError:
@@ -62,26 +62,30 @@ class Polo(DatagramProtocol):
 		Operations to be performed before starting to listen
 		"""
 		logging.info("Starting service polod")
-		#global offered_services
+		logging.info("Loading services")
 
 		#List all files in the service directory
-		servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
+		services_dir = join(conf.CONF_DIR, conf.SERVICES_DIR)
+		servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join(services_dir,f)) ]
 		
 		for service in servicefiles:
 			try:
 			    with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
 			        s = json.load(f)
 			        s["permanent"] = True
+			        s["params"] = s.get("params", {})
 			        if not self.verify.match(s['id']):
 			        	self.offered_services.append(s)
+			        else:
+			        	logging.warning("The service %s does not have a valid id", s['id'])
 			except ValueError:
 			    logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
-
+			except Exception as e:
+				logging.error("Unknown error %s", e)
 		if conf.DEBUG:
 			for s in self.offered_services:
-				print(s['id'])
+				print("%s:%s"% (s['id'], s['params']))
 		logging.info("Offering " + str(len(self.offered_services)) + " services")
-
 		
 		self.attempts = 0
 		def handler(arg):
@@ -94,23 +98,23 @@ class Polo(DatagramProtocol):
 			else:
 				logging.error("Could not joing the multicast group after %d attempts. Leaving" % (conf.RETRIES))
 				reactor.stop()
-
 		
 		self.transport.joinGroup(conf.MULTICAST_ADDR).addErrback(handler)
 		
-		self.transport.setTTL(conf.HOPS) #Go beyond the network
+		self.transport.setTTL(conf.HOPS) #Go beyond the network. TODO
 
 	def datagramReceived(self, datagram, address):
 		"""
 		When a datagram is received the command is parsed and a response is generated
 		"""
-		#global offered_services
+		
 		try:
 			message_dict = json.loads(datagram.decode('utf-8'))
 		except ValueError:
+			logging.info("Datagram received from [%s:%s]. Invalid JSON structure" % (address[0], address[1]))
 			return
 		
-		command = message_dict["Command"]
+		command = message_dict.get("Command", "")
 
 		if command == 'Discover' or command == 'Marco':
 			self.polo(command, address)
@@ -119,13 +123,12 @@ class Polo(DatagramProtocol):
 		elif command == 'Services':
 			response_services(command, address)
 		else:
-			logging.info("Unknown command: " + datagram.decode('utf-8'))
+			logging.info("Datagram received from [%s:%s]. Unknown command %s " % (address[0], address[1], datagram.decode('utf-8')))
 
 	def polo(self, command, address):
 		"""
 		Replies to `Polo` requests
 		"""
-		#global offered_services
 		response_dict = {}
 		response_dict["Command"] = "Polo"
 		response_dict["Params"] = conf.POLO_PARAMS
@@ -139,9 +142,7 @@ class Polo(DatagramProtocol):
 		"""
 		Replies to `Services` requests
 		"""
-		#TODO: User services
 
-		#global offered_services
 		response_services = []
 		for service in self.offered_services:
 			response_services.append(service['id'])
@@ -153,9 +154,7 @@ class Polo(DatagramProtocol):
 			self.reload_user_services(user)
 
 		match = next((s for s in self.user_services.get(user, []) if s['id'] == service), None)
-		print(self.user_services.get(user, None))
-		print(user)
-		print(self.user_services)
+		
 		if match:
 			command_msg = json.dumps({'Command':'OK', 'Params': match.get("Params", {})})
 			self.transport.write(command_msg.encode('utf-8'), address)
@@ -171,7 +170,6 @@ class Polo(DatagramProtocol):
 			self.response_request_for_user(user, service, address)
 			return
 
-		#global offered_services
 		match = next((s for s in self.offered_services if s['id'] == param), None)
 		if match:
 			command_msg = json.dumps({'Command':'OK', 'Params':json.dumps(match)})
