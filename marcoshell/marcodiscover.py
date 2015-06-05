@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
       cadena = ""
       for node in nodes:
-        cadena += node.address[0] + "\n" if not args.shell else " "
+        cadena += node.address + "\n" if not args.shell else " "
 
       print(cadena[:-1])
     else:
