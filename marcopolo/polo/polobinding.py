@@ -15,11 +15,11 @@ from marco_conf import conf
 
 class PoloBinding(DatagramProtocol):
 
-	def __init__(self, offered_services, user_services):
+	def __init__(self, offered_services, user_services, verify_regex):
 		super(PoloBinding).__init__()
 		self.offered_services = offered_services
 		self.user_services = user_services
-		self.verify = re.compile('^([\d\w]+):([\d\w]+)$')
+		self.verify = re.compile(verify_regex)#re.compile('^([\d\w]+):([\d\w]+)$')
 
 	def startProtocol(self):
 		pass

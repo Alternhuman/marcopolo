@@ -26,3 +26,5 @@ RETRIES = 10
 POLO_USER_DIR = ".polo"
 
 POLO_PARAMS = {}
+
+VERIFY_REGEXP = '^([\d\w]+):([\d\w]+)$'
