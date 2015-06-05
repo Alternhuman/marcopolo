@@ -27,37 +27,19 @@ user_services = {}
 
 #verify = re.compile('^([\d\w]+):([\d\w]+)$')
 
-polo = Polo()
-polobinding = PoloBinding()
+polo_instances = {}
+polobinding_instances = {}
+
+polo = Polo(offered_services, user_services, conf.MULTICAST_ADDR)
+polobinding = PoloBinding(offered_services, user_services, conf.MULTICAST_ADDR)
 
 def reload_services(sig, frame):
-	print("Reloading")
 	signal.signal(signal.SIGUSR1, signal.SIG_IGN)
 	polo.reload_services()
-	# global offered_services
-	# del offered_services[:] #http://stackoverflow.com/a/1400622/2628463
-	# logging.info("Reloading services")
-	
-	# servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
-
-	# for service in servicefiles:
-	# 	try:
-	# 		with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
-	# 			service = json.load(f)
-	# 			service["permanent"] = True
-	# 			offered_services.append(json.load(f))
-	# 	except ValueError:
-	# 		logging.debug(str.format("The file {0} does not have a valid JSON structure", conf.SERVICES_DIR+service.get("id")))
-
-	# polo.reload_user_services()
-
-	# logging.info("Reloaded: Offering " + str(len(offered_services)) + " services")
-	
 	signal.signal(signal.SIGUSR1, reload_services)
 
 def sanitize_path(path_str):
 	return path.normpath("/"+path_str).lstrip('/')
-
 
 #TODO
 def sigint_handler(signal, frame):
@@ -69,8 +51,6 @@ def graceful_shutdown():
 	yield logging.info('Stopping service polod')
 
 if __name__ == "__main__":
-	#signal.signal(signal.SIGINT, sigint_handler)
-	#Closing std(in|out|err)
 	pid = os.getpid()
 	
 	if not path.exists('/var/run/marcopolo'):
