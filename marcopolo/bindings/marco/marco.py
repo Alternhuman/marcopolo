@@ -80,14 +80,13 @@ class Marco(object):
     for node_arr in nodes_arr:
       node = Node()
       node.address = node_arr["Address"]
-      #node.services = []
-      #node.services += node_arr["Params"]
       node.params = node_arr["Params"]
+
       nodes.add(node)
     return nodes
 
 
-  def marco(self, max_nodes=None, exclude=[], timeout=None, retries=0):
+  def marco(self, max_nodes=None, exclude=[], params={}, timeout=None, retries=0):
     """
     **C struct node * marco(int timeout)**
 
@@ -112,11 +111,13 @@ class Marco(object):
       self.marco_socket.sendto(bytes(json.dumps({"Command": "Marco", 
                                                  "max_nodes": max_nodes,
                                                  "exclude":exclude,
+                                                 "params":params,
                                                  "timeout":timeout}).encode('utf-8')), ('127.0.1.1', 1338))
     else:
       self.marco_socket.sendto(bytes(json.dumps({"Command": "Marco", 
                                                  "max_nodes": max_nodes,
                                                  "exclude":exclude,
+                                                 "params":params,
                                                  "timeout":timeout}), 'utf-8'), ('127.0.1.1', 1338))
     
     
@@ -137,6 +138,16 @@ class Marco(object):
     if error_parse:
       raise MarcoInternalError("Internal parsing error")
     
+    nodes_set = set()
+    for node in nodes:
+      n = Node()
+      n.address = node["Address"]
+      n.params = node["Params"]
+      nodes_set.add(n)
+
+    else:
+      return nodes_set
+
     return nodes
 
   def request_one_for(self, exclude=[], timeout=None):

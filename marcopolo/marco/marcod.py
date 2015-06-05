@@ -45,7 +45,7 @@ class Marco:
 		self.socket_mcast.close()
 		self.socket_ucast.close()
 
-	def marco(self, max_nodes=None, exclude=[], timeout=None, retries=0):
+	def marco(self, max_nodes=None, exclude=[], timeout=None, params={}, retries=0):
 		"""
 		Sends a `marco` message to all nodes, which reply with a Polo message. Upon receiving all responses (those arriving before the timeout), a collection of the response information is returned.
     	
@@ -137,8 +137,16 @@ class Marco:
 					n = utils.Node()
 					n.address = address[0] # IP address.
 					n.params = json_data.get("Params", {})
-					print(n.params)
-					nodes.add(n)
+
+					if type(params) != type({}):
+						raise MarcoException("params must be a dictionary")
+
+					for name, value in params.items():
+						if n.params.get(name, None) != value:
+							break
+					else:
+						nodes.add(n)
+
 					stop = True
 				
 				if max_nodes:
@@ -270,6 +278,8 @@ class Marco:
 			n.address = node
 			n.services = []
 
+
+
 			try:
 				n.services.append(json.loads(response))
 			except ValueError:
@@ -317,8 +327,10 @@ class Marco:
 					n.address = address[0]
 					n.params = response.get("Params", {})
 					
+					if type(params) != type({}):
+						raise MarcoException("params must be a dictionary")
+
 					for name, value in params.items():
-						print(n.params.get(name, None), value)
 						if n.params.get(name, None) != value:
 							break
 					else:
@@ -361,9 +373,9 @@ class MarcoBinding(DatagramProtocol):
 		nodes = self.marco.marco(max_nodes=command.get("max_nodes", None), 
 								 exclude=command.get("exclude", []),
 								 timeout=command.get("timeout", None),
-
+								 params=command.get("params", {})
 								 )
-		self.transport.write(bytes(json.dumps([n.address for n in nodes]).encode('utf-8')), address)
+		self.transport.write(bytes(json.dumps([{"Address":n.address, "Params": n.params} for n in nodes]).encode('utf-8')), address)
 
 	def servicesInThread(self, command, address):
 		services = self.marco.services(addr=command.get("node", None), 
