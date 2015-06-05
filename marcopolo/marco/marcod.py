@@ -314,6 +314,7 @@ class Marco:
 				if response.get("Command", "") == 'OK' and address not in exclude:
 
 					n = utils.Node()
+					#print(address[0])
 					n.address = address[0]
 					n.params = response.get("Params", {})
 					#n.services = []
