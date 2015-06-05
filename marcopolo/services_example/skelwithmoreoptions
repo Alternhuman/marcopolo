@@ -1,0 +1,8 @@
+{
+	"id":"<unique identifier>",
+	"params":{"param1":"value1", "param2":"value2"},
+	"groups":["224.0.1.130", "224.0.1.131"]   /*"version":"<version>" //optional
+	"startup-command": "<command>" //optional
+	"shared-only": "<list of multicast groups separated by commas>" //optional
+	"requires-auth": "<yes/no>" // Unimplemented. Some services will only be shown to authenticated requests*/
+}

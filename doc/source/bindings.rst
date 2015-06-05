@@ -1,6 +1,0 @@
-Bindings
-========
-
-.. toctree::
-	
-	bindings/intro

@@ -1,5 +1,0 @@
-Services
---------
-.. toctree::
-
-	services/intro
