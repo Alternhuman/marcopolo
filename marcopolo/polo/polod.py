@@ -31,10 +31,10 @@ polo_instances = {}
 polobinding_instances = {}
 
 
-
 def reload_services(sig, frame):
 	signal.signal(signal.SIGUSR1, signal.SIG_IGN)
-	polo.reload_services()
+	for polo in polo_instances:
+		polo.reload_services()
 	signal.signal(signal.SIGUSR1, reload_services)
 
 def sanitize_path(path_str):
@@ -69,12 +69,14 @@ if __name__ == "__main__":
 			offered_services[group] = []
 			user_services[group] = {}
 			polo = Polo(offered_services[group], user_services[group], group)
+			polo_instances[group]=polo
 			reactor.listenMulticast(conf.PORT, polo, listenMultiple=False, interface=group)
 	
 	def start_binding():
 		polobinding = PoloBinding(offered_services[conf.MULTICAST_ADDR], 
 									  user_services[conf.MULTICAST_ADDR], 
-									  conf.MULTICAST_ADDR)
+									  conf.MULTICAST_ADDR
+								)
 		reactor.listenUDP(conf.POLO_BINDING_PORT, polobinding, interface="127.0.0.1")
 
 	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
