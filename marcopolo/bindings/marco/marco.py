@@ -145,10 +145,7 @@ class Marco(object):
       n.params = node["Params"]
       nodes_set.add(n)
 
-    else:
-      return nodes_set
-
-    return nodes
+    return nodes_set
 
   def request_one_for(self, exclude=[], timeout=None):
     """
@@ -211,6 +208,9 @@ class Marco(object):
       raise MarcoInternalError("Internal parsing error")
     
     return services_list
+
+  def request_multi(self, services, max_nodes=None, exclude=[], params={}, timeout=None):
+    pass
 
 class MarcoTimeOutException(Exception):
   pass

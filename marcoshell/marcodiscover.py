@@ -57,7 +57,7 @@ if __name__ == "__main__":
     cadena = ""
     if len(nodes) > 0:
       for node in nodes:
-        cadena += node + "\n" if not args.shell else " "
+        cadena += node.address + "\n" if not args.shell else " "
       print(cadena[:-1])
     else:
       print("There are no nodes available for the requested query")
