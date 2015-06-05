@@ -164,7 +164,7 @@ class Polo(object):
 
 		error = False
 		try:
-			data, address = self.polo_socket.recvfrom(2048)
+			data = self.polo_socket.recv(2048)
 		except socket.timeout:
 			error = True
 
@@ -188,14 +188,24 @@ class Polo(object):
 		if error:
 			raise PoloInternalException("Error during internal communication")
 
-		if parsed_data.get("OK") is not None:
-			return parsed_data.get("OK")
+		error = None
+		try:
+			if parsed_data.get("OK") is not None:
+				return parsed_data.get("OK")
 
-		elif parsed_data.get("Error") is not None:
-			raise PoloException("Error in publishing %s: '%s'" % (service, parsed_data.get("Error")))
+			elif parsed_data.get("Error") is not None:
+				raise PoloException("Error in publishing %s: '%s'" % (service, parsed_data.get("Error")))
 		
-		else:
-			raise PoloInternalException("Error during internal communication")
+			else:
+				raise PoloInternalException("Error during internal communication")
+		except PoloInternalException as e:
+			error = e
+
+		except AttributeError as a:
+			error = PoloInternalException("Error during internal communication")
+
+		if error is not None:
+			raise error
 
 
 
@@ -253,7 +263,7 @@ class Polo(object):
 
 		error = False
 		try:
-			data, address = self.polo_socket.recvfrom(2048)
+			data = self.polo_socket.recv(2048)
 		except socket.timeout:
 			error = True
 
@@ -280,7 +290,7 @@ class Polo(object):
 			return parsed_data.get("OK")
 
 		elif parsed_data.get("Error") is not None:
-			raise PoloException("Error in publishing %s: '%s'" % (service, parsed_data.get("Error")))
+			raise PoloException("Error in unpublishing %s: '%s'" % (service, parsed_data.get("Error")))
 		
 		else:
 			raise PoloInternalException("Error during internal communication")
