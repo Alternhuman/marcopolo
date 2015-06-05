@@ -20,14 +20,44 @@ class Polo(DatagramProtocol):
 	"""
 	Twisted-inherited class in charge of receiving Marco requests on the defined multicast groups
 	"""
-	def __init__(self, offered_services, user_services, verify_regex):
+	def __init__(self, offered_services=[], user_services={}, verify_regexp=conf.VERIFY_REGEXP):
 		super(Polo).__init__()
 		self.offered_services = offered_services
 		self.user_services = user_services
-		self.verify = re.compile(verify_regex)#re.compile('^([\d\w]+):([\d\w]+)$')
+		self.verify = re.compile(verify_regexp)#re.compile('^([\d\w]+):([\d\w]+)$')
 
+	def reload_services(self):
+		del self.offered_services[:] #http://stackoverflow.com/a/1400622/2628463
+		logging.info("Reloading services")
+		
+		servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
 
-	def reload_user_services(self, user):
+		service_ids = set()
+		for service_file in servicefiles:
+			try:
+				with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service_file), 'r', encoding='utf-8') as f:
+					service = json.load(f)
+					if service['id'] in service_ids:
+						logging.warning("Service %s already published. The service in the file %s will not be published" % (service['id'], service_file))
+					else:
+						service_ids.add(service['id'])
+
+					service["permanent"] = True
+					self.offered_services.append(service)
+					print(service)
+			except ValueError as e:
+				print(e)
+				logging.debug(str.format("The file {0} does not have a valid JSON structure", conf.SERVICES_DIR+service_file))
+
+		self.reload_user_services()
+
+		logging.info("Reloaded: Offering " + str(len(self.offered_services)) + " services")
+
+	def reload_user_services(self):
+		for user in self.user_services:
+			self.reload_user_services_iter(user)
+
+	def reload_user_services_iter(self, user):
 		logging.info("Reloading user services")
 		try:
 			user = pwd.getpwnam(user)
@@ -67,20 +97,29 @@ class Polo(DatagramProtocol):
 		services_dir = join(conf.CONF_DIR, conf.SERVICES_DIR)
 		servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join(services_dir,f)) ]
 		
+		service_ids = set()
 		for service in servicefiles:
 			try:
-			    with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
-			        s = json.load(f)
-			        s["permanent"] = True
-			        s["params"] = s.get("params", {})
-			        if not self.verify.match(s['id']):
-			        	self.offered_services.append(s)
-			        else:
-			        	logging.warning("The service %s does not have a valid id", s['id'])
+				with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
+					s = json.load(f)
+					if s['id'] in service_ids:
+						logging.warning("Service %s already published. The service in the file %s will not be published" % (s['id'], service))
+						#print("Service %s already published. The service in the file %s will not be published" % (s['id'], service))
+					else:
+						#print(s['id'])
+						service_ids.add(s['id'])
+					
+					s["permanent"] = True
+					s["params"] = s.get("params", {})
+					if not self.verify.match(s['id']):
+						self.offered_services.append(s)
+					else:
+						logging.warning("The service %s does not have a valid id", s['id'])
 			except ValueError:
-			    logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
+				logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
 			except Exception as e:
 				logging.error("Unknown error %s", e)
+		
 		if conf.DEBUG:
 			for s in self.offered_services:
 				print("%s:%s"% (s['id'], s['params']))

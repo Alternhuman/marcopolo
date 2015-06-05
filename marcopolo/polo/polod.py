@@ -25,34 +25,33 @@ __author__ = 'Diego Martín'
 offered_services = []
 user_services = {}
 
-verify = re.compile('^([\d\w]+):([\d\w]+)$')
+#verify = re.compile('^([\d\w]+):([\d\w]+)$')
 
-polo = Polo(offered_services, user_services, conf.VERIFY_REGEXP)
-polobinding = PoloBinding(offered_services, user_services, conf.VERIFY_REGEXP)
-
+polo = Polo()
+polobinding = PoloBinding()
 
 def reload_services(sig, frame):
 	print("Reloading")
 	signal.signal(signal.SIGUSR1, signal.SIG_IGN)
-	global offered_services
-	del offered_services[:] #http://stackoverflow.com/a/1400622/2628463
-	logging.info("Reloading services")
+	polo.reload_services()
+	# global offered_services
+	# del offered_services[:] #http://stackoverflow.com/a/1400622/2628463
+	# logging.info("Reloading services")
 	
-	servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
+	# servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
 
-	for service in servicefiles:
-		try:
-			with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
-				service = json.load(f)
-				service["permanent"] = True
-				offered_services.append(json.load(f))
-		except ValueError:
-			logging.debug(str.format("The file {0} does not have a valid JSON structure", conf.SERVICES_DIR+service.get("id")))
+	# for service in servicefiles:
+	# 	try:
+	# 		with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
+	# 			service = json.load(f)
+	# 			service["permanent"] = True
+	# 			offered_services.append(json.load(f))
+	# 	except ValueError:
+	# 		logging.debug(str.format("The file {0} does not have a valid JSON structure", conf.SERVICES_DIR+service.get("id")))
 
-	for user in user_services:
-		polo.reload_user_services(user)
+	# polo.reload_user_services()
 
-	logging.info("Reloaded: Offering " + str(len(offered_services)) + " services")
+	# logging.info("Reloaded: Offering " + str(len(offered_services)) + " services")
 	
 	signal.signal(signal.SIGUSR1, reload_services)
 
