@@ -135,8 +135,9 @@ class Marco:
 				if json_data.get("Command", "") == "Polo" and address not in exclude:
 
 					n = utils.Node()
-					n.address = address[0] # Address includes both IP and port. The latter is rather irrelevant
+					n.address = address[0] # IP address.
 					n.params = json_data.get("Params", {})
+					print(n.params)
 					nodes.add(n)
 					stop = True
 				
@@ -221,7 +222,7 @@ class Marco:
 		return n
 
 
-	def request_for(self, service, node=None, max_nodes=None, exclude=[], timeout=None):
+	def request_for(self, service, node=None, max_nodes=None, exclude=[], params={}, timeout=None):
 		"""
 		Request all nodes offering a certain service or the details for one single node
 		
@@ -312,15 +313,17 @@ class Marco:
 				except ValueError:
 					continue
 				if response.get("Command", "") == 'OK' and address not in exclude:
-
 					n = utils.Node()
-					#print(address[0])
 					n.address = address[0]
 					n.params = response.get("Params", {})
-					#n.services = []
-					#n.services.append(json.loads(response["Params"])) ##TODO
+					
+					for name, value in params.items():
+						print(n.params.get(name, None), value)
+						if n.params.get(name, None) != value:
+							break
+					else:
+						nodes.add(n)
 
-					nodes.add(n)
 				if max_nodes:
 					counter +=1
 					if counter >= max_nodes:
@@ -344,17 +347,21 @@ class MarcoBinding(DatagramProtocol):
 		logging.info("Starting service marcod")
 
 	def requestForInThread(self, command, address):
-		nodes = self.marco.request_for(command["Params"])
-
+		nodes = self.marco.request_for(command["Params"],
+										max_nodes=command.get("max_nodes", None),
+										exclude=command.get("exclude", []),
+										params=command.get("params", {}),
+										timeout=command.get("timeout", None))
 		if len(nodes) > 0:
-			self.transport.write(bytes(json.dumps([{"Address": n.address, "Params": n.services} for n in nodes]).encode('utf-8')), address)
+			self.transport.write(bytes(json.dumps([{"Address": n.address, "Params": n.params} for n in nodes]).encode('utf-8')), address)
 		else:
 			self.transport.write(bytes(json.dumps([]), 'utf-8'), address)
 	def marcoInThread(self, address, command):
 
 		nodes = self.marco.marco(max_nodes=command.get("max_nodes", None), 
 								 exclude=command.get("exclude", []),
-								 timeout=command.get("timeout", None)
+								 timeout=command.get("timeout", None),
+
 								 )
 		self.transport.write(bytes(json.dumps([n.address for n in nodes]).encode('utf-8')), address)
 

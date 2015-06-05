@@ -20,7 +20,6 @@ class Polo(DatagramProtocol):
 	"""
 	Twisted-inherited class in charge of receiving Marco requests on the defined multicast groups
 	"""
-
 	def __init__(self, offered_services, user_services, verify_regex):
 		super(Polo).__init__()
 		self.offered_services = offered_services
@@ -156,7 +155,7 @@ class Polo(DatagramProtocol):
 		match = next((s for s in self.user_services.get(user, []) if s['id'] == service), None)
 		
 		if match:
-			command_msg = json.dumps({'Command':'OK', 'Params': match.get("Params", {})})
+			command_msg = json.dumps({'Command':'OK', 'Params': match.get("params", {})})
 			self.transport.write(command_msg.encode('utf-8'), address)
 			return
 
@@ -172,7 +171,7 @@ class Polo(DatagramProtocol):
 
 		match = next((s for s in self.offered_services if s['id'] == param), None)
 		if match:
-			command_msg = json.dumps({'Command':'OK', 'Params':json.dumps(match)})
+			command_msg = json.dumps({'Command':'OK', 'Params':match.get("params", {})})
 
 			self.transport.write(command_msg.encode('utf-8'), address)
 			return

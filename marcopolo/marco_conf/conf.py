@@ -1,3 +1,4 @@
+import socket
 __author__ = 'martin'
 
 DEBUG = True
@@ -26,6 +27,6 @@ RETRIES = 10
 
 POLO_USER_DIR = ".polo"
 
-POLO_PARAMS = {}
+POLO_PARAMS = {"hostname":socket.gethostname()}
 
 VERIFY_REGEXP = '^([\d\w]+):([\d\w]+)$'

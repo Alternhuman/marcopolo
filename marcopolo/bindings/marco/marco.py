@@ -10,7 +10,7 @@ class Marco(object):
     self.marco_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     self.marco_socket.settimeout(TIMEOUT*2/1000.0)
   
-  def request_for(self, service, node=None, max_nodes=None, exclude=[], timeout=None):
+  def request_for(self, service, node=None, max_nodes=None, exclude=[], params={}, timeout=None):
     """
     **C: struct node * request_for(const char * service)**
 
@@ -36,10 +36,28 @@ class Marco(object):
       :MarcoTimeOutException: If no connection can be made to the local resolver (probably due a failure start of the daemon).
 
     """
-    if sys.version_info[0] > 2:
-      self.marco_socket.sendto(bytes(json.dumps({"Command": "Request-for", "Params":service}), 'utf-8'), ('127.0.1.1', 1338))
-    else:
-      self.marco_socket.sendto(bytes(json.dumps({"Command": "Request-for", "Params":service}).encode('utf-8')), ('127.0.1.1', 1338))
+    error = None
+    try:
+      if sys.version_info[0] > 2:
+        self.marco_socket.sendto(bytes(json.dumps({"Command": "Request-for", 
+                                                 "Params":service, 
+                                                 "node":node, 
+                                                 "max_nodes":max_nodes, 
+                                                 "exclude":exclude, 
+                                                 "params":params, 
+                                                 "timeout":timeout}), 'utf-8'), ('127.0.1.1', 1338))
+      else:
+        self.marco_socket.sendto(bytes(json.dumps({"Command": "Request-for", 
+                                                "Params":service, 
+                                                "node":node, 
+                                                "max_nodes":max_nodes, 
+                                                "exclude":exclude, 
+                                                "params":params, 
+                                                "timeout":timeout}).encode('utf-8')), ('127.0.1.1', 1338))
+    except ValueError as e:
+      error = True
+    if error:
+      raise MarcoTimeOutException("Bad parameters")
 
     error = None
     try:
@@ -62,8 +80,9 @@ class Marco(object):
     for node_arr in nodes_arr:
       node = Node()
       node.address = node_arr["Address"]
-      node.services = []
-      node.services += node_arr["Params"]
+      #node.services = []
+      #node.services += node_arr["Params"]
+      node.params = node_arr["Params"]
       nodes.add(node)
     return nodes
 
