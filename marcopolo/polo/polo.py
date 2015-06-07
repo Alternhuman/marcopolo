@@ -46,7 +46,7 @@ class Polo(DatagramProtocol):
 
 					service["permanent"] = True
 					self.offered_services.append(service)
-					print(service)
+					#print(service)
 			except ValueError as e:
 				print(e)
 				logging.debug(str.format("The file {0} does not have a valid JSON structure", conf.SERVICES_DIR+service_file))
@@ -124,7 +124,7 @@ class Polo(DatagramProtocol):
 		
 		if conf.DEBUG:
 			for s in self.offered_services:
-				print("%s:%s"% (s['id'], s['params']))
+				pass#print("%s:%s"% (s['id'], s['params']))
 		logging.info("Offering " + str(len(self.offered_services)) + " services")
 		
 		self.attempts = 0
@@ -135,7 +135,7 @@ class Polo(DatagramProtocol):
 		self.transport.setTTL(conf.HOPS) #Go beyond the network. TODO
 	
 	def handler(self, arg):
-			#TODO: http://stackoverflow.com/questions/808560/how-to-detect-the-physical-connected-state-of-a-network-cable-connector
+		#TODO: http://stackoverflow.com/questions/808560/how-to-detect-the-physical-connected-state-of-a-network-cable-connector
 		logging.error("Error on joining the multicast group, %s. %d retries" % (conf.MULTICAST_ADDR, self.attempts))
 		self.attempts += 1
 		reactor.callLater(3, self.retry)
@@ -197,7 +197,7 @@ class Polo(DatagramProtocol):
 	
 	def response_request_for_user(self, user, service, address):
 		if self.user_services.get(user, None) is None:
-			self.reload_user_services(user)
+			self.reload_user_services_iter(user)
 
 		match = next((s for s in self.user_services.get(user, []) if s['id'] == service), None)
 		

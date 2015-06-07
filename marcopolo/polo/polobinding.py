@@ -15,14 +15,16 @@ from marco_conf import conf
 
 class PoloBinding(DatagramProtocol):
 
-	def __init__(self, offered_services=[], user_services={}, verify_regexp=conf.VERIFY_REGEXP):
+	def __init__(self, offered_services={}, user_services={}, multicast_groups=conf.MULTICAST_ADDRS, verify_regexp=conf.VERIFY_REGEXP):
 		super(PoloBinding).__init__()
 		self.offered_services = offered_services
 		self.user_services = user_services
 		self.verify = re.compile(verify_regexp)#re.compile('^([\d\w]+):([\d\w]+)$')
+		self.multicast_groups = multicast_groups
+
 
 	def startProtocol(self):
-		pass
+		print("Starting binding")
 
 	def datagramReceived(self, datagram, address):
 		"""
@@ -70,7 +72,7 @@ class PoloBinding(DatagramProtocol):
 
 		return json.dumps({"Error": error})
 
-	def publish_service(self, address, service, uid, multicast_groups=set(), permanent=False, root=False):
+	def publish_service(self, address, service, uid, multicast_groups=conf.MULTICAST_ADDRS, permanent=False, root=False):
 		"""
 		Registers a service during execution time.
 		
@@ -102,7 +104,6 @@ class PoloBinding(DatagramProtocol):
 		if error:
 			self.transport.write(self.write_error("The name of the service %s is invalid" % service).encode('utf-8'), address)
 			return
-		
 		error = False
 		faulty_ip = ''
 		#The IP addresses must be represented in valid dot notation and belong to the range 224-239
@@ -112,6 +113,10 @@ class PoloBinding(DatagramProtocol):
 				error = True
 				faulty_ip = ip
 				break
+
+			if ip not in self.multicast_groups:
+				error = True
+				faulty_ip = ip
 			
 			#Instead of parsing we ask the socket module
 			try:
@@ -148,87 +153,130 @@ class PoloBinding(DatagramProtocol):
 			self.transport.write(self.write_error("wrong user").encode('utf-8'), address)
 			return
 		
-		
 		#Final entry with all service parameters
 		service_dict = {}
 		service_dict["id"] = service
 
+		
 		#Root service
 		if root is True:
-			if service in [s['id'] for s in self.offered_services]:
-				self.transport.write(self.write_error("Service %s already exists" % service).encode('utf-8'), address)
-				return
+			for group in multicast_groups:
+				#Only root or members of the `marcopolo` group can publish root services
+				if not self.is_superuser(user):
+					self.transport.write(self.write_error("Permission denied").encode('utf-8'), address)
+					return
 
-			#Only root or members of the `marcopolo` group can publish root services
-			if not self.is_superuser(user):
-				self.transport.write(self.write_error("Permission denied").encode('utf-8'), address)
-				return
-			
-			if permanent is True:
-
-				services_dir = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
-				if not path.exists(services_dir):
-					makedirs(services_dir)
-					os.chown(services_dir, 0, grp.getgrnam(name).gr_gid)
-
-				service_file = sanitize_path(service)
-				if path.isfile(path.join(services_dir, service_file)):
+				if service in [s['id'] for s in self.offered_services[group]]:
 					self.transport.write(self.write_error("Service %s already exists" % service).encode('utf-8'), address)
 					return
+				
+				if permanent is True:
 
-				try:
-					f = open(path.join(services_dir, service_file), 'w')
-					f.write(json.dumps(service_dict))
-					os.fchown(f.fileno(), user.pw_uid, user.pw_gid)
-					f.close()
-				except Exception as e:
-					print(e)
-					self.transport.write(self.write_error("Could not write file").encode('utf-8'), address)
-					return
-			
-			self.offered_services.append({"id":service, "permanent":permanent})
-			self.transport.write(json.dumps({"OK":service}).encode('utf-8'), address)
-			return
+					services_dir = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
+					if not path.exists(services_dir):
+						makedirs(services_dir)
+						os.chown(services_dir, 0, grp.getgrnam(name).gr_gid)
 
-		
-		if self.user_services.get(user.pw_name, None):
-			if service in [s['id'] for s in  self.user_services[user.pw_name]]:
-				self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
+					service_file = sanitize_path(service)
+					if path.isfile(path.join(services_dir, service_file)):
+						self.transport.write(self.write_error("Service %s already exists" % service).encode('utf-8'), address)
+						return
+
+					try:
+						f = open(path.join(services_dir, service_file), 'w')
+						f.write(json.dumps(service_dict))
+						os.fchown(f.fileno(), user.pw_uid, user.pw_gid)
+						f.close()
+					except Exception as e:
+						print(e)
+						self.transport.write(self.write_error("Could not write file").encode('utf-8'), address)
+						return
+				
+				self.offered_services[group].append({"id":service, "permanent":permanent})
+				self.transport.write(json.dumps({"OK":service}).encode('utf-8'), address)
 				return
 
-		folder = user.pw_dir
-		deploy_folder = path.join(folder, conf.POLO_USER_DIR)
-		
-		if permanent is True:
-			if not path.exists(deploy_folder):
-				makedirs(deploy_folder)
-				os.chown(deploy_folder, user.pw_uid, user.pw_gid)
+		else:
+
+			for group in self.multicast_groups:
+				print("Group", group)
+				if self.user_services[group].get(user.pw_name, None):
+					if service in [s['id'] for s in  self.user_services[group][user.pw_name]]:
+						self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
+						return
+
+				folder = user.pw_dir
+				deploy_folder = path.join(folder, conf.POLO_USER_DIR)
+				
+				if permanent is True:
+					if not path.exists(deploy_folder):
+						makedirs(deploy_folder)
+						os.chown(deploy_folder, user.pw_uid, user.pw_gid)
+					
+					service_file = sanitize_path(service)
+					if path.isfile(path.join(deploy_folder, service_file)):
+						self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
+						#TODO: if unpublished and not deleted, this will be true
+						return
+					
+					try:
+						f = open(path.join(deploy_folder, service_file), 'w')
+						f.write(json.dumps(service_dict))
+						os.fchown(f.fileno(), user.pw_uid, user.pw_gid)
+						f.close()
+					except Exception as e:
+						logging.debug(e)
+						self.transport.write(self.write_error("Could not write service file").encode('utf-8'), address)
+						return
+
+				if self.user_services[group].get(user.pw_name, None) is None:
+					self.user_services[group][user.pw_name] = []
+
+				self.user_services[group][user.pw_name].append({"id":service, "permanent":permanent})
+			else:
+				self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
+
+	def unpublish_service(self, address, service, uid, multicast_groups=conf.MULTICAST_ADDRS, delete_file=False):
+		#Determine whether it is a root or a user service
+		#The IP addresses must be represented in valid dot notation and belong to the range 224-239
+		error = None
+		for ip in multicast_groups:
+			#The IP must be a string
+			if type(ip) != type(''):
+				error = True
+				faulty_ip = ip
+				break
+
+			if ip not in self.multicast_groups:
+				error = True
+				faulty_ip = ip
 			
-			service_file = sanitize_path(service)
-			if path.isfile(path.join(deploy_folder, service_file)):
-				self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
-				#TODO: if unpublished and not deleted, this will be true
-				return
+			#Instead of parsing we ask the socket module
+			try:
+				socket.inet_aton(ip)
+			except socket.error:
+				error = True
+				faulty_ip = ip
+				break
 			
 			try:
-				f = open(path.join(deploy_folder, service_file), 'w')
-				f.write(json.dumps(service_dict))
-				os.fchown(f.fileno(), user.pw_uid, user.pw_gid)
-				f.close()
-			except Exception as e:
-				logging.debug(e)
-				self.transport.write(self.write_error("Could not write service file").encode('utf-8'), address)
-				return
+				first_byte = int(re.search("\d{3}", ip).group(0))
+				if first_byte < 224 or first_byte > 239:
+					error = True
+					faulty_ip = ip
+			except (AttributeError, ValueError):
+				error = True
+				faulty_ip = ip
+				break
 
-		if self.user_services.get(user.pw_name, None) is None:
-			self.user_services[user.pw_name] = []
+		if error is not None:
+			self.transport.write(self.write_error("Invalid multicast group address '%s'" % str(faulty_ip)).encode('utf-8'), address)
+			return
+		#self.transport
 
-		self.user_services[user.pw_name].append({"id":service, "permanent":permanent})
-
-		self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
-
-	def unpublish_service(self, address, service, uid, multicast_groups=[], delete_file=False):
-		#Determine whether it is a root or a user service
+		if len(set(multicast_groups) - (set(conf.MULTICAST_ADDRS) & set(multicast_groups))) > 0:
+			self.transport.write(self.write_error("The group %s is not available" % multicast_groups[0]).encode('utf-8'), address)
+			return
 
 		user = self.validate_user(uid)
 
@@ -243,72 +291,85 @@ class PoloBinding(DatagramProtocol):
 			except (IndexError, ValueError):
 				self.transport.write(self.write_error("Invalid formatting").encode('utf-8'), address)
 				return
-			if self.user_services.get(user, None) is not None:
-				match = next((s for s in self.user_services[user] if s['id'] == service_name), None)
-				if match:
-					is_permanent = match.get("permanent", False)
-					
-					if delete_file and is_permanent:
-						folder = user.pw_dir
-						deploy_folder = path.join(folder, conf.POLO_USER_DIR)
-						if path.exists(deploy_folder) and isfile(path.join(deploy_folder, service_name)):
-							try:
-								os.remove(path.join(deploy_folder, service_name))
-							except Exception as e:
-								print(e)
-						else:
-							self.transport.write(self.write_error("Could not find service file").encode('utf-8'), address)
-				
-					try:
-						self.user_services[user].remove(match)
-					except ValueError:
-						pass
-					
-					self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
-					return
+			
+			for group in multicast_groups:
+				if self.user_services[group].get(user, None) is not None:
+					match = next((s for s in self.user_services[group][user] if s['id'] == service_name), None)
+					if match:
+						is_permanent = match.get("permanent", False)
+						if delete_file and is_permanent:
+							folder = user.pw_dir
+							deploy_folder = path.join(folder, conf.POLO_USER_DIR)
+							if path.exists(deploy_folder) and isfile(path.join(deploy_folder, service_name)):
+								try:
+									os.remove(path.join(deploy_folder, service_name))
+								except Exception as e:
+									print(e)
+							else:
+								self.transport.write(self.write_error("Could not find service file").encode('utf-8'), address)
+						try:
+							self.user_services[group][user].remove(match)
+						except ValueError:
+							pass
+					else:
+						self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
+						return
 				else:
 					self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
 					return
 			else:
-				self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
+				self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
 				return
 		else:
 			#root service
+			for group in multicast_groups:
+				match = next((s for s in self.offered_services[group] if s['id'] == service), None)
+				if match:
+					is_permanent = match.get("permanent", False)
 
-			match = next((s for s in self.offered_services if s['id'] == service), None)
-			if match:
-				is_permanent = match.get("permanent", False)
-
-				if delete_file and is_permanent:
-					folder = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
+					if delete_file and is_permanent:
+						folder = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
 					
-					if path.exists(folder) and isfile(path.join(folder, service)):
-						try:
-							os.remove(path.join(folder, service))
-						except Exception as e:
-							self.transport.write(self.write_error("Internal error during processing of file").encode('utf-8'), address)
-					else:
-						self.transport.write(self.write_error("Could not find service file").encode('utf-8'), address)
+						if path.exists(folder) and isfile(path.join(folder, service)):
+							with open(path.join(folder, service, 'r')) as f:
+								file_dict = json.load(f)
+								if len(file_dict.get("groups", [])) <= 1:
+									try:
+										f.close()
+										os.remove(path.join(folder, service))
+									except Exception as e:
+										self.transport.write(self.write_error("Internal error during processing of file").encode('utf-8'), address)
+								else:
+									file_dict.get("groups", []).remove(group)
+						else:
+							self.transport.write(self.write_error("Could not find service file").encode('utf-8'), address)
 				
+				else:
+					if delete_file:
+						folder = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
+						if path.exists(folder) and isfile(path.join(folder, service)):
+							with open(path.join(folder, service), 'r') as f:
+								file_dict = json.load(f)
+								if len(file_dict.get("groups", [])) <= 1:
+									try:
+										f.close()
+										os.remove(path.join(folder, service))
+									except Exception as e:
+										self.transport.write(self.write_error("Internal error during processing of file").encode('utf-8'), address)
+								else:
+									file_dict.get("groups", []).remove(group)
+							
+							self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
+							return
+					
+					self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
+					return
+			else:
 				try:
-					self.offered_services.remove(match)
+					self.offered_services[group].remove(match)
 					self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
 				except ValueError:
 					pass
-			else:
-				if delete_file:
-					folder = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
-					if path.exists(folder) and isfile(path.join(folder, service)):
-						try:
-							os.remove(path.join(folder, service))
-						except Exception as e:
-							self.transport.write(self.write_error("Internal error during processing of file").encode('utf-8'), address)
-						self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
-						return
-				
-				self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
-				return
-		
 	def validate_user(self, uid):
 		"""
 		Returns a `pwd` structure if the uid is present in the passwd database.

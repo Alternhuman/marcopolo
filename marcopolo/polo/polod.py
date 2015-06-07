@@ -73,9 +73,9 @@ if __name__ == "__main__":
 			reactor.listenMulticast(conf.PORT, polo, listenMultiple=False, interface=group)
 	
 	def start_binding():
-		polobinding = PoloBinding(offered_services[conf.MULTICAST_ADDR], 
-									  user_services[conf.MULTICAST_ADDR], 
-									  conf.MULTICAST_ADDR
+		polobinding = PoloBinding(offered_services, 
+									  user_services, 
+									  conf.MULTICAST_ADDRS
 								)
 		reactor.listenUDP(conf.POLO_BINDING_PORT, polobinding, interface="127.0.0.1")
 
