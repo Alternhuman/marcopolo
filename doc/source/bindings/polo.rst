@@ -4,7 +4,7 @@ Polo functions
 .. py:function:: register_service(service, params=None)
 
 	Adds a new service to the set of offered ones. The service will only be offered through the life cycle of the calling node, and will be deregistered upon the end of it.
-	In order to make a service permanently available please refer to the :doc:`/services` documentation.
+	In order to make a service permanently available please refer to the :doc:`/services/intro` documentation.
 
 .. py:function:: remove_service(service)
 

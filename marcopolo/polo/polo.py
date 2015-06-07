@@ -20,6 +20,7 @@ class Polo(DatagramProtocol):
 	"""
 	Twisted-inherited class in charge of receiving Marco requests on the defined multicast groups
 	"""
+	
 	def __init__(self, offered_services=[], user_services={}, multicast_group=conf.MULTICAST_ADDR, verify_regexp=conf.VERIFY_REGEXP):
 		super(Polo).__init__()
 		self.offered_services = offered_services
