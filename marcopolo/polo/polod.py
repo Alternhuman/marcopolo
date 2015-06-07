@@ -25,28 +25,54 @@ __author__ = 'Diego Martín'
 offered_services = {}
 user_services = {}
 
-#verify = re.compile('^([\d\w]+):([\d\w]+)$')
-
 polo_instances = {}
 polobinding_instances = {}
 
 
 def reload_services(sig, frame):
+	"""
+	Captures the ``SIGUSR1`` signal and reloads the services\
+	in each ``Polo`` object. The signal is ignored \
+	during processing.
+
+	:param signal sig: The signal identifier
+
+	:param object frame: TODO
+	"""
 	signal.signal(signal.SIGUSR1, signal.SIG_IGN)
 	for polo in polo_instances:
 		polo.reload_services()
 	signal.signal(signal.SIGUSR1, reload_services)
 
 def sanitize_path(path_str):
+	"""
+	Prevents unwanted directory traversing and other bash vulnerabilities.
+
+	:param str path_str: The path to be sanitized.
+
+	:returns: The sanitized path.
+
+	:rtype: str
+	"""
 	return path.normpath("/"+path_str).lstrip('/')
 
 #TODO
 def sigint_handler(signal, frame):
-    reactor.stop()
-    sys.exit(0)
+	"""
+	A ``SIGINT`` handler.
+
+	:param signal sig: The signal identifier
+
+	:param object frame: TODO
+	"""
+	reactor.stop()
+	sys.exit(0)
 
 @defer.inlineCallbacks
 def graceful_shutdown():
+	"""
+	Stops the reactor gracefully
+	"""
 	yield logging.info('Stopping service polod')
 
 if __name__ == "__main__":
@@ -65,6 +91,10 @@ if __name__ == "__main__":
 	logging.basicConfig(filename=conf.LOGGING_DIR+'polod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 	
 	def start_multicast():
+		"""
+		Starts a ``Polo`` instance for each multicast group configured in\ 
+		conf.MULTICAST_ADDRS, initializing all the data structures
+		"""
 		for group in conf.MULTICAST_ADDRS:
 			offered_services[group] = []
 			user_services[group] = {}
@@ -73,6 +103,9 @@ if __name__ == "__main__":
 			reactor.listenMulticast(conf.PORT, polo, listenMultiple=False, interface=group)
 	
 	def start_binding():
+		"""
+		Starts the ``PoloBinding``
+		"""
 		polobinding = PoloBinding(offered_services, 
 									  user_services, 
 									  conf.MULTICAST_ADDRS

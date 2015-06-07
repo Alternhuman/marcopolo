@@ -16,6 +16,23 @@ from marco_conf import conf
 class PoloBinding(DatagramProtocol):
 
 	def __init__(self, offered_services={}, user_services={}, multicast_groups=conf.MULTICAST_ADDRS, verify_regexp=conf.VERIFY_REGEXP):
+		"""
+		Creates the ``PoloBinding`` instance with the data structures to work with.
+		If defined, the ``offered_services`` and ``user_services`` variables will be treated 
+		as references to a dictionaries (i.e. the values will be modified, but the object reference 
+		will never be altered).
+		
+		:param dict offered_services: A dictionary which comprises all the dictionaries \
+		passed to the ``offered_services`` param in the Polo instances. That way the services \
+		can be altered by both parties
+		
+		:param dict user_services: A dictionary of all the user services dictionaries (the key is multicast
+			group and the value is the list of user dictionaries passed to the param ``user_services``.
+		
+		:param str multicast_group: The IPv4 address of the multicast group to join to. **Important**: The multicast_addr is not validated until the reactor is started.
+		
+		:param str verify_regexp: Regular expression used to verify an user service.
+		"""
 		super(PoloBinding).__init__()
 		self.offered_services = offered_services
 		self.user_services = user_services
@@ -24,12 +41,19 @@ class PoloBinding(DatagramProtocol):
 
 
 	def startProtocol(self):
-		print("Starting binding")
+		"""
+		Starts the binding and adds an entry in the log file
+		"""
+		logging.info("Starting binding")
 
 	def datagramReceived(self, datagram, address):
 		"""
 		Receives datagrams from bindings, and verifies the `Command` field.
 		It emits a response based on the value (if necessary)
+
+		:param bytes datagram: The byte stream with the message
+
+		:param tuple address: A tuple with the requesting address and port
 		"""
 		datos = datagram.decode('utf-8')
 		
@@ -68,21 +92,28 @@ class PoloBinding(DatagramProtocol):
 	def write_error(self, error):
 		"""
 		Creates an `Error` return value
-		"""
 
+		:returns: A JSON-encoded string
+		:rtype: str
+		"""
 		return json.dumps({"Error": error})
 
 	def publish_service(self, address, service, uid, multicast_groups=conf.MULTICAST_ADDRS, permanent=False, root=False):
 		"""
 		Registers a service during execution time.
+
+		:param tuple address: A tuple with the requesting address and port
 		
-		:param string service: Indicates the unique identifier of the service.
+		:param str service: Indicates the unique identifier of the service.
 		
 			If `root` is true, the published service will have the same identifier as the value of the parameter. Otherwise, the name of the user will be prepended (`<user>:<service>`).
 		
+		:param int uid: The unique user identifier
+
 		:param set multicast_groups: Indicates the groups where the service shall be published.
 		
 			Note that the groups must be defined in the polo.conf file, or otherwise the method will throw an exception.
+		
 		:param bool permanent: If set to true a file will be created and the service will be permanently offered until the file is deleted.
 		
 		:param bool root: Stores the file in the marcopolo configuration directory.
@@ -237,6 +268,22 @@ class PoloBinding(DatagramProtocol):
 				self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
 
 	def unpublish_service(self, address, service, uid, multicast_groups=conf.MULTICAST_ADDRS, delete_file=False):
+		"""
+		Removes a service from the offered services structures and all associated files, upon request.
+
+		:param tuple address: A tuple with the requesting address and port.
+
+		:param str service: The id of the service to delete.
+
+		:param int uid: The uid of the requesting user.
+
+		:param list multicast_groups: The list of multicast_groups to delete the service from.\
+		 If not defined, the service is removed from all groups.
+
+		:param bool delete_file: If set to ``True`` and the service is of type permanent,\
+		 the service file is deleted. If the service is not permanent the parameter is ignored. 
+		"""
+
 		#Determine whether it is a root or a user service
 		#The IP addresses must be represented in valid dot notation and belong to the range 224-239
 		error = None

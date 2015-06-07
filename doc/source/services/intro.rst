@@ -1,5 +1,5 @@
-Services
-========
+Definition of Services
+======================
 
 A *service* is a set of information that can be discovered by using a unique identifier (the service *name*). There are two types of services, depending on the way that they were published: *dynamic* services, those created by a program in execution and *static* services, created using service files. The services behave similarly without regard of the publication method, however, dynamic services are unpublished automatically when Polo is stopped or restarted (**but not when it is reloaded**) while static services last as long as the file exists.
 

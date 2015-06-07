@@ -14,5 +14,5 @@ All bindings implement this set of functions:
 .. toctree::
 	:maxdepth: 2
 
-	Marco <marco>
-	Polo <polo>
+	marco
+	polo

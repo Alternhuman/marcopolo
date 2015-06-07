@@ -1,5 +1,5 @@
-Marco functions
----------------
+Marco methods
+-------------
 
 .. autoclass:: bindings.marco.marco.Marco
 	:members:

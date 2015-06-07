@@ -2,5 +2,5 @@ Reference
 =========
 
 .. toctree::
-	reference/marco
-	reference/polo
+	reference/marco/index
+	reference/polo/index

@@ -14,7 +14,7 @@ from marco_conf import utils, conf
 class Marco:
 	def __init__(self):
 		"""
-		Initializes all the data structures and sockets, setting timeouts
+		Initializes all the data structures and sockets, setting timeouts and other socket options
 		"""
 		error = False
 		try:
@@ -35,7 +35,7 @@ class Marco:
 			error = True
 
 		if error:
-			raise MarcoException("Error in initialization")
+			raise MarcoException("Error in initialization: %s" % e)
 
 	def __del__(self):
 		"""
@@ -47,17 +47,19 @@ class Marco:
 
 	def marco(self, max_nodes=None, exclude=[], timeout=None, params={}, retries=0):
 		"""
-		Sends a `marco` message to all nodes, which reply with a Polo message. Upon receiving all responses (those arriving before the timeout), a collection of the response information is returned.
-    	
-    	:param int max_nodes: Maximum number of nodes to be returned. If set to `None`, no limit is applied.
+		Sends a `marco` message to all nodes, which reply with a Polo message. \
+		Upon receiving all responses (those arriving before the timeout), \
+		a collection of the response information is returned.
+		
+		:param list exclude: List of nodes to be excluded from the returned ValueError.
 
-	    :param list exclude: List of nodes to be excluded from the returned ValueError.
+		:param int timeout: If set, overrides the default timeout value.
 
-	    :param int timeout: If set, overrides the default timeout value.
+		:param int retries: If set to a value greater than 0, retries the *retries* times if the first attempt is unsuccessful
 
-	    :param int retries: If set to a value greater than 0, retries the *retries* times if the first attempt is unsuccessful
-
-	    :returns: A list of all responding nodes.
+		:param int max_nodes: Maximum number of nodes to be returned. If set to `None`, no limit is applied.
+		
+		:returns: A list of all responding nodes.
 		"""
 		counter = 0
 		
@@ -270,7 +272,7 @@ class Marco:
 				raise MarcoException("Error on multicast sending")
 
 			try:
-			    response = self.socket_ucast.recv(conf.FRAME_SIZE)
+				response = self.socket_ucast.recv(conf.FRAME_SIZE)
 			except socket.timeout:
 			    return
 

@@ -9,46 +9,7 @@ BINDING_PORT = conf.POLO_BINDING_PORT
 
 TIMEOUT = 4000
 
-def verify_parameters(service, multicast_groups):
-	error = False
-	if type(service) != type(''):
-		raise PoloException("The name of the service %s is invalid" % service)
 
-	if service is None or len(service) < 1:
-		error = True
-
-	if error:
-		raise PoloException("The name of the service %s is invalid" % service)
-
-	error = False
-	faulty_ip = ''
-
-	for ip in multicast_groups:
-		if type(ip) != type(''):
-			error = True
-			faulty_ip = ip
-			break
-		try:
-			socket.inet_aton(ip)
-		except socket.error:
-			error = True
-			faulty_ip = ip
-			break
-		try:
-			first_byte = int(re.search("\d{3}", ip).group(0))
-			if first_byte < 224 or first_byte > 239:
-				error = True
-				faulty_ip = ip
-		except (AttributeError, ValueError):
-			error = True
-			faulty_ip = ip
-			break
-
-	if error:
-		raise PoloException("Invalid multicast group address '%s'" % str(faulty_ip))
-
-class PoloException(Exception):
-	pass
 
 class Polo(object):
 	def __init__(self):
@@ -57,7 +18,7 @@ class Polo(object):
 
 	def publish_service(self, service, multicast_groups=set(), permanent=False, root=False):
 		"""
-		Registers a service during execution time.
+		Registers a service during execution time. See :ref:`/services/intro/`.
 		
 		:param string service: Indicates the unique identifier of the service.
 		
@@ -207,12 +168,62 @@ class Polo(object):
 		if error is not None:
 			raise error
 
+	def verify_parameters(service, multicast_groups):
+		"""
+		Verifies that the parameters are compliant with the following rules:
 
+		- The service must be a string.
+
+		- The multicast_groups parameter must be a list of valid IPv4 addresses.
+
+		:param str service: The service identifier.
+
+		:param list multicast_groups: The list of IPv4 addresses. 
+		"""
+		error = False
+		if type(service) != type(''):
+			raise PoloException("The name of the service %s is invalid" % service)
+
+		if service is None or len(service) < 1:
+			error = True
+
+		if error:
+			raise PoloException("The name of the service %s is invalid" % service)
+
+		error = False
+		faulty_ip = ''
+
+		for ip in multicast_groups:
+			if type(ip) != type(''):
+				error = True
+				faulty_ip = ip
+				break
+			try:
+				socket.inet_aton(ip)
+			except socket.error:
+				error = True
+				faulty_ip = ip
+				break
+			try:
+				first_byte = int(re.search("\d{3}", ip).group(0))
+				if first_byte < 224 or first_byte > 239:
+					error = True
+					faulty_ip = ip
+			except (AttributeError, ValueError):
+				error = True
+				faulty_ip = ip
+				break
+
+		if error:
+			raise PoloException("Invalid multicast group address '%s'" % str(faulty_ip))
 
 
 	def unpublish_service(self, service, multicast_groups=[], delete_file=False):
 		"""
-		Removes a service. If the service is permanent, the file is only deleted if `delete_file` is set to `True`
+		Removes a service. If the service is permanent, the file is only deleted if `delete_file` is set to `True`.\
+		Please note that it is required to have the "ownership" of the service (that is, the only user which can remove \
+		a service is the user who created it or the Polo instance itself) for the function to be successful. 
+		Otherwise, a PoloException will be raised.
 		
 		:param string service: Name of the service
 
@@ -221,7 +232,7 @@ class Polo(object):
 		:param boolean delete_file: Removes the file service if the service is `permanent`. Otherwise it is ignored.
 		
 		"""
-		verify_parameters(service, multicast_groups)
+		self.verify_parameters(service, multicast_groups)
 
 		if type(delete_file) is not bool:
 			raise PoloException("delete_file must be boolean")
@@ -305,16 +316,18 @@ class Polo(object):
 	def service_info(self, service):
 		"""
 		Returns a dictionary with all the information from a service
+		
 		:param string service: The name of the service
 
 		"""
 
-	def have_service(self, service):
+	def has_service(self, service):
 		"""
 		Returns true if the requested service is set to be offered
+		
 		:param string service: The name of the service.
 
-			Please not that in order to check for an user service, it must be written as user:service
+			Please note that in order to check for an user service, the user id has to be complete (user:service)
 
 
 		"""
@@ -323,6 +336,7 @@ class Polo(object):
 	def set_permanent(self, service, permanent=True):
 		"""
 		Changes the status of a service (permanent/not permanent)
+
 		:param string service: The name of the service
 
 		:param bool permanent: Indicates whether the service must be permanent or not
@@ -333,4 +347,9 @@ class Polo(object):
 		pass
 
 class PoloInternalException(Exception):
-	pass
+	"""An exception raised when an internal error occurred \
+	(for example, an internal communication error)"""
+
+class PoloException(Exception):
+	"""An exception raised when an error caused by a misuse of the binding \
+	(for example, a bad service ID, an already published service, etc.)"""

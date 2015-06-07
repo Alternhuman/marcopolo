@@ -26,7 +26,7 @@ LOGGING_DIR = '/var/log/marcopolo/'
 PIDFILE_POLO = '/var/run/marcopolo/polod.pid'
 PIDFILE_MARCO = '/var/run/marcopolo/marcod.pid'
 
-RETRIES = 10
+RETRIES = -10
 
 POLO_USER_DIR = ".polo"
 

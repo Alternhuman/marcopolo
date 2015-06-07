@@ -12,13 +12,13 @@ MarcoPolo is a service discovery protocol based on multicast networking designed
 .. toctree::
    :maxdepth: 1
    
-   Fundamentals <fundamentals>
-   Configuration <configuration/basics>
-   Definition of Services <services/intro>
+   fundamentals
+   configuration/basics
+   services/intro
    commands/intro
-   The daemons <daemons>
-   Bindings <bindings/intro>
-   Utilities <utilities>
+   daemons
+   bindings/intro
+   utilities
    Implementation Reference <reference>
 
 
