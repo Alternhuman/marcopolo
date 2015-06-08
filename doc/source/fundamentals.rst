@@ -1,7 +1,7 @@
 Fundamentals
 ============
 
-MarcoPolo (named upon the swimming pool game [1]_) is a utility designed to allow hosts to publicly share their available resources (known as :doc:`/services/intro`) inside a local-area network. Multiple grids of nodes can work in the same network without interferences and nodes can work on different grids simultaneously.
+MarcoPolo (named upon the swimming pool game [1]_) is a utility designed to allow hosts to publicly share their available resources (known as :doc:`services </services/intro>`) inside a local-area network. Multiple grids of nodes can work in the same network without interferences and nodes can work on different grids simultaneously.
 
 MarcoPolo is built upon UDP multicast sockets. The multicast approach reduces the neccesary bandwith compared to broadcast messaging and makes it possible to have multiple independent grids on the same network.
 
