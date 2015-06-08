@@ -209,7 +209,7 @@ class PoloBinding(DatagramProtocol):
 		service_dict = {}
 		service_dict["id"] = service
 		#TODOservice_dict["params"] ={}
-		#TODOservice_dict["groups"] =[]
+		service_dict["groups"] = multicast_groups
 		
 		#Root service
 		error = None
@@ -249,14 +249,16 @@ class PoloBinding(DatagramProtocol):
 						f.close()
 						service_dict["file"] = service_file
 					except Exception as e:
-						print(e)
 						error_reason = self.write_error("Could not write file")
 						#self.transport.write(self.write_error("Could not write file").encode('utf-8'), address)
 						error=True
 						continue
+
 				
 				self.offered_services[group].append({"id":service, "permanent":permanent})
 			else:
+				service_dict["permanent"] = permanent
+				print(service_dict["permanent"])
 				if not error:
 					self.transport.write(json.dumps({"OK":service}).encode('utf-8'), address)
 				else:
@@ -392,10 +394,12 @@ class PoloBinding(DatagramProtocol):
 					match = next((s for s in self.user_services[group][user] if s['id'] == service_name), None)
 					if match:
 						is_permanent = match.get("permanent", False)
+						print("The service is permanent ", is_permanent)
 						if delete_file and is_permanent:
 							folder = user.pw_dir
 							deploy_folder = path.join(folder, conf.POLO_USER_DIR)
 							if path.exists(deploy_folder) and isfile(path.join(deploy_folder, service_name)):
+								print("Removing")
 								try:
 									os.remove(path.join(deploy_folder, service_name))
 								except Exception as e:
@@ -422,7 +426,7 @@ class PoloBinding(DatagramProtocol):
 				match = next((s for s in self.offered_services[group] if s['id'] == service), None)
 				if match:
 					is_permanent = match.get("permanent", False)
-
+					print("The service is permanent", is_permanent)
 					if delete_file and is_permanent:
 						folder = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
 					
@@ -456,7 +460,10 @@ class PoloBinding(DatagramProtocol):
 
 						else:
 							self.transport.write(self.write_error("Could not find service file").encode('utf-8'), address)
-				
+					try:
+						self.offered_services[group].remove(match)
+					except ValueError:
+						pass
 				else:
 					if delete_file:
 						folder = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
@@ -480,15 +487,16 @@ class PoloBinding(DatagramProtocol):
 									f.truncate()
 									json.dump(file_dict, f)
 							
-							self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
-							return
+							#self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
+							#return
 					
-					self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
-					return
+						else:
+							self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
+							return
 				try:
 					self.offered_services[group].remove(match)
 				except ValueError as e:
-					print(e)	
+					pass#print(e)	
 			else:
 				try:
 					self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
