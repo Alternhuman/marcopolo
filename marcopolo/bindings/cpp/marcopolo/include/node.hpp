@@ -4,6 +4,11 @@
 #include <string>
 #include <map>
 
+typedef struct parameter{
+	int type;
+	std::string value;
+}parameter;
+
 class Node{
 public:
 	std::string getAddress(){
@@ -13,16 +18,16 @@ public:
 		this->address = value;
 	}
 
-	std::map<std::string, std::string> getParams(){
+	std::map<std::string, parameter> getParams(){
 		return this->params;
 	}
-	void setParams(std::map<std::string, std::string> value){
+	void setParams(std::map<std::string, parameter> value){
 		this->params = value;
 	}
 
 private:
 	std::string address;
-	std::map<std::string, std::string> params;
+	std::map<std::string, parameter> params;
 };
 
 #endif

@@ -6,6 +6,14 @@
 #include "marco.hpp"
 #include "utf8.h"
 
+#define TYPE_NULL 0
+#define TYPE_FALSE 1
+#define TYPE_TRUE 2
+#define TYPE_OBJECT 3
+#define TYPE_ARRAY 4
+#define TYPE_STRING 5
+#define TYPE_NUMBER 6
+
 #define UTF8_SEQUENCE_MAXLEN 8
 
 Marco::Marco(int timeout, std::string group){
@@ -35,7 +43,7 @@ Marco::~Marco(){
 	close(this->marco_socket);
 }
 
-std::vector<Node> Marco::marco(int max_nodes, std::vector<std::string> exclude, std::map<std::string, std::string> params, int timeout, int retries){
+int Marco::marco(std::vector<Node>& nodes, int max_nodes, std::vector<std::string> exclude, std::map<std::string, std::string> params, int timeout, int retries){
 	rapidjson::StringBuffer s;
 	rapidjson::Writer<rapidjson::StringBuffer> writer(s);
 
@@ -78,7 +86,14 @@ std::vector<Node> Marco::marco(int max_nodes, std::vector<std::string> exclude, 
     	perror("Internal error during UTF-8 conversion");
     }
 
-    sendto(this->marco_socket,iconv_out,(b/4)-1,0,(struct sockaddr *)&(this->bind_addr),this->size_addr);
+    if(-1 == sendto(this->marco_socket,
+    			    iconv_out,(b/4)-1,
+    			    0,
+    			    (struct sockaddr *)&(this->bind_addr),
+    			    this->size_addr))
+    {
+    	return -1;
+    }
 	
 	char recv_response[2048];
 
@@ -89,12 +104,13 @@ std::vector<Node> Marco::marco(int max_nodes, std::vector<std::string> exclude, 
     		case EINPROGRESS:
     		case EAGAIN:
     			perror("Timeout\n");
-    			break;
+    			return -1;
     		default:
     			perror("Unkwnown error");
+    			return -1;
     	}
     }else{
-        printf("%s\n", recv_response);
+        //printf("%s\n", recv_response);
     }
     
     
@@ -113,7 +129,7 @@ std::vector<Node> Marco::marco(int max_nodes, std::vector<std::string> exclude, 
     
     if(document.Parse<0>(str.c_str()).HasParseError()){
     	perror("Internal parsing error");
-    	//throw marcoexception("Internal error on parsing");
+    	return -1;
 	}
 
     assert(document.IsArray());
@@ -124,51 +140,20 @@ std::vector<Node> Marco::marco(int max_nodes, std::vector<std::string> exclude, 
     	Node n;
     	n.setAddress(document[i]["Address"].GetString());
 
-    	/*const rapidjson::Value& membersArray = document[i];
-		for(rapidjson::Value::ConstMemberIterator it=membersArray.MemberBegin(); it != membersArray.MembersEnd(); it++) {
-		   std::cout << it->value["template"].GetString();
-		}*/
+		std::map<std::string, parameter> params;
 		static const char* kTypeNames[] =  { "Null", "False", "True", "Object", "Array", "String", "Number" };
 		for (rapidjson::Value::ConstMemberIterator itr = document[i]["Params"].MemberBegin(); itr != document[i]["Params"].MemberEnd(); ++itr)
 		{
-		    printf("Type of member %s is %s\n",
-		        itr->name.GetString(), kTypeNames[itr->value.GetType()]);
+		    parameter p;
+			p.type = itr->value.GetType();
+			p.value = itr->value.GetString();
+			params[itr->name.GetString()] = p;
 		}
+		n.setParams(params);
 
-		/*for (MemberIterator m = document[i]["Params"].MemberBegin(); m != document[i]["Params"].MemberEnd(); ++m) {
-			std::cout << m.name << " " << (m.IsNumber()?m.GetNumber():m.GetString()) << std::endl;
-		}*/
-    	//n.setParams(document[i]["Params"]);
+		
     	return_nodes.push_back(n);
     }
-
-    //return return_hosts;
-
-
-
-
-	return return_nodes;
-
-	// signed char utf8[(wcslen(wcs) + 1 /* L'\0' */) * UTF8_SEQUENCE_MAXLEN];
- //    char *iconv_in = (char *) wcs;
- //    char *iconv_out = (char *) &utf8[0];
- //    size_t iconv_in_bytes = (wcslen(wcs) + 1  L'\0' ) * sizeof(wchar_t);
- //    size_t iconv_out_bytes = sizeof(utf8);
- //    size_t ret;
-    
- //    size_t b = wchar_to_utf8(wcs, iconv_in_bytes, iconv_out, iconv_out_bytes, 0);
- //    if(b < 1){
- //    	perror("Internal error during UTF-8 conversion");
- //    }
-
-	/*sendvalue =  self.marco_socket.sendto(bytes(json.dumps({"Command": "Marco", 
-                                                       "max_nodes": max_nodes,
-                                                       "exclude":exclude,
-                                                       "params":params,
-                                                       "timeout":timeout,
-                                                       "group":self.group,
-                                                       "timeout":timeout}).encode('utf-8')), 
-                                                       ('127.0.1.1', 1338))*/
-
-
+    nodes = return_nodes;
+    return return_nodes.size();
 }
