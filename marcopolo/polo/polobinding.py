@@ -426,7 +426,7 @@ class PoloBinding(DatagramProtocol):
 				match = next((s for s in self.offered_services[group] if s['id'] == service), None)
 				if match:
 					is_permanent = match.get("permanent", False)
-					print("The service is permanent", is_permanent)
+					
 					if delete_file and is_permanent:
 						folder = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
 					
@@ -486,9 +486,6 @@ class PoloBinding(DatagramProtocol):
 									f.seek(0,0)
 									f.truncate()
 									json.dump(file_dict, f)
-							
-							#self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
-							#return
 					
 						else:
 							self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
