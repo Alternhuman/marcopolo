@@ -11,3 +11,4 @@ doc/build/*
 *__pycache__/*
 _trial_temp/*
 marcopolo/tests/_trial_temp/*
+marcopolo/bindings/cpp/marcobinding/build/*

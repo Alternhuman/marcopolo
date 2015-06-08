@@ -3,28 +3,29 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT( MARCOCPPBINDING )
 find_package(RapidJSON)
 
-SET( MARCOCPPBINDING_TEST_SRC
-  ${CMAKE_SOURCE_DIR}/src/main.cpp
-  ${CMAKE_SOURCE_DIR}/src/marcobinding.cpp
-  ${CMAKE_SOURCE_DIR}/src/marcoexception.cpp
-  ${CMAKE_SOURCE_DIR}/src/JSON.cpp
-  ${CMAKE_SOURCE_DIR}/src/JSONValue.cpp
-  ${CMAKE_SOURCE_DIR}/src/utf8.c
-)
+#SET( MARCOCPPBINDING_TEST_SRC
+  # ${CMAKE_SOURCE_DIR}/src/main.cpp
+  # ${CMAKE_SOURCE_DIR}/src/marcobinding.cpp
+  # ${CMAKE_SOURCE_DIR}/src/marcoexception.cpp
+  # ${CMAKE_SOURCE_DIR}/src/JSON.cpp
+  # ${CMAKE_SOURCE_DIR}/src/JSONValue.cpp
+  # ${CMAKE_SOURCE_DIR}/src/utf8.c
+#)
 
 SET( MARCOCPPBINDING_SRC
-  ${CMAKE_SOURCE_DIR}/src/marcobinding.cpp
-  ${CMAKE_SOURCE_DIR}/src/marcoexception.cpp
-  ${CMAKE_SOURCE_DIR}/src/JSON.cpp
-  ${CMAKE_SOURCE_DIR}/src/JSONValue.cpp
+  ${CMAKE_SOURCE_DIR}/src/marco.cpp
+  # ${CMAKE_SOURCE_DIR}/src/marcobinding.cpp
+  # ${CMAKE_SOURCE_DIR}/src/marcoexception.cpp
+  # ${CMAKE_SOURCE_DIR}/src/JSON.cpp
+  # ${CMAKE_SOURCE_DIR}/src/JSONValue.cpp
   ${CMAKE_SOURCE_DIR}/src/utf8.c
 )
 
 INCLUDE_DIRECTORIES( "${CMAKE_SOURCE_DIR}/include" )
 INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
 
-ADD_EXECUTABLE( marcobindingtest ${MARCOCPPBINDING_TEST_SRC})
-TARGET_LINK_LIBRARIES( marcobindingtest ${RAPIDJSON_LIBRARIES})
+#ADD_EXECUTABLE( marcobindingtest ${MARCOCPPBINDING_TEST_SRC})
+#TARGET_LINK_LIBRARIES( marcobindingtest ${RAPIDJSON_LIBRARIES})
 
 SET(CMAKE_EXE_LINKER_FLAGS "-Wall -Wno-write-strings")
 add_definitions(${CMAKE_EXE_LINKER_FLAGS})
