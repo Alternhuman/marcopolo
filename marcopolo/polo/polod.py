@@ -75,6 +75,28 @@ def graceful_shutdown():
 	"""
 	yield logging.info('Stopping service polod')
 
+def start_multicast():
+	"""
+	Starts a :class:`Polo` instance for each multicast group configured in\ 
+	conf.MULTICAST_ADDRS, initializing all the data structures
+	"""
+	for group in conf.MULTICAST_ADDRS:
+		offered_services[group] = []
+		user_services[group] = {}
+		polo = Polo(offered_services[group], user_services[group], group)
+		polo_instances[group]=polo
+		reactor.listenMulticast(conf.PORT, polo, listenMultiple=False, interface=group)
+
+def start_binding():
+	"""
+	Starts the :class:`PoloBinding`
+	"""
+	polobinding = PoloBinding(offered_services, 
+								  user_services, 
+								  conf.MULTICAST_ADDRS
+							)
+	reactor.listenUDP(conf.POLO_BINDING_PORT, polobinding, interface="127.0.0.1")
+
 if __name__ == "__main__":
 	pid = os.getpid()
 	
@@ -90,27 +112,7 @@ if __name__ == "__main__":
 	
 	logging.basicConfig(filename=conf.LOGGING_DIR+'polod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 	
-	def start_multicast():
-		"""
-		Starts a ``Polo`` instance for each multicast group configured in\ 
-		conf.MULTICAST_ADDRS, initializing all the data structures
-		"""
-		for group in conf.MULTICAST_ADDRS:
-			offered_services[group] = []
-			user_services[group] = {}
-			polo = Polo(offered_services[group], user_services[group], group)
-			polo_instances[group]=polo
-			reactor.listenMulticast(conf.PORT, polo, listenMultiple=False, interface=group)
 	
-	def start_binding():
-		"""
-		Starts the ``PoloBinding``
-		"""
-		polobinding = PoloBinding(offered_services, 
-									  user_services, 
-									  conf.MULTICAST_ADDRS
-								)
-		reactor.listenUDP(conf.POLO_BINDING_PORT, polobinding, interface="127.0.0.1")
 
 	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
 	reactor.callWhenRunning(start_multicast)
