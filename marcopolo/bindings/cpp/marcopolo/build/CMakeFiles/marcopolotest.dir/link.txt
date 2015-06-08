@@ -1,0 +1,1 @@
+/usr/bin/c++     -Wall -Wno-write-strings CMakeFiles/marcopolotest.dir/src/main.cpp.o CMakeFiles/marcopolotest.dir/src/marco.cpp.o CMakeFiles/marcopolotest.dir/src/utf8.c.o  -o marcopolotest -rdynamic 

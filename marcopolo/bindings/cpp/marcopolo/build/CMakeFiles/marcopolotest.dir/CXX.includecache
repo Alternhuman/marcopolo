@@ -36,21 +36,9 @@ string
 map
 -
 
-../include/utf8.h
-sys/types.h
--
-wchar.h
--
-
-/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/marco.cpp
-rapidjson/stringbuffer.h
--
-rapidjson/writer.h
--
-rapidjson/document.h
--
+/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/main.cpp
 marco.hpp
 /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/marco.hpp
-utf8.h
-/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/utf8.h
+node.hpp
+/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/node.hpp
 
