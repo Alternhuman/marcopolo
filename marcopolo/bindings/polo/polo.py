@@ -16,7 +16,7 @@ class Polo(object):
 		self.polo_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		self.polo_socket.settimeout(TIMEOUT/1000.0)
 
-	def publish_service(self, service, multicast_groups=set(), permanent=False, root=False):
+	def publish_service(self, service, multicast_groups=conf.MULTICAST_ADDRS, permanent=False, root=False):
 		"""
 		Registers a service during execution time. See :ref:`/services/intro/`.
 		
@@ -43,7 +43,7 @@ class Polo(object):
 		
 		:rvalue: str
 		"""
-		#Verify user input
+		#Verify user input. TODO: multicast_groups can be an array or an IP
 		error = False
 		if type(service) != type(''):
 			raise PoloException("The name of the service %s is invalid" % service)
@@ -55,18 +55,20 @@ class Polo(object):
 			raise PoloException("The name of the service %s is invalid" % service)
 		
 		error = False
-		faulty_ip = ''
-
+		faulty_ip = ""
+		reason = ""
 		for ip in multicast_groups:
 			if type(ip) != type(''):
 				error = True
 				faulty_ip = ip
+				reason = "IP must be a string"
 				break
 			try:
 				socket.inet_aton(ip)
 			except socket.error:
 				error = True
 				faulty_ip = ip
+				reason = "Wrong IP format"
 				break
 			try:
 				first_byte = int(re.search("\d{3}", ip).group(0))
@@ -76,10 +78,11 @@ class Polo(object):
 			except (AttributeError, ValueError):
 				error = True
 				faulty_ip = ip
+				reason = "IP is not of class D"
 				break
 
 		if error:
-			raise PoloException("Invalid multicast group address '%s'" % str(faulty_ip))
+			raise PoloException("Invalid multicast group address '%s': %s" % (str(faulty_ip), reason))
 
 		if type(permanent) is not bool:
 			raise PoloException("permanent must be boolean")

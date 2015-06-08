@@ -45,7 +45,7 @@ class Polo(DatagramProtocol):
 
 	def reload_services(self):
 		"""
-		Reloads both root and user services (calling reload_user_services). The services stored in a file are loaded again, 
+		Reloads both root and user services (calling :func:`reload_user_services`). The services stored in a file are loaded again, 
 		whereas dynamic services are kept intact.
 		"""
 		del self.offered_services[:] #http://stackoverflow.com/a/1400622/2628463
@@ -157,7 +157,7 @@ class Polo(DatagramProtocol):
 		
 		if conf.DEBUG:
 			for s in self.offered_services:
-				pass#print("%s:%s"% (s['id'], s['params']))
+				logging.debug("%s:%s"% (s['id'], s['params']))
 		logging.info("Offering " + str(len(self.offered_services)) + " services")
 		
 		self.attempts = 0
@@ -168,10 +168,10 @@ class Polo(DatagramProtocol):
 	
 	def handler(self, arg):
 		"""
-		An 'errback' which is called when the multicast subscription is unsuccessful.
+		An 'errback' that is called when the multicast subscription is unsuccessful.
 		It schedules a retry and increments an attempt counter.
 
-		:param object arg: The arg passed in the addErrback call
+		:param object arg: The arg passed in the addErrback() call
 
 		"""
 		#TODO: http://stackoverflow.com/questions/808560/how-to-detect-the-physical-connected-state-of-a-network-cable-connector
@@ -275,16 +275,16 @@ class Polo(DatagramProtocol):
 		:param str service: The id of the service
 		:param tuple address: A tuple with the requesting address and port
 		"""
-		Handle
-		if self.verify.match(param):
+		
+		if self.verify.match(service):
 			try:
-				user, service = self.verify.match(param).groups()
+				user, service = self.verify.match(service).groups()
 			except (IndexError, ValueError):
 				return
 			self.response_request_for_user(command, user, service, address)
 			return
 
-		match = next((s for s in self.offered_services if s['id'] == param), None)
+		match = next((s for s in self.offered_services if s['id'] == service), None)
 		if match:
 			command_msg = json.dumps({'Command':'OK', 'Params':match.get("params", {})})
 

@@ -10,6 +10,8 @@ import sys, json, logging
 import pwd, grp
 import re
 
+import socket
+
 sys.path.append('/opt/marcopolo')
 from marco_conf import conf
 
@@ -73,7 +75,7 @@ class PoloBinding(DatagramProtocol):
 			self.publish_service(address,
 								args.get("service", ''), 
 								args.get("uid", -1),
-								multicast_groups=args.get("multicast_groups", set()),
+								multicast_groups=args.get("multicast_groups", conf.MULTICAST_ADDRS),
 								permanent=args.get("permanent", False),
 								root=args.get("root", False))
 		elif command == 'Unpublish':
@@ -120,20 +122,23 @@ class PoloBinding(DatagramProtocol):
 		
 			This feature is only available to privileged users, by default root and users in the marcopolo group.
 		"""
-		
+		print(conf.MULTICAST_ADDRS)
+		print(multicast_groups)
 		error = False # Python does not allow throwing an exception insided an exception, so we use a flag
-		
+		reason = ""
 		#Verification of services
 		if type(service) != type(''):
 			error=True
+			reason = "Service must be a string"
 			return
 		
 		#The service must be something larger than 1 character
 		if service is None or len(service) < 1:
 			error = True
+			reason = "Must be larger than 1"
 
 		if error:
-			self.transport.write(self.write_error("The name of the service %s is invalid" % service).encode('utf-8'), address)
+			self.transport.write(self.write_error("The name of the service %s is invalid: %s" % (service, reason)).encode('utf-8'), address)
 			return
 		error = False
 		faulty_ip = ''
@@ -143,18 +148,16 @@ class PoloBinding(DatagramProtocol):
 			if type(ip) != type(''):
 				error = True
 				faulty_ip = ip
+				reason = "IP must be a string"
 				break
 
-			if ip not in self.multicast_groups:
-				error = True
-				faulty_ip = ip
-			
 			#Instead of parsing we ask the socket module
 			try:
 				socket.inet_aton(ip)
 			except socket.error:
 				error = True
 				faulty_ip = ip
+				reason = "Wrong IP format"
 				break
 			
 			try:
@@ -165,10 +168,17 @@ class PoloBinding(DatagramProtocol):
 			except (AttributeError, ValueError):
 				error = True
 				faulty_ip = ip
+				reason = "IP is not of class D"
+				break
+
+			if ip not in self.multicast_groups:
+				error = True
+				faulty_ip = ip
+				reason = "The instance is not a member of this group"
 				break
 
 		if error:
-			self.transport.write(self.write_error("Invalid multicast group address '%s'" % str(faulty_ip)).encode('utf-8'), address)
+			self.transport.write(self.write_error("Invalid multicast group address '%s': %s" % (str(faulty_ip), reason)).encode('utf-8'), address)
 			return
 		
 		if type(permanent) is not bool:
@@ -190,16 +200,21 @@ class PoloBinding(DatagramProtocol):
 
 		
 		#Root service
+		error = None
+		error_reason = ""
 		if root is True:
+			if not self.is_superuser(user):
+				self.transport.write(self.write_error("Permission denied").encode('utf-8'), address)
+				return
+			
 			for group in multicast_groups:
 				#Only root or members of the `marcopolo` group can publish root services
-				if not self.is_superuser(user):
-					self.transport.write(self.write_error("Permission denied").encode('utf-8'), address)
-					return
-
+				
 				if service in [s['id'] for s in self.offered_services[group]]:
-					self.transport.write(self.write_error("Service %s already exists" % service).encode('utf-8'), address)
-					return
+					error_reason = self.write_error("Service %s already exists" % service);
+					#self.transport.write(self.write_error("Service %s already exists" % service).encode('utf-8'), address)
+					error=True
+					continue
 				
 				if permanent is True:
 
@@ -210,8 +225,10 @@ class PoloBinding(DatagramProtocol):
 
 					service_file = sanitize_path(service)
 					if path.isfile(path.join(services_dir, service_file)):
-						self.transport.write(self.write_error("Service %s already exists" % service).encode('utf-8'), address)
-						return
+						error_reason = self.write_error("Permanent service %s already exists" % service)
+						#self.transport.write(self.write_error("Permanent service %s already exists" % service).encode('utf-8'), address)
+						error=True
+						continue
 
 					try:
 						f = open(path.join(services_dir, service_file), 'w')
@@ -220,21 +237,28 @@ class PoloBinding(DatagramProtocol):
 						f.close()
 					except Exception as e:
 						print(e)
-						self.transport.write(self.write_error("Could not write file").encode('utf-8'), address)
-						return
+						error_reason = self.write_error("Could not write file")
+						#self.transport.write(self.write_error("Could not write file").encode('utf-8'), address)
+						error=True
+						continue
 				
 				self.offered_services[group].append({"id":service, "permanent":permanent})
-				self.transport.write(json.dumps({"OK":service}).encode('utf-8'), address)
-				return
+			else:
+				if not error:
+					self.transport.write(json.dumps({"OK":service}).encode('utf-8'), address)
+				else:
+					self.transport.write(error_reason.encode('utf-8'), address)
+			return
 
 		else:
-
-			for group in self.multicast_groups:
-				print("Group", group)
+			error = False
+			for group in multicast_groups:
+				
 				if self.user_services[group].get(user.pw_name, None):
 					if service in [s['id'] for s in  self.user_services[group][user.pw_name]]:
 						self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
-						return
+						error = True
+						continue
 
 				folder = user.pw_dir
 				deploy_folder = path.join(folder, conf.POLO_USER_DIR)
@@ -248,7 +272,8 @@ class PoloBinding(DatagramProtocol):
 					if path.isfile(path.join(deploy_folder, service_file)):
 						self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
 						#TODO: if unpublished and not deleted, this will be true
-						return
+						error=True
+						continue
 					
 					try:
 						f = open(path.join(deploy_folder, service_file), 'w')
@@ -258,14 +283,17 @@ class PoloBinding(DatagramProtocol):
 					except Exception as e:
 						logging.debug(e)
 						self.transport.write(self.write_error("Could not write service file").encode('utf-8'), address)
-						return
+						error=True
+						continue
 
 				if self.user_services[group].get(user.pw_name, None) is None:
 					self.user_services[group][user.pw_name] = []
 
 				self.user_services[group][user.pw_name].append({"id":service, "permanent":permanent})
+				logging.debug("Publishing user service %s in group %s" % (service, group))
 			else:
-				self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
+				if not error:
+					self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
 
 	def unpublish_service(self, address, service, uid, multicast_groups=conf.MULTICAST_ADDRS, delete_file=False):
 		"""
@@ -287,16 +315,16 @@ class PoloBinding(DatagramProtocol):
 		#Determine whether it is a root or a user service
 		#The IP addresses must be represented in valid dot notation and belong to the range 224-239
 		error = None
+		reason = ""
 		for ip in multicast_groups:
 			#The IP must be a string
 			if type(ip) != type(''):
 				error = True
 				faulty_ip = ip
+				reason = "IP must be a string"
 				break
 
-			if ip not in self.multicast_groups:
-				error = True
-				faulty_ip = ip
+			
 			
 			#Instead of parsing we ask the socket module
 			try:
@@ -304,6 +332,7 @@ class PoloBinding(DatagramProtocol):
 			except socket.error:
 				error = True
 				faulty_ip = ip
+				reason="Wrong IP format"
 				break
 			
 			try:
@@ -314,10 +343,17 @@ class PoloBinding(DatagramProtocol):
 			except (AttributeError, ValueError):
 				error = True
 				faulty_ip = ip
+				reason="IP is not of type multicast"
+				break
+
+			if ip not in self.multicast_groups:
+				error = True
+				faulty_ip = ip
+				reason="The instance is not a member of this group"
 				break
 
 		if error is not None:
-			self.transport.write(self.write_error("Invalid multicast group address '%s'" % str(faulty_ip)).encode('utf-8'), address)
+			self.transport.write(self.write_error("Invalid multicast group address '%s': %s" % (str(faulty_ip), reason)).encode('utf-8'), address)
 			return
 		#self.transport
 
@@ -417,6 +453,7 @@ class PoloBinding(DatagramProtocol):
 					self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
 				except ValueError:
 					pass
+	
 	def validate_user(self, uid):
 		"""
 		Returns a `pwd` structure if the uid is present in the passwd database.
@@ -450,9 +487,3 @@ class PoloBinding(DatagramProtocol):
 		groups.append(grp.getgrgid(gid).gr_name)
 		
 		return 'marcopolo' in groups or user.pw_uid == 0
-
-	def remove_service(self, service_id):
-		pass
-
-	def reload(self):
-		pass
