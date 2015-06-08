@@ -3,11 +3,11 @@
 
 # compile C with /usr/bin/cc
 # compile CXX with /usr/bin/c++
-C_FLAGS = -fPIC -I/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/include -I/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build    -Wall -Wno-write-strings
+C_FLAGS = -fPIC -I/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/include -I/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build   
 
 C_DEFINES = -Dmarcopolo_EXPORTS
 
-CXX_FLAGS = -fPIC -I/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/include -I/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build    -Wall -Wno-write-strings
+CXX_FLAGS = -fPIC -I/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/include -I/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build   
 
 CXX_DEFINES = -Dmarcopolo_EXPORTS
 

@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include <iostream>
+
 #include "node.hpp"
 
 #define PORT 1338

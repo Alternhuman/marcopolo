@@ -1,7 +1,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/document.h>
-
+//#include <rapidjson/memberiterator.h>
 
 #include "marco.hpp"
 #include "utf8.h"
@@ -123,7 +123,22 @@ std::vector<Node> Marco::marco(int max_nodes, std::vector<std::string> exclude, 
     for(int i= 0; i<document.Size();i++){
     	Node n;
     	n.setAddress(document[i]["Address"].GetString());
-    	//n.setParams(document[i])
+
+    	/*const rapidjson::Value& membersArray = document[i];
+		for(rapidjson::Value::ConstMemberIterator it=membersArray.MemberBegin(); it != membersArray.MembersEnd(); it++) {
+		   std::cout << it->value["template"].GetString();
+		}*/
+		static const char* kTypeNames[] =  { "Null", "False", "True", "Object", "Array", "String", "Number" };
+		for (rapidjson::Value::ConstMemberIterator itr = document[i]["Params"].MemberBegin(); itr != document[i]["Params"].MemberEnd(); ++itr)
+		{
+		    printf("Type of member %s is %s\n",
+		        itr->name.GetString(), kTypeNames[itr->value.GetType()]);
+		}
+
+		/*for (MemberIterator m = document[i]["Params"].MemberBegin(); m != document[i]["Params"].MemberEnd(); ++m) {
+			std::cout << m.name << " " << (m.IsNumber()?m.GetNumber():m.GetString()) << std::endl;
+		}*/
+    	//n.setParams(document[i]["Params"]);
     	return_nodes.push_back(n);
     }
 
