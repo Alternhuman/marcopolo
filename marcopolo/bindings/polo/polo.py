@@ -171,7 +171,7 @@ class Polo(object):
 		if error is not None:
 			raise error
 
-	def verify_parameters(service, multicast_groups):
+	def verify_parameters(self, service, multicast_groups):
 		"""
 		Verifies that the parameters are compliant with the following rules:
 
@@ -221,7 +221,7 @@ class Polo(object):
 			raise PoloException("Invalid multicast group address '%s'" % str(faulty_ip))
 
 
-	def unpublish_service(self, service, multicast_groups=[], delete_file=False):
+	def unpublish_service(self, service, multicast_groups=conf.MULTICAST_ADDRS, delete_file=False):
 		"""
 		Removes a service. If the service is permanent, the file is only deleted if `delete_file` is set to `True`.\
 		Please note that it is required to have the "ownership" of the service (that is, the only user which can remove \
