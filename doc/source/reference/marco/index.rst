@@ -1,5 +1,10 @@
 Marco reference
 ---------------
 
-.. autoclass:: marco.marcod.Marco
+.. autoclass:: marco.marco.Marco
+	:members:
+
+.. autoclass:: marco.marcobinding.MarcoBinding
+
+.. automodule:: marco.marcod
 	:members:
