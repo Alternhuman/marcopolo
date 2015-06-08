@@ -1,8 +1,5 @@
-from twisted.internet.protocol import DatagramProtocol
-from twisted.internet import reactor, defer
-
-import socket, sys, json, logging, os, signal #time, string were necessary
-from os import path, makedirs, listdir
+import socket, sys, json, logging, os
+from os import path
 from copy import copy
 
 sys.path.append('/opt/marcopolo/')
@@ -45,7 +42,7 @@ class Marco:
 		self.socket_mcast.close()
 		self.socket_ucast.close()
 
-	def marco(self, max_nodes=None, exclude=[], timeout=None, params={}, retries=0):
+	def marco(self, max_nodes=None, exclude=[], timeout=None, params={}, retries=0, group=conf.MULTICAST_ADDR):
 		"""
 		Sends a `marco` message to all nodes, which reply with a Polo message. \
 		Upon receiving all responses (those arriving before the timeout), \
@@ -61,6 +58,9 @@ class Marco:
 		
 		:returns: A list of all responding nodes.
 		"""
+		if group is None:
+			group = conf.MULTICAST_ADDR
+
 		counter = 0
 		
 		#Python 2 and 3 compatibility in byte encoding
@@ -70,7 +70,7 @@ class Marco:
 			discover_msg = bytes(json.dumps({'Command': 'Marco'}), 'utf-8')
 
 		#Send to group IP
-		if -1 == self.socket_mcast.sendto(discover_msg, (conf.MULTICAST_ADDR, conf.PORT)):
+		if -1 == self.socket_mcast.sendto(discover_msg, (group, conf.PORT)):
 			raise MarcoException("Error on multicast sending")
 		
 		#Timeout check
@@ -232,7 +232,7 @@ class Marco:
 		return n
 
 
-	def request_for(self, service, node=None, max_nodes=None, exclude=[], params={}, timeout=None):
+	def request_for(self, service, node=None, max_nodes=None, exclude=[], params={}, timeout=None, group=conf.MULTICAST_ADDR):
 		"""
 		Request all nodes offering a certain service or the details for one single node
 		
@@ -312,7 +312,7 @@ class Marco:
 				raise MarcoException("Invalud exclude value. Must be instance of array or set()")
 
 			
-			self.socket_mcast.sendto(command_msg, (conf.MULTICAST_ADDR, conf.PORT))
+			self.socket_mcast.sendto(command_msg, (group, conf.PORT))
 			counter = 0
 			while True:
 				try:

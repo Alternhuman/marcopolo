@@ -4,15 +4,17 @@ sys.path.append('/opt/marcopolo/')
 from marco_conf.utils import Node
 
 TIMEOUT = 1000
-TIMEOUT_WAIT = 2000
 MULTICAST_GROUP = '224.0.0.112'
 
 class Marco(object):
     def __init__(self, timeout=TIMEOUT, group=MULTICAST_GROUP):
         self.marco_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.marco_socket.settimeout(TIMEOUT_WAIT/1000.0)
+        self.marco_socket.settimeout(2*timeout/1000.0)
         self._timeout = timeout
         self._group = group
+
+    def __del__(self):
+        self.marco_socket.close()
 
     @property
     def timeout(self):
@@ -20,7 +22,11 @@ class Marco(object):
 
     @timeout.setter
     def timeout(self, value):
-        self._timeout=value
+        try:
+            self._timeout=int(value)
+            self.marco_socket.settimeout(2*self.timeout/1000.0)
+        except ValueError:
+            pass
 
     @property
     def group(self):
@@ -51,6 +57,7 @@ class Marco(object):
         :returns: A list of all responding nodes.
         """
 
+        timeout = timeout if timeout else self.timeout
         #if sys.version_info[0] < 3:
         sendvalue =  self.marco_socket.sendto(bytes(json.dumps({"Command": "Marco", 
                                                        "max_nodes": max_nodes,
@@ -58,7 +65,7 @@ class Marco(object):
                                                        "params":params,
                                                        "timeout":timeout,
                                                        "group":self.group,
-                                                       "timeout":self.timeout}).encode('utf-8')), 
+                                                       "timeout":timeout}).encode('utf-8')), 
                                                        ('127.0.1.1', 1338))
 
         if sendvalue < 1:
@@ -127,6 +134,7 @@ class Marco(object):
             :MarcoTimeOutException: If no connection can be made to the local resolver (probably due a failure start of the daemon).
 
         """
+        timeout = timeout if timeout else self.timeout
         error = None
         try:
             #if sys.version_info[0] > 2:
@@ -272,7 +280,7 @@ class Marco(object):
 
         :rvalue: set()
 
-    """
+        """
 
         if sys.version_info[0] < 3:
             self.marco_socket.sendto(bytes(json.dumps({"Command": "Services",

@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor, defer
 
-import socket, sys, json, logging, os, signal #time, string were necessary
+import sys, logging, os, signal #time, string were necessary
 from os import path, makedirs, listdir
-from copy import copy
 
 sys.path.append('/opt/marcopolo/')
 from marco_conf import utils, conf
