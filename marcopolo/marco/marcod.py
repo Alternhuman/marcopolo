@@ -15,6 +15,7 @@ from marcobinding import MarcoBinding
 def graceful_shutdown():
 	yield logging.info('Stopping service marcod')
 
+
 if __name__ == "__main__":
 	signal.signal(signal.SIGHUP, signal.SIG_IGN)
 	
