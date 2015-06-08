@@ -50,25 +50,29 @@ class Polo(DatagramProtocol):
 		"""
 		del self.offered_services[:] #http://stackoverflow.com/a/1400622/2628463
 		
-		logging.info("Reloading services")
+		logging.info("Reloading services in polo instance for group %s" % self.multicast_group)
 		
 		#Load list of filenames
 		servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
 
 		service_ids = set()
-
 		for service_file in servicefiles:
 			try:
 				with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service_file), 'r', encoding='utf-8') as f:
 					service = json.load(f)
-					if service['id'] in service_ids:
-						logging.warning("Service %s already published. The service in the file %s will not be added"  
-							% (service['id'], service_file))
-					else:
-						service_ids.add(service['id'])
-
 					service["permanent"] = True
-					self.offered_services.append(service)
+					service["params"] = service.get("params", {})
+					service["file"] = service_file
+					groups = service.get("groups",[])
+					if self.multicast_group in groups or len(groups) == 0:
+						if not self.verify.match(service['id']):
+							if service['id'] in service_ids:
+								logging.warning("Service %s already published. The service in the file %s will not be added"  
+									% (service['id'], service_file))
+							else:
+								service_ids.add(service['id'])
+								self.offered_services.append(service)
+
 			except ValueError as e:
 				logging.debug(str.format("The file {0} does not have a valid JSON structure", conf.SERVICES_DIR+service_file))
 			except Exception as e:
@@ -76,7 +80,7 @@ class Polo(DatagramProtocol):
 
 		self.reload_user_services()
 
-		logging.info("Reloaded: Offering " + str(len(self.offered_services)) + " services")
+		logging.info("Polo instance for group " + self.multicast_group + ".Reloaded: Offering " + str(len(self.offered_services)) + " services")
 
 	def reload_user_services(self):
 		"""
@@ -114,10 +118,12 @@ class Polo(DatagramProtocol):
 					with open(service, 'r', encoding='utf-8') as f:
 						s = json.load(f)
 						s["permanent"] = True
+						s["params"] = s.get("params", {})
+						s["file"] = service
 						if not self.verify.match(s['id']):
 							fileservices.append(s)
 				except ValueError:
-					logging.debug(str.format("The file {0} does not have a valid JSON structures", 
+					logging.warning(str.format("The file {0} does not have a valid JSON structure", 
 											 conf.SERVICES_DIR+service))
 
 			self.user_services[username] = self.user_services[username] + fileservices
@@ -139,19 +145,24 @@ class Polo(DatagramProtocol):
 			try:
 				with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
 					s = json.load(f)
-					if s['id'] in service_ids:
-						logging.warning("Service %s already published. The service in the file %s will not be published" % (s['id'], service))
-					else:
-						service_ids.add(s['id'])
 					
 					s["permanent"] = True
 					s["params"] = s.get("params", {})
-					if not self.verify.match(s['id']):
-						self.offered_services.append(s)
-					else:
-						logging.warning("The service %s does not have a valid id", s['id'])
+					s["file"] = service
+					groups = s.get("groups",[])
+					if self.multicast_group in groups or len(groups) == 0:
+						if not self.verify.match(s['id']):
+							if s['id'] in service_ids:
+								logging.warning("Service %s already published. The service in the file %s will not be published" % (s['id'], service))
+							else:
+								service_ids.add(s['id'])
+								self.offered_services.append(s)
+					#if not self.verify.match(s['id']):
+					#	self.offered_services.append(s)
+						else:
+							logging.warning("The service %s does not have a valid id", s['id'])
 			except ValueError:
-				logging.debug(str.format("The file {0} does not have a valid JSON structures", conf.SERVICES_DIR+service))
+				logging.warning(str.format("The file {0} does not have a valid JSON structure", conf.SERVICES_DIR+service))
 			except Exception as e:
 				logging.error("Unknown error %s", e)
 		

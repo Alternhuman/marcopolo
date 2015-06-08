@@ -40,21 +40,10 @@ def reload_services(sig, frame):
 	:param object frame: TODO
 	"""
 	signal.signal(signal.SIGUSR1, signal.SIG_IGN)
-	for polo in polo_instances:
-		polo.reload_services()
+	logging.info("Broadcasting reload")
+	for group, instance in polo_instances.items():
+		instance.reload_services()
 	signal.signal(signal.SIGUSR1, reload_services)
-
-def sanitize_path(path_str):
-	"""
-	Prevents unwanted directory traversing and other bash vulnerabilities.
-
-	:param str path_str: The path to be sanitized.
-
-	:returns: The sanitized path.
-
-	:rtype: str
-	"""
-	return path.normpath("/"+path_str).lstrip('/')
 
 #TODO
 def sigint_handler(signal, frame):
@@ -86,6 +75,8 @@ def start_multicast():
 		polo = Polo(offered_services[group], user_services[group], group)
 		polo_instances[group]=polo
 		reactor.listenMulticast(conf.PORT, polo, listenMultiple=False, interface=group)
+
+
 
 def start_binding():
 	"""

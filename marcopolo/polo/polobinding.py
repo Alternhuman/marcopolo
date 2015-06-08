@@ -15,6 +15,18 @@ import socket
 sys.path.append('/opt/marcopolo')
 from marco_conf import conf
 
+def sanitize_path(path_str):
+	"""
+	Prevents unwanted directory traversing and other bash vulnerabilities.
+
+	:param str path_str: The path to be sanitized.
+
+	:returns: The sanitized path.
+
+	:rtype: str
+	"""
+	return path.normpath("/"+path_str).lstrip('/')
+
 class PoloBinding(DatagramProtocol):
 
 	def __init__(self, offered_services={}, user_services={}, multicast_groups=conf.MULTICAST_ADDRS, verify_regexp=conf.VERIFY_REGEXP):
@@ -122,8 +134,7 @@ class PoloBinding(DatagramProtocol):
 		
 			This feature is only available to privileged users, by default root and users in the marcopolo group.
 		"""
-		print(conf.MULTICAST_ADDRS)
-		print(multicast_groups)
+
 		error = False # Python does not allow throwing an exception insided an exception, so we use a flag
 		reason = ""
 		#Verification of services
@@ -197,7 +208,8 @@ class PoloBinding(DatagramProtocol):
 		#Final entry with all service parameters
 		service_dict = {}
 		service_dict["id"] = service
-
+		#TODOservice_dict["params"] ={}
+		#TODOservice_dict["groups"] =[]
 		
 		#Root service
 		error = None
@@ -235,6 +247,7 @@ class PoloBinding(DatagramProtocol):
 						f.write(json.dumps(service_dict))
 						os.fchown(f.fileno(), user.pw_uid, user.pw_gid)
 						f.close()
+						service_dict["file"] = service_file
 					except Exception as e:
 						print(e)
 						error_reason = self.write_error("Could not write file")
@@ -311,7 +324,8 @@ class PoloBinding(DatagramProtocol):
 		:param bool delete_file: If set to ``True`` and the service is of type permanent,\
 		 the service file is deleted. If the service is not permanent the parameter is ignored. 
 		"""
-
+		if len(multicast_groups) < 1:
+			multicast_groups = conf.MULTICAST_ADDRS
 		#Determine whether it is a root or a user service
 		#The IP addresses must be represented in valid dot notation and belong to the range 224-239
 		error = None
@@ -323,8 +337,6 @@ class PoloBinding(DatagramProtocol):
 				faulty_ip = ip
 				reason = "IP must be a string"
 				break
-
-			
 			
 			#Instead of parsing we ask the socket module
 			try:
@@ -405,6 +417,7 @@ class PoloBinding(DatagramProtocol):
 				return
 		else:
 			#root service
+			error_str = ""
 			for group in multicast_groups:
 				match = next((s for s in self.offered_services[group] if s['id'] == service), None)
 				if match:
@@ -414,16 +427,33 @@ class PoloBinding(DatagramProtocol):
 						folder = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
 					
 						if path.exists(folder) and isfile(path.join(folder, service)):
-							with open(path.join(folder, service, 'r')) as f:
+							with open(path.join(folder, service), 'r+') as f:
 								file_dict = json.load(f)
-								if len(file_dict.get("groups", [])) <= 1:
+								if len(file_dict.get("groups", [])) == 0:
 									try:
 										f.close()
 										os.remove(path.join(folder, service))
 									except Exception as e:
 										self.transport.write(self.write_error("Internal error during processing of file").encode('utf-8'), address)
 								else:
-									file_dict.get("groups", []).remove(group)
+									groups = file_dict.get("groups", [])
+									if len(groups) > 0:
+										try:
+											groups.remove(group)
+										except ValueError:
+											pass
+									
+									if len(groups) == 0:
+										try:
+											f.close()
+											os.remove(path.join(folder, service))
+										except Exception as e:
+											self.transport.write(self.write_error("Internal error during processing of file").encode('utf-8'), address)
+									else:
+										f.seek(0, 0)
+										f.truncate()
+										json.dump(file_dict, f)
+
 						else:
 							self.transport.write(self.write_error("Could not find service file").encode('utf-8'), address)
 				
@@ -431,25 +461,36 @@ class PoloBinding(DatagramProtocol):
 					if delete_file:
 						folder = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
 						if path.exists(folder) and isfile(path.join(folder, service)):
-							with open(path.join(folder, service), 'r') as f:
+							with open(path.join(folder, service), 'r+') as f:
 								file_dict = json.load(f)
-								if len(file_dict.get("groups", [])) <= 1:
+								if len(file_dict.get("groups", [])) < 1:
 									try:
 										f.close()
 										os.remove(path.join(folder, service))
 									except Exception as e:
 										self.transport.write(self.write_error("Internal error during processing of file").encode('utf-8'), address)
 								else:
-									file_dict.get("groups", []).remove(group)
+									groups = file_dict.get("groups", [])
+									if len(groups) > 0:
+										try:
+											groups.remove(group)
+										except ValueError:
+											pass
+									f.seek(0,0)
+									f.truncate()
+									json.dump(file_dict, f)
 							
 							self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
 							return
 					
 					self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
 					return
-			else:
 				try:
 					self.offered_services[group].remove(match)
+				except ValueError as e:
+					print(e)	
+			else:
+				try:
 					self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
 				except ValueError:
 					pass
