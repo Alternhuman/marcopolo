@@ -1,0 +1,72 @@
+from twisted.internet.protocol import DatagramProtocol
+from twisted.internet import reactor, defer
+
+import socket, sys, json, logging, os, signal #time, string were necessary
+from os import path, makedirs, listdir
+from copy import copy
+
+sys.path.append('/opt/marcopolo/')
+from marco_conf import utils, conf
+
+from marco import Marco, MarcoException
+
+class MarcoBinding(DatagramProtocol):
+	"""
+	Twisted class for an asynchronous socket server
+	"""
+	def __init__(self):
+		self.marco = Marco() #Own instance of Marco
+	
+	def startProtocol(self):
+		logging.info("Starting service marcod")
+
+
+	def requestForInThread(self, command, address):
+		nodes = self.marco.request_for(command["Params"],
+										max_nodes=command.get("max_nodes", None),
+										exclude=command.get("exclude", []),
+										params=command.get("params", {}),
+										timeout=command.get("timeout", None))
+		if len(nodes) > 0:
+			self.transport.write(bytes(json.dumps([{"Address": n.address, "Params": n.params} for n in nodes]).encode('utf-8')), address)
+		else:
+			self.transport.write(bytes(json.dumps([]), 'utf-8'), address)
+	def marcoInThread(self, address, command):
+		nodes = []
+		
+		nodes = self.marco.marco(max_nodes=command.get("max_nodes", None), 
+								 exclude=command.get("exclude", []),
+								 timeout=command.get("timeout", None),
+								 params=command.get("params", {})
+								 )
+
+		self.transport.write(bytes(json.dumps([{"Address":n.address, "Params": n.params} for n in nodes]).encode('utf-8')), address)
+
+	def servicesInThread(self, command, address):
+		services = self.marco.services(addr=command.get("node", None), 
+									   timeout=command.get("timeout", 0)
+									   )
+		
+		self.transport.write(bytes(json.dumps([service for service in services]).encode('utf-8')), address)
+	
+	def datagramReceived(self, data, address):
+		try:
+			command = json.loads(data.decode('utf-8'))
+		except ValueError:
+			return
+		if command.get("Command", None) == None:
+			self.transport.write(bytes(json.dumps({"Error": True}).encode('utf-8')), address)
+
+		else:
+			if command["Command"] == "Marco":
+				reactor.callInThread(self.marcoInThread, address, command)
+
+			elif command["Command"] == "Request-for" or command["Command"] == "Request-For":
+				reactor.callInThread(self.requestForInThread, command, address)
+
+			elif command["Command"] == "Services":
+				reactor.callInThread(self.servicesInThread, command, address)
+			
+			else:
+				self.transport.write(bytes(json.dumps({"Error": True}).encode('utf-8')), address)
+		
