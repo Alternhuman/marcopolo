@@ -28,7 +28,7 @@ INSTALL(TARGETS marcopolo EXPORT marcopolo DESTINATION /usr/lib PERMISSIONS OWNE
 INSTALL(EXPORT marcopolo NAMESPACE marcopolo_ DESTINATION /usr/lib/marcopolo)
 
 #http://stackoverflow.com/a/11097012/2628463
-file(GLOB DEPLOY_FILES_AND_DIRS "${CMAKE_SOURCE_DIR}/include/*.hpp")
+file(GLOB DEPLOY_FILES_AND_DIRS "${CMAKE_SOURCE_DIR}/include/*.h*")
 foreach(ITEM ${DEPLOY_FILES_AND_DIRS})
     IF( IS_DIRECTORY "${ITEM}" )
        LIST( APPEND DIRS_TO_DEPLOY "${ITEM}" )

@@ -8,7 +8,7 @@ int main(int argc, char* argv[]){
 	mp.timeout = 0;
 	mp.group = NULL;
 	node_t * nodes;
-	int r = marco(mp, &nodes, 0, NULL, 0, NULL, 0, 1000, 0);
+	int r = request_for(mp, "marcobootstrap", &nodes, 0, NULL, 0, NULL, 0, 1000, 0);
 
 	for (int i = 0; i < r; ++i)
 	{
