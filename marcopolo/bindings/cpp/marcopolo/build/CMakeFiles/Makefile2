@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/
 CMakeFiles/marcopolo.dir/all:
 	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/depend
 	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles  1 2
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles  1
 	@echo "Built target marcopolo"
 .PHONY : CMakeFiles/marcopolo.dir/all
 
@@ -69,7 +69,7 @@ all: CMakeFiles/marcopolo.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/marcopolo.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/marcopolo.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles 0
 .PHONY : CMakeFiles/marcopolo.dir/rule
@@ -91,10 +91,10 @@ clean: CMakeFiles/marcopolo.dir/clean
 # Target rules for target CMakeFiles/marcopolotest.dir
 
 # All Build rule for target.
-CMakeFiles/marcopolotest.dir/all:
+CMakeFiles/marcopolotest.dir/all: CMakeFiles/marcopolo.dir/all
 	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/depend
 	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles  3 4 5
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles  2
 	@echo "Built target marcopolotest"
 .PHONY : CMakeFiles/marcopolotest.dir/all
 
@@ -104,7 +104,7 @@ all: CMakeFiles/marcopolotest.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/marcopolotest.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles 2
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/marcopolotest.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles 0
 .PHONY : CMakeFiles/marcopolotest.dir/rule

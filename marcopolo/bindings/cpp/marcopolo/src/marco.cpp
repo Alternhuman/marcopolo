@@ -3,10 +3,8 @@
 #include <rapidjson/document.h>
 #include <iconv.h>
 #include <wchar.h>
-//#include <rapidjson/memberiterator.h>
 
 #include "marco.hpp"
-//#include "utf8.h"
 
 #define TYPE_NULL 0
 #define TYPE_FALSE 1
@@ -64,7 +62,8 @@ int Marco::wchar_to_utf8(wchar_t* input, char* output, size_t output_len){
 }
 
 int Marco::utf8_to_wchar(char* input, wchar_t* output, size_t output_len){
-
+	//https://www.tablix.org/~avian/blog/archives/2009/10/more_about_wchar_t/
+	//http://stackoverflow.com/questions/19751382/how-to-use-iconv3-to-convert-wide-string-to-utf-8
 	char* pi = input;
 	char* po = (char*) output;
 	
@@ -90,7 +89,8 @@ int Marco::utf8_to_wchar(char* input, wchar_t* output, size_t output_len){
 }
 
 int Marco::marco(std::vector<Node>& nodes, int max_nodes, std::vector<std::string> exclude, std::map<std::string, std::string> params, int timeout, int retries){
-
+	//TODO:const char* kTypeNames[] =  { "Null", "False", "True", "Object", "Array", "String", "Number" };
+		
 	timeout = timeout > 0 ? timeout : this->timeout;
 	
 	marco_socket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -158,8 +158,8 @@ int Marco::marco(std::vector<Node>& nodes, int max_nodes, std::vector<std::strin
 	char recv_response[2048];
 
     size_t response = recv(marco_socket, recv_response, 2048,0);
-    //printf("%d\n", response);
-    if(response == -1){
+    
+    if(response == (size_t)-1){
     	switch(errno){
     		case EINPROGRESS:
     		case EAGAIN:
@@ -179,17 +179,13 @@ int Marco::marco(std::vector<Node>& nodes, int max_nodes, std::vector<std::strin
     char to_arr_aux[response];
     strncpy(to_arr_aux, recv_response, response);
     
-    //size_t c = this->utf8_to_wchar(to_arr_aux, response, to_arr, response, 0);
-    size_t c = this->utf8_to_wchar(to_arr_aux, to_arr, response);
-	
-	//std::wcout << L"This is the string: " << to_arr << std::endl;
+    if(-1 == this->utf8_to_wchar(to_arr_aux, to_arr, response)){
+    	perror("Error on conversion");
+    }
 	
     std::wstring ws(to_arr);
     
     std::string str(ws.begin(), ws.end());
-    //str = str.substr(0, c);
-
-    //fprintf(stderr, "%s : %d\n", str.c_str(), c);
     
     rapidjson::Document document;
     
@@ -202,12 +198,11 @@ int Marco::marco(std::vector<Node>& nodes, int max_nodes, std::vector<std::strin
 
     std::vector<Node> return_nodes;
 
-    for(int i= 0; i<document.Size();i++){
+    for(unsigned int i= 0; i<document.Size();i++){
     	Node n;
     	n.setAddress(document[i]["Address"].GetString());
 
 		std::map<std::string, parameter> params;
-		const char* kTypeNames[] =  { "Null", "False", "True", "Object", "Array", "String", "Number" };
 		for (rapidjson::Value::ConstMemberIterator itr = document[i]["Params"].MemberBegin(); itr != document[i]["Params"].MemberEnd(); ++itr)
 		{
 		    parameter p;

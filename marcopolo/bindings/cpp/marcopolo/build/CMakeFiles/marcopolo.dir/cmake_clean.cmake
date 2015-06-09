@@ -1,6 +1,5 @@
 FILE(REMOVE_RECURSE
   "CMakeFiles/marcopolo.dir/src/marco.cpp.o"
-  "CMakeFiles/marcopolo.dir/src/utf8.cpp.o"
   "libmarcopolo.pdb"
   "libmarcopolo.so"
 )

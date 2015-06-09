@@ -1,1 +1,1 @@
-/usr/bin/c++  -fPIC    -shared -Wl,-soname,libmarcopolo.so -o libmarcopolo.so CMakeFiles/marcopolo.dir/src/marco.cpp.o CMakeFiles/marcopolo.dir/src/utf8.cpp.o 
+/usr/bin/c++  -fPIC    -shared -Wl,-soname,libmarcopolo.so -o libmarcopolo.so CMakeFiles/marcopolo.dir/src/marco.cpp.o 

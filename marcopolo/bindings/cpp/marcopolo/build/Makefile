@@ -195,7 +195,6 @@ src/marco.o: src/marco.cpp.o
 # target to build an object file
 src/marco.cpp.o:
 	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/marco.cpp.o
-	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/marco.cpp.o
 .PHONY : src/marco.cpp.o
 
 src/marco.i: src/marco.cpp.i
@@ -204,7 +203,6 @@ src/marco.i: src/marco.cpp.i
 # target to preprocess a source file
 src/marco.cpp.i:
 	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/marco.cpp.i
-	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/marco.cpp.i
 .PHONY : src/marco.cpp.i
 
 src/marco.s: src/marco.cpp.s
@@ -213,35 +211,7 @@ src/marco.s: src/marco.cpp.s
 # target to generate assembly for a file
 src/marco.cpp.s:
 	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/marco.cpp.s
-	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/marco.cpp.s
 .PHONY : src/marco.cpp.s
-
-src/utf8.o: src/utf8.cpp.o
-.PHONY : src/utf8.o
-
-# target to build an object file
-src/utf8.cpp.o:
-	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/utf8.cpp.o
-	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/utf8.cpp.o
-.PHONY : src/utf8.cpp.o
-
-src/utf8.i: src/utf8.cpp.i
-.PHONY : src/utf8.i
-
-# target to preprocess a source file
-src/utf8.cpp.i:
-	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/utf8.cpp.i
-	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/utf8.cpp.i
-.PHONY : src/utf8.cpp.i
-
-src/utf8.s: src/utf8.cpp.s
-.PHONY : src/utf8.s
-
-# target to generate assembly for a file
-src/utf8.cpp.s:
-	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/utf8.cpp.s
-	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/utf8.cpp.s
-.PHONY : src/utf8.cpp.s
 
 # Help Target
 help:
@@ -263,9 +233,6 @@ help:
 	@echo "... src/marco.o"
 	@echo "... src/marco.i"
 	@echo "... src/marco.s"
-	@echo "... src/utf8.o"
-	@echo "... src/utf8.i"
-	@echo "... src/utf8.s"
 .PHONY : help
 
 

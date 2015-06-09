@@ -5,36 +5,24 @@ find_package(RapidJSON)
 
 SET( MARCOCPPBINDING_TEST_SRC
   ${CMAKE_SOURCE_DIR}/src/main.cpp
-  ${CMAKE_SOURCE_DIR}/src/marco.cpp
-  # ${CMAKE_SOURCE_DIR}/src/marcobinding.cpp
-  # ${CMAKE_SOURCE_DIR}/src/marcoexception.cpp
-  # ${CMAKE_SOURCE_DIR}/src/JSON.cpp
-  # ${CMAKE_SOURCE_DIR}/src/JSONValue.cpp
-  ${CMAKE_SOURCE_DIR}/src/utf8.cpp
 )
 
 SET( MARCOCPPBINDING_SRC
   ${CMAKE_SOURCE_DIR}/src/marco.cpp
-  # ${CMAKE_SOURCE_DIR}/src/marcobinding.cpp
-  # ${CMAKE_SOURCE_DIR}/src/marcoexception.cpp
-  # ${CMAKE_SOURCE_DIR}/src/JSON.cpp
-  # ${CMAKE_SOURCE_DIR}/src/JSONValue.cpp
-  ${CMAKE_SOURCE_DIR}/src/utf8.cpp
 )
 
 INCLUDE_DIRECTORIES( "${CMAKE_SOURCE_DIR}/include" )
 INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
 
-#ADD_EXECUTABLE( marcobindingtest ${MARCOCPPBINDING_TEST_SRC})
-#TARGET_LINK_LIBRARIES( marcobindingtest ${RAPIDJSON_LIBRARIES})
 
 SET(CMAKE_EXE_LINKER_FLAGS "-Wall -Wno-write-strings")
-#add_definitions(${CMAKE_EXE_LINKER_FLAGS})
+ADD_DEFINITIONS(${CMAKE_EXE_LINKER_FLAGS})
 
 ADD_LIBRARY( marcopolo SHARED ${MARCOCPPBINDING_SRC})
 TARGET_LINK_LIBRARIES( marcopolo ${RAPIDJSON_LIBRARIES})
 
 ADD_EXECUTABLE(marcopolotest ${MARCOCPPBINDING_TEST_SRC})
+TARGET_LINK_LIBRARIES(marcopolotest marcopolo)
 
 INSTALL(TARGETS marcopolo EXPORT marcopolo DESTINATION /usr/lib PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 INSTALL(EXPORT marcopolo NAMESPACE marcopolo_ DESTINATION /usr/lib/marcopolo)

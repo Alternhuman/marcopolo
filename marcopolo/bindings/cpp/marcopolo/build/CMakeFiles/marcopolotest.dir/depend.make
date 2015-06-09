@@ -5,10 +5,3 @@ CMakeFiles/marcopolotest.dir/src/main.cpp.o: ../include/marco.hpp
 CMakeFiles/marcopolotest.dir/src/main.cpp.o: ../include/node.hpp
 CMakeFiles/marcopolotest.dir/src/main.cpp.o: ../src/main.cpp
 
-CMakeFiles/marcopolotest.dir/src/marco.cpp.o: ../include/marco.hpp
-CMakeFiles/marcopolotest.dir/src/marco.cpp.o: ../include/node.hpp
-CMakeFiles/marcopolotest.dir/src/marco.cpp.o: ../src/marco.cpp
-
-CMakeFiles/marcopolotest.dir/src/utf8.cpp.o: ../include/utf8.h
-CMakeFiles/marcopolotest.dir/src/utf8.cpp.o: ../src/utf8.cpp
-

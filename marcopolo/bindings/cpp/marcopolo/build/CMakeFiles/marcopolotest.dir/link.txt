@@ -1,1 +1,1 @@
-/usr/bin/c++     -Wall -Wno-write-strings CMakeFiles/marcopolotest.dir/src/main.cpp.o CMakeFiles/marcopolotest.dir/src/marco.cpp.o CMakeFiles/marcopolotest.dir/src/utf8.cpp.o  -o marcopolotest -rdynamic 
+/usr/bin/c++     -Wall -Wno-write-strings CMakeFiles/marcopolotest.dir/src/main.cpp.o  -o marcopolotest -rdynamic libmarcopolo.so -Wl,-rpath,/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build 
