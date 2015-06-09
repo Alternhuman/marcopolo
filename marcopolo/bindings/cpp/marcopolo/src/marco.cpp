@@ -5,6 +5,7 @@
 #include <wchar.h>
 
 #include "marco.hpp"
+#include "marco.h"
 
 #define TYPE_NULL 0
 #define TYPE_FALSE 1
@@ -15,6 +16,87 @@
 #define TYPE_NUMBER 6
 
 #define UTF8_SEQUENCE_MAXLEN 6
+
+
+int marco(marco_t mp, node_t** nodes, int max_nodes, char* exclude[], int exclude_len, parameter_t* params, int params_len, int timeout, int retries){
+
+	Marco marco;
+	if(mp.group != NULL)
+		marco = Marco(mp.timeout, std::string(mp.group));
+	else
+		marco = Marco(mp.timeout);
+
+	std::vector<Node> nodes_v;
+
+	if(exclude_len < 0){
+		perror("Wrong exclude_len value");
+		return -1;
+	}
+
+	std::vector<std::string> exclude_v;
+	if(exclude != NULL){
+		for (int i = 0; i < exclude_len; i++)
+		{
+			exclude_v.push_back(std::string(exclude[i]));
+		}
+	}
+
+	std::map<std::string, parameter> params_m;
+	if(params != NULL){
+		for (int i = 0; i < params_len; i++)
+		{
+			parameter p;
+			p.type = params[i].type;
+			p.value = std::string(params[i].value);
+			params_m[params[i].name] = p;
+		}
+	}
+
+	int retval = marco.marco(nodes_v, max_nodes, exclude_v, params_m, timeout, retries);
+	
+	if(retval <= 0){
+		return retval;
+	}
+
+	*nodes = (node_t*)malloc(retval * sizeof(node_t));
+
+	if(nodes == NULL){
+		return -1;
+	}
+
+	/*fprintf(stderr, "%s\n", "Hi");
+	(*nodes)[0].params;
+	fprintf(stderr, "%s\n", "Hi");*/
+	typedef std::map<std::string, parameter>::iterator it_type;
+
+	for (int i = 0; i < retval; i++)
+	{
+		
+		std::map<std::string, parameter> parameters =  nodes_v[i].getParams();
+		
+		int size_arr = (int)parameters.size();
+		
+		(*nodes)[i].params = (parameter_t*)malloc(size_arr * sizeof(parameter_t));
+		
+		(*nodes)[i].address = (char*)malloc(nodes_v[i].getAddress().length() * sizeof(char));
+		strcpy((*nodes)[i].address, nodes_v[i].getAddress().c_str());
+		
+		for(it_type iterator = parameters.begin(); iterator != parameters.end(); iterator++) {
+		    int j = std::distance(parameters.begin(), iterator);
+		    strcpy((*nodes)[i].params[j].name, iterator->first.c_str());
+		    (*nodes)[i].params[j].type = iterator->second.type;
+		    (*nodes)[i].params[j].value = (char*)malloc(iterator->second.value.length() * sizeof(char));
+		    strcpy((*nodes)[i].params[j].value, iterator->second.value.c_str());
+		}
+		
+	}
+	return retval;
+}
+
+int request_for(marco_t mp, char* service, node_t* nodes, int max_nodes, node_t* exclude, parameter_t* params, int timeout, int retries){
+	return 0;
+}
+
 
 Marco::Marco(int timeout, std::string group){
 	this->timeout = timeout;
@@ -88,7 +170,7 @@ int Marco::utf8_to_wchar(char* input, wchar_t* output, size_t output_len){
 	return ret_count;
 }
 
-int Marco::marco(std::vector<Node>& nodes, int max_nodes, std::vector<std::string> exclude, std::map<std::string, std::string> params, int timeout, int retries){
+int Marco::marco(std::vector<Node>& nodes, int max_nodes, std::vector<std::string> exclude, std::map<std::string, parameter> params, int timeout, int retries){
 	//TODO:const char* kTypeNames[] =  { "Null", "False", "True", "Object", "Array", "String", "Number" };
 		
 	timeout = timeout > 0 ? timeout : this->timeout;

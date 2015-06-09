@@ -24,7 +24,7 @@ class Marco{
 public:
 	Marco(int timeout=2000, std::string group=STD_GROUP);
 	~Marco();
-	int marco(std::vector<Node>& nodes, int max_nodes=0, std::vector<std::string> exclude=std::vector<std::string>(), std::map<std::string, std::string> params=std::map<std::string, std::string>(), int timeout=0, int retries=0);
+	int marco(std::vector<Node>& nodes, int max_nodes=0, std::vector<std::string> exclude=std::vector<std::string>(), std::map<std::string, parameter> params=std::map<std::string, parameter>(), int timeout=0, int retries=0);
 	int request_for(std::vector<Node>&nodes, std::string service, int max_nodes=0, std::vector<std::string> exclude=std::vector<std::string>(), std::map<std::string, std::string> params=std::map<std::string, std::string>(), int timeout=0, int retries = 0);
 
 private:

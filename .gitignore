@@ -12,3 +12,4 @@ doc/build/*
 _trial_temp/*
 marcopolo/tests/_trial_temp/*
 marcopolo/bindings/cpp/marcobinding/build/*
+marcopolo/bindings/cpp/marcopolo/build/*
