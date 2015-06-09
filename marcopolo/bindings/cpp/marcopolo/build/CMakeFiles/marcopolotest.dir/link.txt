@@ -1,1 +1,0 @@
-/usr/bin/c++     -Wall -Wno-write-strings CMakeFiles/marcopolotest.dir/src/main.cpp.o  -o marcopolotest -rdynamic libmarcopolo.so -Wl,-rpath,/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build 

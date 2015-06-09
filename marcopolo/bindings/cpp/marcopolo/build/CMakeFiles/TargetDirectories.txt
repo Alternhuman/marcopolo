@@ -1,2 +1,0 @@
-/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles/marcopolo.dir
-/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles/marcopolotest.dir
