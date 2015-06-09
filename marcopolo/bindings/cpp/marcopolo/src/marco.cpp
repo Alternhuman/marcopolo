@@ -63,6 +63,32 @@ int Marco::wchar_to_utf8(wchar_t* input, char* output, size_t output_len){
 	return 0;
 }
 
+int Marco::utf8_to_wchar(char* input, wchar_t* output, size_t output_len){
+
+	char* pi = input;
+	char* po = (char*) output;
+	
+	size_t ni = output_len;
+	size_t no = strlen(input) * sizeof(wchar_t);
+
+	iconv_t cd = iconv_open("WCHAR_T", "UTF-8");
+	
+	int iter = 0;
+	int ret_count = 0;
+	
+	const int max_iter = 100000;
+	
+	while(ni > 0 && iter++ < max_iter){ 
+		ret_count += iconv(cd, &pi, &ni, &po, &no);
+	}
+	
+	iconv_close(cd);
+
+	*po = 0;
+
+	return ret_count;
+}
+
 int Marco::marco(std::vector<Node>& nodes, int max_nodes, std::vector<std::string> exclude, std::map<std::string, std::string> params, int timeout, int retries){
 
 	timeout = timeout > 0 ? timeout : this->timeout;
@@ -128,14 +154,11 @@ int Marco::marco(std::vector<Node>& nodes, int max_nodes, std::vector<std::strin
     	perror("Error on sending");
     	return -1;
     }
-
-    return 0;
-	//fprintf(stderr, "%s\n", "Here");
     
 	char recv_response[2048];
 
     size_t response = recv(marco_socket, recv_response, 2048,0);
-    printf("%d\n", response);
+    //printf("%d\n", response);
     if(response == -1){
     	switch(errno){
     		case EINPROGRESS:
@@ -151,16 +174,22 @@ int Marco::marco(std::vector<Node>& nodes, int max_nodes, std::vector<std::strin
     }
     
     
+    
     wchar_t to_arr[response];
     char to_arr_aux[response];
     strncpy(to_arr_aux, recv_response, response);
     
-    size_t c = 0;//utf8_to_wchar(to_arr_aux, response, to_arr, response, 0);
-    
+    //size_t c = this->utf8_to_wchar(to_arr_aux, response, to_arr, response, 0);
+    size_t c = this->utf8_to_wchar(to_arr_aux, to_arr, response);
+	
+	//std::wcout << L"This is the string: " << to_arr << std::endl;
+	
     std::wstring ws(to_arr);
     
     std::string str(ws.begin(), ws.end());
-    str = str.substr(0, c);
+    //str = str.substr(0, c);
+
+    //fprintf(stderr, "%s : %d\n", str.c_str(), c);
     
     rapidjson::Document document;
     
@@ -168,7 +197,7 @@ int Marco::marco(std::vector<Node>& nodes, int max_nodes, std::vector<std::strin
     	perror("Internal parsing error");
     	return -1;
 	}
-
+	
     assert(document.IsArray());
 
     std::vector<Node> return_nodes;
