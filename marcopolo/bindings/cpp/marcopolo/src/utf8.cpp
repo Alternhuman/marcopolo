@@ -14,8 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 #include <sys/types.h>
-
+#include <stdio.h>
 #include <wchar.h>
+#include <arpa/inet.h>
 
 #include "utf8.h"
 
@@ -28,11 +29,10 @@
 
 #define _BOM	0xfeff
 
-static int __wchar_forbitten(wchar_t sym);
-static int __utf8_forbitten(u_char octet);
 
-static int
-__wchar_forbitten(wchar_t sym)
+
+int
+wchar_forbitten(wchar_t sym)
 {
 
 	/* Surrogate pairs */
@@ -42,8 +42,8 @@ __wchar_forbitten(wchar_t sym)
 	return (0);
 }
 
-static int
-__utf8_forbitten(u_char octet)
+int
+utf8_forbitten(u_char octet)
 {
 
 	switch (octet) {
@@ -100,7 +100,7 @@ utf8_to_wchar(const char *in, size_t insize, wchar_t *out, size_t outsize,
 	wlim = out + outsize;
 
 	for (; p < lim; p += n) {
-		if (__utf8_forbitten(*p) != 0 &&
+		if (utf8_forbitten(*p) != 0 &&
 		    (flags & UTF8_IGNORE_ERROR) == 0)
 			return (0);
 
@@ -172,7 +172,7 @@ utf8_to_wchar(const char *in, size_t insize, wchar_t *out, size_t outsize,
 		}
 		*out |= high << n_bits;
 
-		if (__wchar_forbitten(*out) != 0) {
+		if (wchar_forbitten(*out) != 0) {
 			if ((flags & UTF8_IGNORE_ERROR) == 0)
 				return (0);	/* forbitten character */
 			else {
@@ -219,7 +219,7 @@ wchar_to_utf8(const wchar_t *in, size_t insize, char *out, size_t outsize,
 	size_t total, n;
 
 	if (in == NULL || insize == 0 || (outsize == 0 && out != NULL))
-		return (0);
+		return (-1);
 
 	w = (wchar_t *)in;
 	wlim = w + insize;
@@ -227,9 +227,9 @@ wchar_to_utf8(const wchar_t *in, size_t insize, char *out, size_t outsize,
 	lim = p + outsize;
 	total = 0;
 	for (; w < wlim; w++) {
-		if (__wchar_forbitten(*w) != 0) {
+		if (wchar_forbitten(*w) != 0) {
 			if ((flags & UTF8_IGNORE_ERROR) == 0)
-				return (0);
+				return (-2);
 			else
 				continue;
 		}
@@ -238,8 +238,9 @@ wchar_to_utf8(const wchar_t *in, size_t insize, char *out, size_t outsize,
 			continue;
 
 		if (*w < 0) {
-			if ((flags & UTF8_IGNORE_ERROR) == 0)
-				return (0);
+			if ((flags & UTF8_IGNORE_ERROR) == 0){
+				return (-3);
+			}
 			continue;
 		} else if (*w <= 0x0000007f)
 			n = 1;
@@ -260,7 +261,7 @@ wchar_to_utf8(const wchar_t *in, size_t insize, char *out, size_t outsize,
 			continue;
 
 		if (lim - p <= n - 1)
-			return (0);		/* no space left */
+			return (-4);		/* no space left */
 
 		/* make it work under different endians */
 		ch = htonl(*w);

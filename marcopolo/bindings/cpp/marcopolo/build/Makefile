@@ -216,32 +216,32 @@ src/marco.cpp.s:
 	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/marco.cpp.s
 .PHONY : src/marco.cpp.s
 
-src/utf8.o: src/utf8.c.o
+src/utf8.o: src/utf8.cpp.o
 .PHONY : src/utf8.o
 
 # target to build an object file
-src/utf8.c.o:
-	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/utf8.c.o
-	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/utf8.c.o
-.PHONY : src/utf8.c.o
+src/utf8.cpp.o:
+	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/utf8.cpp.o
+	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/utf8.cpp.o
+.PHONY : src/utf8.cpp.o
 
-src/utf8.i: src/utf8.c.i
+src/utf8.i: src/utf8.cpp.i
 .PHONY : src/utf8.i
 
 # target to preprocess a source file
-src/utf8.c.i:
-	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/utf8.c.i
-	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/utf8.c.i
-.PHONY : src/utf8.c.i
+src/utf8.cpp.i:
+	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/utf8.cpp.i
+	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/utf8.cpp.i
+.PHONY : src/utf8.cpp.i
 
-src/utf8.s: src/utf8.c.s
+src/utf8.s: src/utf8.cpp.s
 .PHONY : src/utf8.s
 
 # target to generate assembly for a file
-src/utf8.c.s:
-	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/utf8.c.s
-	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/utf8.c.s
-.PHONY : src/utf8.c.s
+src/utf8.cpp.s:
+	$(MAKE) -f CMakeFiles/marcopolo.dir/build.make CMakeFiles/marcopolo.dir/src/utf8.cpp.s
+	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/utf8.cpp.s
+.PHONY : src/utf8.cpp.s
 
 # Help Target
 help:

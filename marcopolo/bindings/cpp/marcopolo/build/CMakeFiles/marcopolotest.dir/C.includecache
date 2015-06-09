@@ -6,3 +6,19 @@
 
 #IncludeRegexTransform: 
 
+../include/utf8.h
+sys/types.h
+-
+wchar.h
+-
+
+/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/utf8.c
+sys/types.h
+-
+stdio.h
+-
+wchar.h
+-
+utf8.h
+/home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/utf8.h
+

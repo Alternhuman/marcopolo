@@ -95,41 +95,41 @@ CMakeFiles/marcopolotest.dir/src/marco.cpp.o.provides: CMakeFiles/marcopolotest.
 
 CMakeFiles/marcopolotest.dir/src/marco.cpp.o.provides.build: CMakeFiles/marcopolotest.dir/src/marco.cpp.o
 
-CMakeFiles/marcopolotest.dir/src/utf8.c.o: CMakeFiles/marcopolotest.dir/flags.make
-CMakeFiles/marcopolotest.dir/src/utf8.c.o: ../src/utf8.c
+CMakeFiles/marcopolotest.dir/src/utf8.cpp.o: CMakeFiles/marcopolotest.dir/flags.make
+CMakeFiles/marcopolotest.dir/src/utf8.cpp.o: ../src/utf8.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/build/CMakeFiles $(CMAKE_PROGRESS_3)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building C object CMakeFiles/marcopolotest.dir/src/utf8.c.o"
-	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -o CMakeFiles/marcopolotest.dir/src/utf8.c.o   -c /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/utf8.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/marcopolotest.dir/src/utf8.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/marcopolotest.dir/src/utf8.cpp.o -c /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/utf8.cpp
 
-CMakeFiles/marcopolotest.dir/src/utf8.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/marcopolotest.dir/src/utf8.c.i"
-	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -E /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/utf8.c > CMakeFiles/marcopolotest.dir/src/utf8.c.i
+CMakeFiles/marcopolotest.dir/src/utf8.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/marcopolotest.dir/src/utf8.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/utf8.cpp > CMakeFiles/marcopolotest.dir/src/utf8.cpp.i
 
-CMakeFiles/marcopolotest.dir/src/utf8.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/marcopolotest.dir/src/utf8.c.s"
-	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -S /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/utf8.c -o CMakeFiles/marcopolotest.dir/src/utf8.c.s
+CMakeFiles/marcopolotest.dir/src/utf8.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/marcopolotest.dir/src/utf8.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/martin/TFG/workspaces/discovery/marcopolo/bindings/cpp/marcopolo/src/utf8.cpp -o CMakeFiles/marcopolotest.dir/src/utf8.cpp.s
 
-CMakeFiles/marcopolotest.dir/src/utf8.c.o.requires:
-.PHONY : CMakeFiles/marcopolotest.dir/src/utf8.c.o.requires
+CMakeFiles/marcopolotest.dir/src/utf8.cpp.o.requires:
+.PHONY : CMakeFiles/marcopolotest.dir/src/utf8.cpp.o.requires
 
-CMakeFiles/marcopolotest.dir/src/utf8.c.o.provides: CMakeFiles/marcopolotest.dir/src/utf8.c.o.requires
-	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/utf8.c.o.provides.build
-.PHONY : CMakeFiles/marcopolotest.dir/src/utf8.c.o.provides
+CMakeFiles/marcopolotest.dir/src/utf8.cpp.o.provides: CMakeFiles/marcopolotest.dir/src/utf8.cpp.o.requires
+	$(MAKE) -f CMakeFiles/marcopolotest.dir/build.make CMakeFiles/marcopolotest.dir/src/utf8.cpp.o.provides.build
+.PHONY : CMakeFiles/marcopolotest.dir/src/utf8.cpp.o.provides
 
-CMakeFiles/marcopolotest.dir/src/utf8.c.o.provides.build: CMakeFiles/marcopolotest.dir/src/utf8.c.o
+CMakeFiles/marcopolotest.dir/src/utf8.cpp.o.provides.build: CMakeFiles/marcopolotest.dir/src/utf8.cpp.o
 
 # Object files for target marcopolotest
 marcopolotest_OBJECTS = \
 "CMakeFiles/marcopolotest.dir/src/main.cpp.o" \
 "CMakeFiles/marcopolotest.dir/src/marco.cpp.o" \
-"CMakeFiles/marcopolotest.dir/src/utf8.c.o"
+"CMakeFiles/marcopolotest.dir/src/utf8.cpp.o"
 
 # External object files for target marcopolotest
 marcopolotest_EXTERNAL_OBJECTS =
 
 marcopolotest: CMakeFiles/marcopolotest.dir/src/main.cpp.o
 marcopolotest: CMakeFiles/marcopolotest.dir/src/marco.cpp.o
-marcopolotest: CMakeFiles/marcopolotest.dir/src/utf8.c.o
+marcopolotest: CMakeFiles/marcopolotest.dir/src/utf8.cpp.o
 marcopolotest: CMakeFiles/marcopolotest.dir/build.make
 marcopolotest: CMakeFiles/marcopolotest.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable marcopolotest"
@@ -141,7 +141,7 @@ CMakeFiles/marcopolotest.dir/build: marcopolotest
 
 CMakeFiles/marcopolotest.dir/requires: CMakeFiles/marcopolotest.dir/src/main.cpp.o.requires
 CMakeFiles/marcopolotest.dir/requires: CMakeFiles/marcopolotest.dir/src/marco.cpp.o.requires
-CMakeFiles/marcopolotest.dir/requires: CMakeFiles/marcopolotest.dir/src/utf8.c.o.requires
+CMakeFiles/marcopolotest.dir/requires: CMakeFiles/marcopolotest.dir/src/utf8.cpp.o.requires
 .PHONY : CMakeFiles/marcopolotest.dir/requires
 
 CMakeFiles/marcopolotest.dir/clean:

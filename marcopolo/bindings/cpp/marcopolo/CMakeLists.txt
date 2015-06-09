@@ -10,7 +10,7 @@ SET( MARCOCPPBINDING_TEST_SRC
   # ${CMAKE_SOURCE_DIR}/src/marcoexception.cpp
   # ${CMAKE_SOURCE_DIR}/src/JSON.cpp
   # ${CMAKE_SOURCE_DIR}/src/JSONValue.cpp
-  ${CMAKE_SOURCE_DIR}/src/utf8.c
+  ${CMAKE_SOURCE_DIR}/src/utf8.cpp
 )
 
 SET( MARCOCPPBINDING_SRC
@@ -19,7 +19,7 @@ SET( MARCOCPPBINDING_SRC
   # ${CMAKE_SOURCE_DIR}/src/marcoexception.cpp
   # ${CMAKE_SOURCE_DIR}/src/JSON.cpp
   # ${CMAKE_SOURCE_DIR}/src/JSONValue.cpp
-  ${CMAKE_SOURCE_DIR}/src/utf8.c
+  ${CMAKE_SOURCE_DIR}/src/utf8.cpp
 )
 
 INCLUDE_DIRECTORIES( "${CMAKE_SOURCE_DIR}/include" )
