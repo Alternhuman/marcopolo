@@ -1,3 +1,6 @@
+#ifndef _MARCO_H
+#define _MARCO_H
+
 typedef struct marco_t{
 	int timeout;
 	char* group;
@@ -18,3 +21,5 @@ extern "C"{
 	int marco(marco_t mp, node_t** nodes, int max_nodes, char* exclude[], int exclude_len, parameter_t* params, int params_len, int timeout, int retries);
 	int request_for(marco_t mp, char* service, node_t** nodes, int max_nodes, char* exclude[], int exclude_len, parameter_t* params, int params_len, int timeout, int retries);
 }
+
+#endif
