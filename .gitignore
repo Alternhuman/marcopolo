@@ -57,3 +57,7 @@ bindings/java/marcobinding/.target
 bindings/java/marcobinding/.texlipse
 bindings/java/marcobinding/RemoteSystemsTempFiles
 
+#Python packates
+
+bindings/python/marcopolobindings.egg-info
+bindings/python/dist

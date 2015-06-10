@@ -1,7 +1,7 @@
 import json, socket, sys
 
 #sys.path.append('/opt/marcopolo/')
-from bindings.marco_conf.utils import Node
+from marcopolo.bindings.marco_conf.utils import Node
 
 TIMEOUT = 1000
 MULTICAST_GROUP = '224.0.0.112'
