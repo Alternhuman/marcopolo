@@ -1,1 +1,0 @@
-Determinación de los nodos pertenecientes a una red mediante un token secreto
