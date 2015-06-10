@@ -20,7 +20,7 @@ sys.path.append('/opt/')
 from marcopolo.marco_conf import conf
 
 from marcopolo.polo.polobinding import PoloBinding
-from polo import Polo
+from marcopolo.polo.polo import Polo
 __author__ = 'Diego Martín'
 
 offered_services = {}

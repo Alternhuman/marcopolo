@@ -136,23 +136,24 @@ class Marco(object):
         """
         timeout = timeout if timeout else self.timeout
         error = None
+        rvalue = None
         try:
             #if sys.version_info[0] > 2:
+            # rvalue = self.marco_socket.sendto(bytes(json.dumps({"Command": "Request-for", 
+            #                                          "Params":service, 
+            #                                          "node":node, 
+            #                                          "max_nodes":max_nodes, 
+            #                                          "exclude":exclude, 
+            #                                          "params":params, 
+            #                                          "timeout":timeout}), 'utf-8'), ('127.0.1.1', 1338))
+        #    else:
             rvalue = self.marco_socket.sendto(bytes(json.dumps({"Command": "Request-for", 
-                                                     "Params":service, 
-                                                     "node":node, 
-                                                     "max_nodes":max_nodes, 
-                                                     "exclude":exclude, 
-                                                     "params":params, 
-                                                     "timeout":timeout}), 'utf-8'), ('127.0.1.1', 1338))
-        #     else:
-        #         self.marco_socket.sendto(bytes(json.dumps({"Command": "Request-for", 
-#                                                            "Params":service, 
-#                                                            "node":node, 
-#                                                            "max_nodes":max_nodes, 
-#                                                            "exclude":exclude, 
-#                                                            "params":params, 
-#                                                            "timeout":timeout}).encode('utf-8')), ('127.0.1.1', 1338))
+                                                           "Params":service, 
+                                                           "node":node, 
+                                                           "max_nodes":max_nodes, 
+                                                           "exclude":exclude, 
+                                                           "params":params, 
+                                                           "timeout":timeout}).encode('utf-8')), ('127.0.1.1', 1338))
         except ValueError as e:
             error = True
         if error:
