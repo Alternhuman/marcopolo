@@ -20,7 +20,7 @@ import shlex
 
 root_folder = os.path.join("../", os.path.realpath(__file__))
 src_folder = os.path.join(root_folder, "marcopolo")
-sys.path.append("/opt/marcopolo/")
+#sys.path.append("/opt/marcopolo/")
 #sys.path.append(src_folder)
 
 #from bindings import polo, marco
