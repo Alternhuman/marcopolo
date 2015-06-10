@@ -1,0 +1,4 @@
+[console_scripts]
+marcodiscover = marcopolo.utils.marcodiscover:main
+marcoinstallkey = marcopolo.utils.marcoinstallkey:main
+

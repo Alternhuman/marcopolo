@@ -179,7 +179,7 @@ class Marco(object):
             raise MarcoInternalError("Internal parsing error")
         
         nodes = set()
-        for node_arr in nodes_arr:
+        for node in nodes_arr:
             node = Node()
             node.address = node_arr["Address"]
             node.params = node_arr["Params"]

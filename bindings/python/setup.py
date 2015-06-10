@@ -15,16 +15,6 @@ from distutils.command.install import install
 import os
 
 here = path.abspath(path.dirname(__file__))
-class MyInstall(install):
-    #http://stackoverflow.com/a/30241551/2628463
-    # Calls the default run command, then deletes the build area
-    # (equivalent to "setup clean --all").
-    def run(self):
-        install.run(self)
-        # c = clean(self.distribution)
-        # c.all = True
-        # c.finalize_options()
-        # c.run()
 
 if __name__ == "__main__":
     
@@ -34,7 +24,7 @@ if __name__ == "__main__":
 
     setup(
         name='marcopolobindings',
-        cmdclass={'install': MyInstall},
+        #cmdclass={'install': MyInstall},
         version='0.0.1',
 
         description='A python binding for MarcoPolo',
@@ -65,17 +55,17 @@ if __name__ == "__main__":
 
         keywords="marcopolo discovery binding",
 
-        packages=['marcopolo.bindings.marco', 'marcopolo.bindings.polo', 'marcopolo.bindings.marco_conf'],
-
+        #packages=['marcopolo.bindings.marco', 'marcopolo.bindings.polo', 'marcopolo.bindings.marco_conf'],
+        packages=find_packages(),
         #install_requires=[''],
         #package_data={
         #    'sample': ['package_data.dat'],
         #},
         #data_files=[('my_data', ['data/data_file'])],
 
-        entry_points={
-            'console_scripts': [
-                'marcopolobindings=marcopolobindings:main',
-            ],
-        },
+        # entry_points={
+        #     'console_scripts': [
+        #         'marcopolobindings=marcopolobindings:main',
+        #     ],
+        # },
     ) 

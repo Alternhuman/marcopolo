@@ -1,0 +1,18 @@
+Metadata-Version: 1.1
+Name: marcoutils
+Version: 0.0.1
+Summary: A set of useful utilities for MarcoPolo
+Home-page: marcopolo.martinarroyo.net
+Author: Diego Martín
+Author-email: martinarroyo@usal.es
+License: MIT
+Description: UNKNOWN
+Keywords: marcopolo utilities
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: Operating System :: Linux
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.4

@@ -1,0 +1,15 @@
+MANIFEST.in
+README.rst
+setup.cfg
+setup.py
+marcopolo/__init__.py
+marcopolo/utils/__init__.py
+marcopolo/utils/marcodiscover.py
+marcopolo/utils/marcoinstallkey.py
+marcoutils.egg-info/PKG-INFO
+marcoutils.egg-info/SOURCES.txt
+marcoutils.egg-info/dependency_links.txt
+marcoutils.egg-info/entry_points.txt
+marcoutils.egg-info/not-zip-safe
+marcoutils.egg-info/requires.txt
+marcoutils.egg-info/top_level.txt
