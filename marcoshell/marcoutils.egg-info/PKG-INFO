@@ -16,3 +16,4 @@ Classifier: Operating System :: Linux
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 2.7
 Classifier: Programming Language :: Python :: 3.4
+Provides: marcopolo.utils

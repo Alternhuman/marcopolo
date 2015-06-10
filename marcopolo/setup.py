@@ -62,7 +62,8 @@ if __name__ == "__main__":
 
     setup(
         name='marcopolo',
-
+        namespace_packages=['marcopolo'],
+        provides=["marcopolo.marco", "marcopolo.polo"],
         version='0.0.1',
 
         description='The reference implementation for MarcoPolo',

@@ -11,7 +11,7 @@ from marcopolo.marco_conf.utils import Node
 
 TIMEOUT = 4000
 
-def main(args):
+def main(args=None):
     parser = argparse.ArgumentParser(description="Discovery of MarcoPolo nodes in the subnet")
 
     parser.add_argument('-d', '--discover', dest="address", type=str, help="Multicast group where to discover", nargs='?', default="224.0.0.1")

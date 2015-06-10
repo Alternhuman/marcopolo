@@ -20,6 +20,8 @@ if __name__ == "__main__":
 
     setup(
         name="marcoutils",
+        namespace_packages=['marcopolo'],
+        provides=['marcopolo.utils'],
         version="0.0.1",
         description="A set of useful utilities for MarcoPolo",
 

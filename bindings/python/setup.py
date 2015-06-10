@@ -25,6 +25,8 @@ if __name__ == "__main__":
     setup(
         name='marcopolobindings',
         #cmdclass={'install': MyInstall},
+        namespace_packages=['marcopolo'],
+        provides=["marcopolo.bindings"],
         version='0.0.1',
 
         description='A python binding for MarcoPolo',
