@@ -101,10 +101,7 @@ if __name__ == "__main__":
 	signal.signal(signal.SIGHUP, signal.SIG_IGN)
 	signal.signal(signal.SIGUSR1, reload_services)
 	
-	#logging.basicConfig(filename=conf.LOGGING_DIR+'polod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
-	logging.basicConfig(stream=sys.stdout, level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
-	
-	
+	logging.basicConfig(filename=conf.LOGGING_DIR+'polod.log', level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
 
 	reactor.addSystemEventTrigger('before', 'shutdown', graceful_shutdown)
 	reactor.callWhenRunning(start_multicast)
