@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-The MarcoPolo bindings
+The MarcoPolo reference implementation
 """
 
 from setuptools import setup, find_packages
@@ -14,7 +14,8 @@ from distutils.command.clean import clean
 from distutils.command.install import install
 import os
 
-here = path.abspath(path.dirname(__file__))
+
+
 class MyInstall(install):
     #http://stackoverflow.com/a/30241551/2628463
     # Calls the default run command, then deletes the build area
@@ -28,20 +29,30 @@ class MyInstall(install):
 
 if __name__ == "__main__":
     
-
+    here = path.abspath(path.dirname(__file__))
     with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
         long_description = f.read()
 
+    
+    
+    data_files = ([('/etc/marcopolo/marco', ["etc/marcopolo/marco/marco.conf"]),
+                 ('/etc/marcopolo/polo', ["etc/marcopolo/polo/polo.conf"]
+                                         + [os.path.join("etc/marcopolo/polo/services/", d) for d in os.listdir("etc/marcopolo/polo/services/")]),
+                 ('/etc/marcopolo', ["etc/marcopolo/marcopolo.conf"]),
+                 ('/etc/init.d/', ["daemon/systemv/marco",
+                                  "daemon/systemv/polo"])
+                 ])
+
     setup(
-        name='marcopolobindings',
+        name='marcopolo',
         cmdclass={'install': MyInstall},
         version='0.0.1',
 
-        description='A python binding for MarcoPolo',
+        description='The reference implementation for MarcoPolo',
 
         long_description=long_description,
 
-        url='',
+        url='marcopolo.martinarroyo.net',
 
         author='Diego Martín',
 
@@ -65,13 +76,14 @@ if __name__ == "__main__":
 
         keywords="marcopolo discovery binding",
 
-        packages=['marcopolo.bindings.marco', 'marcopolo.bindings.polo', 'marcopolo.bindings.marco_conf'],
+        packages=['marcopolo.marco', 'marcopolo.polo', 'marcopolo.marco_conf'],
 
-        #install_requires=[''],
-        #package_data={
-        #    'sample': ['package_data.dat'],
-        #},
-        #data_files=[('my_data', ['data/data_file'])],
+        install_requires=[
+            'Twisted==15.1.0',
+            'zope.interface==4.1.2'
+        ],
+
+        data_files=data_files,
 
         entry_points={
             'console_scripts': [

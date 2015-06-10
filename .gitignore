@@ -61,3 +61,6 @@ bindings/java/marcobinding/RemoteSystemsTempFiles
 
 bindings/python/marcopolobindings.egg-info
 bindings/python/dist
+bindings/python/build
+build
+marcopolo.egg*

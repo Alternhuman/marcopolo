@@ -6,10 +6,10 @@ from twisted.internet import reactor, defer
 import sys, logging, os, signal #time, string were necessary
 from os import path, makedirs, listdir
 
-sys.path.append('/opt/marcopolo/')
-from marco_conf import utils, conf
+#sys.path.append('/opt/marcopolo/')
+from marcopolo.marco_conf import utils, conf
 
-from marcobinding import MarcoBinding
+from marcopolo.marco.marcobinding import MarcoBinding
 
 @defer.inlineCallbacks
 def graceful_shutdown():

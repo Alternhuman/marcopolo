@@ -12,8 +12,8 @@ import re
 
 import socket
 
-sys.path.append('/opt/marcopolo')
-from marco_conf import conf
+sys.path.append('/opt/')
+from marcopolo.marco_conf import conf
 
 def sanitize_path(path_str):
 	"""

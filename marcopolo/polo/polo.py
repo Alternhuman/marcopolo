@@ -12,8 +12,9 @@ import time
 import pwd, grp
 import re
 
-sys.path.append('/opt/marcopolo')
-from marco_conf import conf
+#sys.path.append('/opt/marcopolo')
+sys.path.append('/opt/')
+from marcopolo.marco_conf import conf
 
 
 class Polo(DatagramProtocol):

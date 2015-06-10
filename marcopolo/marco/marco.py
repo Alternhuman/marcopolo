@@ -2,8 +2,8 @@ import socket, sys, json, logging, os
 from os import path
 from copy import copy
 
-sys.path.append('/opt/marcopolo/')
-from marco_conf import utils, conf
+#sys.path.append('/opt/marcopolo/')
+from marcopolo.marco_conf import utils, conf
 
 class MarcoException(Exception):
 	pass

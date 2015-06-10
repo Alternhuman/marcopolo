@@ -5,8 +5,8 @@ import argparse, socket, json
 from sys import exit
 import sys
 
-sys.path.append('/opt/marcopolo/')
-from bindings.marco import marco
+#sys.path.append('/opt/marcopolo/')
+from marcopolo.bindings.marco import marco
 from marco_conf.utils import Node
 
 TIMEOUT = 4000
