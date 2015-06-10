@@ -1,5 +1,5 @@
 """
-The MarcoPolo bindings
+The MarcoPolo reference implementation
 """
 
 from setuptools import setup, find_packages

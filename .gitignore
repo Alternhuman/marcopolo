@@ -10,47 +10,50 @@ tmp/
 doc/build/*
 *__pycache__/*
 _trial_temp/*
-marcopolo/tests/_trial_temp/*
-marcopolo/bindings/cpp/marcobinding/build/*
-marcopolo/bindings/cpp/marcopolo/build/*
-marcopolo/bindings/java/marcobinding/*.pydevproject
-marcopolo/bindings/java/marcobinding/.metadata
-marcopolo/bindings/java/marcobinding/.gradle
-marcopolo/bindings/java/marcobinding/bin/
-marcopolo/bindings/java/marcobinding/tmp/
-marcopolo/bindings/java/marcobinding/*.tmp
-marcopolo/bindings/java/marcobinding/*.bak
-marcopolo/bindings/java/marcobinding/*.swp
-marcopolo/bindings/java/marcobinding/*~.nib
-marcopolo/bindings/java/marcobinding/local.properties
-marcopolo/bindings/java/marcobinding/.settings/
-marcopolo/bindings/java/marcobinding/.loadpath
+
+#Eclipse files
+
+bindings/tests/_trial_temp/*
+bindings/cpp/marcobinding/build/*
+bindings/cpp/marcopolo/build/*
+bindings/java/marcobinding/*.pydevproject
+bindings/java/marcobinding/.metadata
+bindings/java/marcobinding/.gradle
+bindings/java/marcobinding/bin/
+bindings/java/marcobinding/tmp/
+bindings/java/marcobinding/*.tmp
+bindings/java/marcobinding/*.bak
+bindings/java/marcobinding/*.swp
+bindings/java/marcobinding/*~.nib
+bindings/java/marcobinding/local.properties
+bindings/java/marcobinding/.settings/
+bindings/java/marcobinding/.loadpath
 
 # Eclipse Core
-marcopolo/bindings/java/marcobinding/.project
+bindings/java/marcobinding/.project
 
 # External tool builders
-marcopolo/bindings/java/marcobinding/.externalToolBuilders/
+bindings/java/marcobinding/.externalToolBuilders/
 
 # Locally stored "Eclipse launch configurations"
-marcopolo/bindings/java/marcobinding/*.launch
+bindings/java/marcobinding/*.launch
 
 # CDT-specific
-marcopolo/bindings/java/marcobinding/.cproject
+bindings/java/marcobinding/.cproject
 
 # JDT-specific (Eclipse Java Development Tools)
-marcopolo/bindings/java/marcobinding/.classpath
+bindings/java/marcobinding/.classpath
 
 # Java annotation processor (APT)
-marcopolo/bindings/java/marcobinding/.factorypath
+bindings/java/marcobinding/.factorypath
 
 # PDT-specific
-marcopolo/bindings/java/marcobinding/.buildpath
+bindings/java/marcobinding/.buildpath
 
 # sbteclipse plugin
-marcopolo/bindings/java/marcobinding/.target
+bindings/java/marcobinding/.target
 
 # TeXlipse plugin
-marcopolo/bindings/java/marcobinding/.texlipse
-marcopolo/bindings/java/marcobinding/RemoteSystemsTempFiles
+bindings/java/marcobinding/.texlipse
+bindings/java/marcobinding/RemoteSystemsTempFiles
 
