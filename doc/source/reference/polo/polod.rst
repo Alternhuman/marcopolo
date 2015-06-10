@@ -1,6 +1,6 @@
 Module polod
 ------------
 
-.. automodule:: polo.polod
+.. automodule:: marcopolo.polo.polod
 	:private-members:
 	:members:

@@ -1,7 +1,7 @@
 Marco methods
 -------------
 
-.. autoclass:: bindings.marco.marco.Marco
+.. autoclass:: marcopolo.bindings.marco.marco.Marco
 	:members:
 
 .. py:function:: service_params(node, max_nodes=None, params=Node, timeout=None)

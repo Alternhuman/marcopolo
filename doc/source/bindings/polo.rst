@@ -1,14 +1,14 @@
 Polo methods
 ------------
 
-.. autoclass:: bindings.polo.polo.Polo
+.. autoclass:: marcopolo.bindings.polo.polo.Polo
 	:members:
 
 Exceptions
 ~~~~~~~~~~
 
-.. autoclass:: bindings.polo.polo.PoloInternalException
+.. autoclass:: marcopolo.bindings.polo.polo.PoloInternalException
 	:members:
 
-.. autoclass:: bindings.polo.polo.PoloException
+.. autoclass:: marcopolo.bindings.polo.polo.PoloException
 	:members:

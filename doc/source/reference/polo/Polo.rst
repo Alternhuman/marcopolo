@@ -1,6 +1,6 @@
 Class Polo
 ----------
 
-.. autoclass:: polo.polo.Polo
+.. autoclass:: marcopolo.polo.polo.Polo
 	:private-members:
 	:members:
