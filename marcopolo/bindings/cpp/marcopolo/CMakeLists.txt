@@ -47,6 +47,6 @@ export(PACKAGE ${PROJECT_NAME})
 
 SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 INSTALL(FILES
-     ${CMAKE_SOURCE_DIR}/FindMarcoCPPBinding.cmake
+     ${CMAKE_SOURCE_DIR}/MarcoCPPBindingConfig.cmake
      DESTINATION "${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME}"
  )
