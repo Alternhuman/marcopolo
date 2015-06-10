@@ -17,6 +17,8 @@ import org.json.JSONObject;
 public class Marco {
 	private static final int PORT = 1338;
 	private static final String ADDR = "127.0.1.1";
+	private static final int DEFAULT_TIMEOUT = 2000;
+	private static final String DEFAULT_GROUP = "224.0.0.112";
 	public static final int TYPE_NULL = 0;
 	public static final int TYPE_FALSE = 1;
 	public static final int TYPE_TRUE = 2;
@@ -25,7 +27,10 @@ public class Marco {
 	public static final int TYPE_STRING = 5;
 	public static final int TYPE_NUMBER = 6;
 	
-	public Marco(){}
+	public Marco(){
+		this.group = DEFAULT_GROUP;
+		this.timeout = DEFAULT_TIMEOUT;
+	}
 	
 	public Marco(int timeout, String group){
 		this.timeout = timeout;
@@ -61,7 +66,7 @@ public class Marco {
 		try{
 			s = new DatagramSocket();
 			addr = InetAddress.getByName(ADDR);
-			s.setSoTimeout(2*timeout);
+			s.setSoTimeout((int) (1.4*timeout));
 		}catch(SocketException e){
 			e.printStackTrace();
 			return -1;
@@ -161,7 +166,7 @@ public class Marco {
 		try{
 			s = new DatagramSocket();
 			addr = InetAddress.getByName(ADDR);
-			s.setSoTimeout(2*timeout);
+			s.setSoTimeout((int) (1.4*timeout));
 		}catch(SocketException e){
 			e.printStackTrace();
 			return -1;
