@@ -2,9 +2,9 @@
 
 import json, socket, sys, os
 import socket, re # Address validation
-sys.path.append('/opt/marcopolo/')
+#sys.path.append('/opt/marcopolo/')
 
-from marco_conf import conf
+from bindings.marco_conf import conf
 BINDING_PORT = conf.POLO_BINDING_PORT
 
 TIMEOUT = 4000
