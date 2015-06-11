@@ -25,7 +25,6 @@ from marcopolo.polo.polo import Polo
 __author__ = 'Diego Martín'
 
 application = twisted.application.service.Application("Polo server")
-#internet.UDPServer(conf.MARCOPORT, MarcoBinding(), interface='127.0.1.1').setServiceParent(application)
 
 offered_services = {}
 user_services = {}
@@ -81,7 +80,6 @@ def start_binding():
                                   user_services, 
                                   conf.MULTICAST_ADDRS
                             )
-    #reactor.listenUDP(conf.POLO_BINDING_PORT, polobinding, interface="127.0.0.1")
     internet.UDPServer(conf.POLO_BINDING_PORT, polobinding, interface='127.0.1.1').setServiceParent(application)
 
 signal.signal(signal.SIGUSR1, reload_services)

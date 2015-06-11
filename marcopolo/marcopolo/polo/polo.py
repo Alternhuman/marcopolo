@@ -59,7 +59,7 @@ class Polo(DatagramProtocol):
         service_ids = set()
         for service_file in servicefiles:
             try:
-                with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service_file), 'r', encoding='utf-8') as f:
+                with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service_file), 'r') as f:
                     service = json.load(f)
                     service["permanent"] = True
                     service["params"] = service.get("params", {})
@@ -116,7 +116,7 @@ class Polo(DatagramProtocol):
             fileservices = []
             for service in servicefiles:
                 try:
-                    with open(service, 'r', encoding='utf-8') as f:
+                    with open(service, 'r') as f:
                         s = json.load(f)
                         s["permanent"] = True
                         s["params"] = s.get("params", {})
@@ -144,7 +144,7 @@ class Polo(DatagramProtocol):
         service_ids = set()
         for service in servicefiles:
             try:
-                with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r', encoding='utf-8') as f:
+                with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r') as f:
                     s = json.load(f)
                     
                     s["permanent"] = True

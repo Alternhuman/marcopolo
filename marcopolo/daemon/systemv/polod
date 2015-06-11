@@ -1,29 +1,43 @@
-#! /bin/sh
+#!/bin/sh
+
 ### BEGIN INIT INFO
-# Provides:          polo
+# Provides:          polod
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: A simple service discovery protocol resolver
-# Description:       A simple service discovery protocol resolver
+# Short-Description: The marcopolo resolver
+# Description:       Marcopolo is a service discovering protocol
+#                    based on multicast messaging.
 ### END INIT INFO
 
 # Author: Diego Martin <martinarroyo@usal.es>
 #
 
+#FROM: https://twistedmatrix.com/trac/attachment/ticket/3434/twistdplugin
+
 # Do NOT "set -e"
 
-# PATH should only include /usr/* if it runs after the mountnfs.sh script
-PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="A simple service discovery protocol resolver"
-NAME=polo
-DAEMON=/opt/marcopolo/polo/polod.py
-PIDFILE=/var/run/marcopolo/$NAME.pid
-SCRIPTNAME=/etc/init.d/$NAME
-# Exit if the package is not installed
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+TWISTED_NAME="polod"
+DESC="The marcopolo resolver"
+DAEMON=/usr/bin/twistd
+SERVICE_NAME="/etc/marcopolo/daemon/polo_twistd.tac"
 
-[ -x "$DAEMON" ] || exit 0
+PIDFILE=/var/run/marcopolo/${TWISTED_NAME}.pid
+LOGFILE=/var/log/marcopolo/${TWISTED_NAME}-twistd.log
+
+DAEMON_OPTS="--pidfile=$PIDFILE --logfile=$LOGFILE -y $SERVICE_NAME"
+
+# Set python path so twistd can find the plugin
+# See: http://twistedmatrix.com/projects/core/documentation/howto/plugin.html
+#export PYTHONPATH=$SERVICE_DIR
+
+if [ ! -x $DAEMON ]; then
+  echo "ERROR: Can't execute $DAEMON."
+  exit 1
+fi
+
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
@@ -35,101 +49,63 @@ SCRIPTNAME=/etc/init.d/$NAME
 # and status_of_proc is working.
 . /lib/lsb/init-functions
 
-#
-# Function that starts the daemon/service
-#
-do_start()
-{
-	echo "Starting service $NAME"
-	$DAEMON &> /dev/null
-	return 0
-	# Return
-	#   0 if daemon has been started
-	#   1 if daemon was already running
-	#   2 if daemon could not be started
-	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
-		|| return 1
-	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
-		$DAEMON_ARGS \
-		|| return 2
-	# Add code here, if necessary, that waits for the process to be ready
-	# to handle requests from services started subsequently which depend
-	# on this one.  As a last resort, sleep for some time.
+start_service() {
+  echo -n " * Starting service $TWISTED_NAME... "
+  start-stop-daemon -Sq -p $PIDFILE -x $DAEMON -- $DAEMON_OPTS
+  e=$?
+  if [ $e -eq 1 ]; then
+    echo "already running"
+    return
+  fi
+
+  if [ $e -eq 255 ]; then
+    echo "couldn't start :("
+    return
+  fi
+
+  echo "done"
 }
 
-#
-# Function that stops the daemon/service
-#
-do_stop()
-{
-	/opt/marcopolo/daemon/polostop.py &> /dev/null
-	return 0
-	# Return
-	#   0 if daemon has been stopped
-	#   1 if daemon was already stopped
-	#   2 if daemon could not be stopped
-	#   other if a failure occurred
-	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --name $NAME
-	RETVAL="$?"
-	[ "$RETVAL" = 2 ] && return 2
-	# Wait for children to finish too if this is a daemon that forks
-	# and if the daemon is only ever run from this initscript.
-	# If the above conditions are not satisfied then add some other code
-	# that waits for the process to drop all resources that could be
-	# needed by services started subsequently.  A last resort is to
-	# sleep for some time.
-	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
-	[ "$?" = 2 ] && return 2
-	# Many daemons don't delete their pidfiles when they exit.
-	rm -f $PIDFILE
-	return "$RETVAL"
+stop_service() {
+  echo -n " * Stopping service $TWISTED_NAME... "
+  start-stop-daemon -Kq -R 10 -p $PIDFILE
+  e=$?
+  if [ $e -eq 1 ]; then
+    echo "not running"
+    return
+  fi
+
+  echo "done"
 }
+
+reload_service(){
+  echo -n " * Reloading service $TWISTED_NAME...";
+  start-stop-daemon --stop --signal 10 --quiet --pidfile $PIDFILE
+  echo "done";
+  return 0;
+}
+
 case "$1" in
   start)
-	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
-	do_start
-	case "$?" in
-		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-	esac
-	;;
+    start_service
+    ;;
   stop)
-	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
-	do_stop
-	case "$?" in
-		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-	esac
-	;;
+    stop_service
+    ;;
+  reload)
+    reload_service
+    ;;
+  restart)
+    stop_service
+    start_service
+    ;;
   status)
-	status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
-	;;
-  restart|force-reload)
-	#
-	# If the "reload" option is implemented then remove the
-	# 'force-reload' alias
-	#
-	log_daemon_msg "Restarting $DESC" "$NAME"
-	do_stop
-	case "$?" in
-	  0|1)
-		do_start
-		case "$?" in
-			0) log_end_msg 0 ;;
-			1) log_end_msg 1 ;; # Old process is still running
-			*) log_end_msg 1 ;; # Failed to start
-		esac
-		;;
-	  *)
-		# Failed to stop
-		log_end_msg 1
-		;;
-	esac
-	;;
+    status_of_proc "$DAEMON" "$TWISTED_NAME" && exit 0 || exit $?
+    ;;
   *)
-	#echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
-	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
-	exit 3
-	;;
+    echo "Usage: /etc/init.d/$SERVICE_NAME {start|stop|restart|status}" >&2
+    exit 1   
+    ;;
 esac
 
+exit 0

@@ -62,8 +62,9 @@ if __name__ == "__main__":
         
         data_files.extend(daemon_files)
 
-    twistd_files = [('/etc/marcopolo/daemon', ["daemon/twistd/marco_twistd.tac"])
-                    ]
+    twistd_files = [('/etc/marcopolo/daemon', ["daemon/twistd/marco_twistd.tac", 
+                                               "daemon/twistd/polo_twistd.tac"])
+                   ]
 
     data_files.extend(twistd_files)
 
@@ -101,7 +102,6 @@ if __name__ == "__main__":
 
         keywords="marcopolo discovery binding",
 
-        #packages=['marcopolo.marco', 'marcopolo.polo', 'marcopolo.marco_conf'],
         packages=find_packages(),
         install_requires=[
             'Twisted==15.1.0'
