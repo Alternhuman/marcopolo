@@ -58,8 +58,7 @@ class MarcoBinding(DatagramProtocol):
         self.transport.write(bytes(json.dumps([service for service in services]).encode('utf-8')), address)
     
     def datagramReceived(self, data, address):
-        print("Datagram received")
-        print(data)
+        
         try:
             command = json.loads(data.decode('utf-8'))
         except ValueError:

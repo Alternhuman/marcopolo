@@ -103,7 +103,7 @@ case "$1" in
     status_of_proc "$DAEMON" "$TWISTED_NAME" && exit 0 || exit $?
     ;;
   *)
-    echo "Usage: /etc/init.d/$SERVICE_NAME {start|stop|restart|status}" >&2
+    echo "Usage: /etc/init.d/$SERVICE_NAME {start|stop|restart|reload|status}" >&2
     exit 1   
     ;;
 esac
