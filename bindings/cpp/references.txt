@@ -1,7 +1,0 @@
-://github.com/miloyip/rapidjson/
-http://www.bsdua.org/libbsdua.html#utf8
-http://stackoverflow.com/questions/7469296/is-there-any-built-in-function-that-convert-wstring-or-wchar-t-to-utf-8-in-linu
-http://www.metashock.de/2011/01/basic-iconv-example-in-c/
-http://utfcpp.sourceforge.net/
-https://github.com/MJPA/SimpleJSON
-
