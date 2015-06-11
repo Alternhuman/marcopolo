@@ -8,8 +8,8 @@ from twisted.trial import unittest
 from mock import MagicMock, patch
 
 class TestPolo(unittest.TestCase):
-	def setUp(self):
-		pass
+    def setUp(self):
+        pass
 
 class TestPoloBinding(unittest.TestCase):
-	pass
+    pass
