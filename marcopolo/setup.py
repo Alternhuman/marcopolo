@@ -28,6 +28,7 @@ def enable_service(service):
     if init_bin == 0:
         subprocess.call(["systemctl", "enable", service], shell=False)
     else:
+        subprocess.call(["update-rc.d", service, "remove", "-f"], shell=False)
         subprocess.call(["update-rc.d", service, "defaults"], shell=False)
     
     print("Enabled!")
@@ -51,7 +52,7 @@ if __name__ == "__main__":
         init_bin = detect_init()
         if init_bin == 1:
             daemon_files = [
-                             ('/etc/init.d/', ["daemon/systemv/marco", "daemon/systemv/polo"])
+                             ('/etc/init.d/', ["daemon/systemv/marcod", "daemon/systemv/polod"])
                            ]
 
         else:
@@ -59,7 +60,7 @@ if __name__ == "__main__":
                              ('/usr/local/bin/', glob.glob("daemon/*.py"))
                            ]
         
-            data_files.extend(daemon_files)
+        data_files.extend(daemon_files)
 
     twistd_files = [('/etc/marcopolo/daemon', ["daemon/twistd/marco_twistd.tac"])
                     ]
@@ -116,7 +117,7 @@ if __name__ == "__main__":
 
     if "--marcopolo-disable-daemons" not in sys.argv:
         if "--marco-disable" not in sys.argv:
-            enable_service("marco")
+            enable_service("marcod")
 
         if "--polo-enable" in sys.argv:
             enable_service("polo")
