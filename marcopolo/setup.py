@@ -43,6 +43,8 @@ if __name__ == "__main__":
     
     marcopolo_params = []
 
+    python_version = int(sys.version[0])
+
     for param in sys.argv:
         if param in custom_marcopolo_params:
             marcopolo_params.append(param)
@@ -64,23 +66,38 @@ if __name__ == "__main__":
 
     if "--marcopolo-disable-daemons" not in marcopolo_params:
         init_bin = detect_init()
-        if init_bin == 1:
-            daemon_files = [
-                             ('/etc/init.d/', ["daemon/systemv/marcod", "daemon/systemv/polod"])
-                           ]
+        if python_version == 2:
+            if init_bin == 1:
+                daemon_files = [
+                                 ('/etc/init.d/', ["daemon/systemv/marcod", "daemon/systemv/polod"])
+                               ]
 
-        else:
-            daemon_files = [('/etc/systemd/system/', ["daemon/marco.service", "daemon/polo.service"]),
-                             ('/usr/local/bin/', glob.glob("daemon/*.py"))
+            else:
+                daemon_files = [('/etc/systemd/system/', ["daemon/marco.service", "daemon/polo.service"]),
+                                 ('/usr/local/bin/', glob.glob("daemon/*.py"))
+                               ]
+            
+            data_files.extend(daemon_files)
+
+            twistd_files = [('/etc/marcopolo/daemon', ["daemon/twistd/marco_twistd.tac", 
+                                                       "daemon/twistd/polo_twistd.tac"])
                            ]
+            data_files.extend(twistd_files)
+
+        elif python_version == 3:
+            if init_bin == 1:
+                daemon_files = [
+                                 ('/etc/init.d/', ["daemon/python3/systemv/marcod", "daemon/python3/systemv/polod"])
+                               ]
+
+            else:
+                daemon_files = [('/etc/systemd/system/', ["daemon/python3/marco.service", "daemon/python3/polo.service"]),
+                                 ('/usr/local/bin/', glob.glob("daemon/python3/*.py"))
+                               ]
+            
+            data_files.extend(daemon_files)
+
         
-        data_files.extend(daemon_files)
-
-    twistd_files = [('/etc/marcopolo/daemon', ["daemon/twistd/marco_twistd.tac", 
-                                               "daemon/twistd/polo_twistd.tac"])
-                   ]
-
-    data_files.extend(twistd_files)
 
     setup(
         name='marcopolo',
