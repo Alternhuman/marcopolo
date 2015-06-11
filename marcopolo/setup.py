@@ -47,18 +47,22 @@ if __name__ == "__main__":
                  ('/etc/marcopolo', ["etc/marcopolo/marcopolo.conf"]),
                  ]
 
-    init_bin = detect_init()
-    if init_bin == 1:
-        daemon_files = [
-                         ('/etc/init.d/', ["daemon/systemv/marco", "daemon/systemv/polo"])
-                       ]
+    if "--marcopolo-disable-daemons" not in sys.argv:
+        init_bin = detect_init()
+        if init_bin == 1:
+            daemon_files = [
+                             ('/etc/init.d/', ["daemon/systemv/marco", "daemon/systemv/polo"])
+                           ]
 
-    else:
-        daemon_files = [('/etc/systemd/system/', ["daemon/marco.service", "daemon/polo.service"]),
-                         ('/usr/local/bin/', glob.glob("daemon/*.py"))
-                       ]
+        else:
+            daemon_files = [('/etc/systemd/system/', ["daemon/marco.service", "daemon/polo.service"]),
+                             ('/usr/local/bin/', glob.glob("daemon/*.py"))
+                           ]
+        
+            data_files.extend(daemon_files)
 
-    data_files.extend(daemon_files)
+    
+
 
     setup(
         name='marcopolo',
@@ -108,4 +112,9 @@ if __name__ == "__main__":
         },
     )
 
-    enable_service("marco")
+    if "--marcopolo-disable-daemons" not in sys.argv:
+        if "--marco-disable" not in sys.argv:
+            enable_service("marco")
+
+        if "--polo-enable" in sys.argv:
+            enable_service("polo")
