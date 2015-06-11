@@ -39,7 +39,7 @@ if [ ! -x $DAEMON ]; then
 fi
 
 # Read configuration variable file if it is present
-[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+[ -r /etc/default/$TWISTED_NAME ] && . /etc/default/$TWISTED_NAME
 
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh

@@ -69,7 +69,7 @@ def start_multicast():
         user_services[group] = {}
         polo = Polo(offered_services[group], user_services[group], group)
         polo_instances[group]=polo
-        #reactor.listenMulticast(conf.PORT, polo, listenMultiple=False, interface=group)
+        
         internet.MulticastServer(conf.PORT, polo, listenMultiple=False, interface=group).setServiceParent(application)
 
 def start_binding():
@@ -80,6 +80,7 @@ def start_binding():
                                   user_services, 
                                   conf.MULTICAST_ADDRS
                             )
+    
     internet.UDPServer(conf.POLO_BINDING_PORT, polobinding, interface='127.0.1.1').setServiceParent(application)
 
 signal.signal(signal.SIGUSR1, reload_services)

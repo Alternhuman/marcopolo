@@ -51,7 +51,7 @@ fi
 . /lib/lsb/init-functions
 
 start_service() {
-  echo -n " * Starting $SERVICE_NAME... "
+  echo -n " * Starting $TWISTED_NAME... "
   start-stop-daemon -Sq -p $PIDFILE -x $DAEMON -- $DAEMON_OPTS
   e=$?
   if [ $e -eq 1 ]; then
@@ -68,7 +68,7 @@ start_service() {
 }
 
 stop_service() {
-  echo -n " * Stopping $SERVICE_NAME... "
+  echo -n " * Stopping $TWISTED_NAME... "
   start-stop-daemon -Kq -R 10 -p $PIDFILE
   e=$?
   if [ $e -eq 1 ]; then

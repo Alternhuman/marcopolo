@@ -24,8 +24,7 @@ class MarcoBinding(DatagramProtocol):
         logging.info('Stopping service marcod')
 
     def startProtocol(self):
-        logging.basicConfig(filename=path.join(conf.LOGGING_DIR, 'marcod.log'), level=conf.LOGGING_LEVEL.upper(), format=conf.LOGGING_FORMAT)
-        logging.info("Starting service marcod")
+        
         reactor.addSystemEventTrigger('before', 'shutdown', self.graceful_shutdown)
 
     def marcoInThread(self, command, address):

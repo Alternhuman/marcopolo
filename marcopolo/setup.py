@@ -16,6 +16,12 @@ import os, sys
 import subprocess
 import glob
 
+custom_marcopolo_params = [
+                            "--marcopolo-disable-daemons",
+                            "--marcopolo-disable-polo", 
+                            "--marcopolo-enable-polo"
+                          ]
+
 def detect_init():
     try:
         subprocess.check_call(["systemctl", "--version"], stdout=None, stderr=None, shell=False)
@@ -28,13 +34,21 @@ def enable_service(service):
     if init_bin == 0:
         subprocess.call(["systemctl", "enable", service], shell=False)
     else:
-        subprocess.call(["update-rc.d", service, "remove", "-f"], shell=False)
+        subprocess.call(["update-rc.d", "-f", service, "remove"], shell=False)
         subprocess.call(["update-rc.d", service, "defaults"], shell=False)
     
     print("Enabled!")
 
 if __name__ == "__main__":
     
+    marcopolo_params = []
+
+    for param in sys.argv:
+        if param in custom_marcopolo_params:
+            marcopolo_params.append(param)
+            sys.argv.remove(param)
+
+
     here = path.abspath(path.dirname(__file__))
     with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
         long_description = f.read()
@@ -48,7 +62,7 @@ if __name__ == "__main__":
                  ('/etc/marcopolo', ["etc/marcopolo/marcopolo.conf"]),
                  ]
 
-    if "--marcopolo-disable-daemons" not in sys.argv:
+    if "--marcopolo-disable-daemons" not in marcopolo_params:
         init_bin = detect_init()
         if init_bin == 1:
             daemon_files = [
@@ -115,9 +129,9 @@ if __name__ == "__main__":
         },
     )
 
-    if "--marcopolo-disable-daemons" not in sys.argv:
-        if "--marco-disable" not in sys.argv:
+    if "--marcopolo-disable-daemons" not in marcopolo_params:
+        if "--marcopolo-disable-polo" not in marcopolo_params:
             enable_service("marcod")
 
-        if "--polo-enable" in sys.argv:
-            enable_service("polo")
+        if "--marcopolo-enable-polo" in marcopolo_params:
+            enable_service("polod")
