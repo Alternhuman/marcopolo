@@ -64,3 +64,5 @@ bindings/python/dist
 bindings/python/build
 build
 marcopolo.egg*
+marcoshell/dist
+marcoshell/marcoutils.egg-info

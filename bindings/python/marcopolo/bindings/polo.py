@@ -1,15 +1,10 @@
-#!/usr/bin/env python
-
 import json, socket, sys, os
 import socket, re # Address validation
-#sys.path.append('/opt/marcopolo/')
 
-from marcopolo.bindings.marco_conf import conf
+from marcopolo.bindings import conf
 BINDING_PORT = conf.POLO_BINDING_PORT
 
 TIMEOUT = 4000
-
-
 
 class Polo(object):
 	def __init__(self):
