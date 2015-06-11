@@ -13,6 +13,7 @@ MarcoPolo is a service discovery protocol based on multicast networking designed
    :maxdepth: 1
    
    fundamentals
+   installation
    configuration/basics
    services/intro
    commands/intro

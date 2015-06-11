@@ -1,0 +1,6 @@
+{
+    "id":"skel",
+    "params":{"param1":"value1", "param2":"value2"},
+    "groups":["224.0.1.130", "224.0.1.131"],
+    "disabled": true
+}

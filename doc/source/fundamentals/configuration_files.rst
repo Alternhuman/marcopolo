@@ -1,7 +1,9 @@
+.. _configuration_files:
+
 Configuration files
 -------------------
 
-The behaviour of MarcoPolo is defined almost in its entirety by the configuration files. All parameters are defined in a single folder (/etc/marcopolo, usually). The main files and folders are the following:
+The behaviour of MarcoPolo is defined almost in its entirety by the configuration files. All parameters are defined in a single folder (``/etc/marcopolo``, usually). The main files and folders are the following:
 
 .. code::
 

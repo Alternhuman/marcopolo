@@ -18,7 +18,7 @@ import glob
 
 custom_marcopolo_params = [
                             "--marcopolo-disable-daemons",
-                            "--marcopolo-disable-polo", 
+                            "--marcopolo-disable-marco", 
                             "--marcopolo-enable-polo",
                             "--marcopolo-no-start"
                           ]
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     )
 
     if "--marcopolo-disable-daemons" not in marcopolo_params:
-        if "--marcopolo-disable-polo" not in marcopolo_params:
+        if "--marcopolo-disable-marco" not in marcopolo_params:
             enable_service("marcod")
             if "--marcopolo-no-start" not in marcopolo_params:
                 start_service("marcod")
