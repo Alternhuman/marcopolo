@@ -19,7 +19,8 @@ import glob
 custom_marcopolo_params = [
                             "--marcopolo-disable-daemons",
                             "--marcopolo-disable-polo", 
-                            "--marcopolo-enable-polo"
+                            "--marcopolo-enable-polo",
+                            "--marcopolo-no-start"
                           ]
 
 def detect_init():
@@ -37,7 +38,16 @@ def enable_service(service):
         subprocess.call(["update-rc.d", "-f", service, "remove"], shell=False)
         subprocess.call(["update-rc.d", service, "defaults"], shell=False)
     
-    print("Enabled!")
+    sys.stdout.write("Enabled!")
+
+def start_service(service):
+    sys.stdout.write("Starting service " + service + "...")
+    if init_bin == 0:
+        subprocess.call(["systemctl", "start", service], shell=False)
+    else:
+        subprocess.call(["update-rc.d", service, "start"], shell=False)
+
+    sys.stdout.write("Started!")
 
 if __name__ == "__main__":
     
@@ -149,9 +159,13 @@ if __name__ == "__main__":
     if "--marcopolo-disable-daemons" not in marcopolo_params:
         if "--marcopolo-disable-polo" not in marcopolo_params:
             enable_service("marcod")
+            if "--marcopolo-no-start" not in marcopolo_params:
+                start_service("marcod")
 
         if "--marcopolo-enable-polo" in marcopolo_params:
             enable_service("polod")
+            if "--marcopolo-no-start" not in marcopolo_params:
+                start_service("polod")
 
     if not os.path.exists("/var/log/marcopolo"):
         os.makedirs('/var/log/marcopolo')
