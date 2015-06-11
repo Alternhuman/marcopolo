@@ -95,8 +95,8 @@ def main(args=None):
 
     pid = os.getpid()
     
-    if not path.exists('/var/run/marcopolo'):
-        makedirs('/var/run/marcopolo')
+    #if not path.exists('/var/run/marcopolo'):
+    #    makedirs('/var/run/marcopolo')
     
     f = open(conf.PIDFILE_POLO, 'w')
     f.write(str(pid))

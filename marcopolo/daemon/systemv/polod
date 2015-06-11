@@ -24,7 +24,7 @@ DESC="The marcopolo resolver"
 DAEMON=/usr/bin/twistd
 SERVICE_NAME="/etc/marcopolo/daemon/polo_twistd.tac"
 
-PIDFILE=/var/run/marcopolo/${TWISTED_NAME}.pid
+PIDFILE=/var/run/${TWISTED_NAME}.pid
 LOGFILE=/var/log/marcopolo/${TWISTED_NAME}-twistd.log
 
 DAEMON_OPTS="--pidfile=$PIDFILE --logfile=$LOGFILE -y $SERVICE_NAME"

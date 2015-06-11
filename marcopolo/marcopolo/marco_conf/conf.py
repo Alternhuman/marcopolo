@@ -23,8 +23,8 @@ SERVICES_DIR = 'polo/services/'
 LOGGING_LEVEL = 'DEBUG'
 LOGGING_FORMAT = '%(asctime)s:%(levelname)s:%(message)s'
 LOGGING_DIR = '/var/log/marcopolo/'
-PIDFILE_POLO = '/var/run/marcopolo/polod.pid'
-PIDFILE_MARCO = '/var/run/marcopolo/marcod.pid'
+PIDFILE_POLO = '/var/run/polod.pid'
+PIDFILE_MARCO = '/var/run/marcod.pid'
 
 RETRIES = -10
 

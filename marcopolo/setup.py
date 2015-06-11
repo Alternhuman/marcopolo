@@ -8,7 +8,7 @@ The MarcoPolo reference implementation
 from setuptools import setup, find_packages
 
 from codecs import open
-from os import path
+import os
 from distutils.core import setup
 from distutils.command.clean import clean
 from distutils.command.install import install
@@ -49,8 +49,8 @@ if __name__ == "__main__":
             sys.argv.remove(param)
 
 
-    here = path.abspath(path.dirname(__file__))
-    with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
+    here = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
         long_description = f.read()
 
     
@@ -135,3 +135,6 @@ if __name__ == "__main__":
 
         if "--marcopolo-enable-polo" in marcopolo_params:
             enable_service("polod")
+
+    if not os.path.exists("/var/log/marcopolo"):
+        os.makedirs('/var/log/marcopolo')
