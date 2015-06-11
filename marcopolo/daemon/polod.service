@@ -1,0 +1,18 @@
+[Unit]
+Description=A simple service discovery protocol advertiser
+Requires=network.target network-online.target
+After=network.target network-online.target 
+After=sys-subsystem-net-devices-net0.device
+
+[Service]
+ExecStart=/usr/bin/twistd --pidfile=/var/run/polod.pid --logfile=/var/log/marcopolo/polod.log -y /etc/marcopolo/daemon/polo_twistd.tac
+
+ExecReload=/usr/local/bin/poloreload.py &> /dev/null
+
+Type=simple
+User=root
+Group=root
+PIDFile=/var/run/polod.pid
+
+[Install]
+WantedBy=multi-user.target

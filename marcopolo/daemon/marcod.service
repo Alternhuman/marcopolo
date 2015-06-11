@@ -1,0 +1,16 @@
+[Unit]
+Description=A simple service discovery protocol resolver
+Requires=network.target network-online.target
+After=network.target network-online.target 
+After=sys-subsystem-net-devices-net0.device
+
+[Service]
+ExecStart=/usr/bin/twistd --pidfile=/var/run/marcod.pid --logfile=/var/log/marcopolo/marcod.log -y /etc/marcopolo/daemon/marco_twistd.tac
+
+Type=simple
+User=root
+Group=root
+PIDFile=/var/run/marcod.pid
+
+[Install]
+WantedBy=multi-user.target
