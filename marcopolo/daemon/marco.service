@@ -2,10 +2,7 @@
 Description=A simple service discovery protocol resolver
 
 [Service]
-
 ExecStart=/usr/bin/marco &> /dev/null
-#ExecStop=/usr/local/bin/marcostop.py &> /dev/null
-
 Type=simple
 User=root
 Group=root

@@ -61,8 +61,10 @@ if __name__ == "__main__":
         
             data_files.extend(daemon_files)
 
-    
+    twistd_files = [('/etc/marcopolo/daemon', ["daemon/twistd/marco_twistd.tac"])
+                    ]
 
+    data_files.extend(twistd_files)
 
     setup(
         name='marcopolo',
@@ -107,8 +109,8 @@ if __name__ == "__main__":
         data_files=data_files,
 
         entry_points={
-            'console_scripts': ['polo = marcopolo.polo.polod:main',
-                                'marco = marcopolo.marco.marcod:main'],
+            'console_scripts': ['polod = marcopolo.polo.polod:main',
+                                'marcod = marcopolo.marco.marcod:main'],
         },
     )
 

@@ -6,7 +6,6 @@ After=sys-subsystem-net-devices-net0.device
 
 [Service]
 ExecStart=/usr/bin/polo &> /dev/null
-#ExecStop=/usr/local/bin/polostop.py &> /dev/null
 ExecReload=/usr/local/bin/poloreload.py &> /dev/null
 
 Type=simple
