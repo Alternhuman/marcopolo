@@ -60,7 +60,7 @@ then
 	exit 1
 fi
 
-lista=$(marcodiscover.py  --shell)
+lista=$(marcodiscover  --shell)
 
 for i in $lista; do
 	ssh-copy-id $DRY_RUN$FILE$PORT$OPTION$USUARIO$i

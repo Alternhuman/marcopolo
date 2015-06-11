@@ -5,18 +5,19 @@ MarcoPolo utilities
 """
 
 from setuptools import setup, find_packages
-import os
+import os, glob
 
 if __name__ == "__main__":
-    print(find_packages())
+
     here = os.path.abspath(os.path.dirname(__file__))
     
     with open(os.path.join(here, 'DESCRIPTION.rst')) as f:
         long_description = f.read()
 
-    # data_files = [
-    #                 ('/usr/local/bin', [])
-    #              ]
+
+    data_files = [
+                     ('/usr/local/bin', glob.glob("shellutils/*.sh"))
+                 ]
 
     setup(
         name="marcoutils",
@@ -55,7 +56,7 @@ if __name__ == "__main__":
         
         zip_safe=False,
         
-        #data_files=data_files,
+        data_files=data_files,
         #packages=['marcopolo.utils'],
         packages=find_packages(),
         entry_points={
