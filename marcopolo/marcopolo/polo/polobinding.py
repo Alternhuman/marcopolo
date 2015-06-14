@@ -144,7 +144,6 @@ class PoloBinding(DatagramProtocol):
         if not isinstance(service, six.string_types):
             error=True
             reason = "Service must be a string"
-            return
         
         #The service must be something larger than 1 character
         if service is None or len(service) < 1:
@@ -391,10 +390,13 @@ class PoloBinding(DatagramProtocol):
             #user service
             try:
                 user, service_name = self.verify.match(service).groups()
+		user_pwd = pwd.getpwnam(user)
             except (IndexError, ValueError):
                 self.transport.write(self.write_error("Invalid formatting").encode('utf-8'), address)
                 return
-            
+            if user_pwd is None:
+		self.transport.write(self.write_error("Invalid user").encode('utf-8'), address)
+		return
             for group in multicast_groups:
                 if self.user_services[group].get(user, None) is not None:
                     match = next((s for s in self.user_services[group][user] if s['id'] == service_name), None)
@@ -402,7 +404,7 @@ class PoloBinding(DatagramProtocol):
                         is_permanent = match.get("permanent", False)
                         
                         if delete_file and is_permanent:
-                            folder = user.pw_dir
+                            folder = user_pwd.pw_dir
                             deploy_folder = path.join(folder, conf.POLO_USER_DIR)
                             if path.exists(deploy_folder) and isfile(path.join(deploy_folder, service_name)):
                                 
@@ -423,7 +425,7 @@ class PoloBinding(DatagramProtocol):
                     self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
                     return
             else:
-                self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
+                self.transport.write(json.dumps({"OK":user_pwd.pw_name+":"+service}).encode('utf-8'), address)
                 return
         else:
             #root service

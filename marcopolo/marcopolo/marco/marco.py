@@ -164,7 +164,7 @@ class Marco:
         if conf.DEBUG:
             debstr = ""
             for node in nodes:
-                debstr = "There is a node at %s joining the multicast group %s with the services: " % (node.address, node.multicast_group))
+                debstr = "There is a node at %s joining the multicast group %s with the services: " % (node.address, node.multicast_group)
                 
                 for service in n.services:
                     debstr += "%s. Version: %s " % (service["id"], service["version"])
