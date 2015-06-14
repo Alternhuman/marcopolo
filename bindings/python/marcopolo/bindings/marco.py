@@ -1,3 +1,5 @@
+from __future__ import division
+from __future__ import absolute_import
 import json, socket, sys
 
 from marcopolo.bindings.utils import Node
@@ -212,14 +214,14 @@ class Marco(object):
 
         """
 
-        if sys.version_info[0] < 3:
-            self.marco_socket.sendto(bytes(json.dumps({"Command": "Services",
-                                                                                                 "node": node,
-                                                                                                 "timeout":timeout}).encode('utf-8')), ('127.0.1.1', conf.POLOPORT))
-        else:
-            self.marco_socket.sendto(bytes(json.dumps({"Command": "Services",
-                                                                                                 "node": node,
-                                                                                                 "timeout":timeout}), 'utf-8'), ('127.0.1.1', conf.POLOPORT))
+        #if sys.version_info[0] < 3:
+        self.marco_socket.sendto(bytes(json.dumps({"Command": "Services",
+             "node": node,
+             "timeout":timeout}).encode('utf-8')), ('127.0.1.1', conf.POLOPORT))
+        #else:
+        #     self.marco_socket.sendto(bytes(json.dumps({"Command": "Services",
+        #     "node": node,
+        #     "timeout":timeout}), 'utf-8'), ('127.0.1.1', conf.POLOPORT))
 
         error = None
         try:
