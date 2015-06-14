@@ -425,7 +425,7 @@ class PoloBinding(DatagramProtocol):
                     self.transport.write(self.write_error("Could not find service").encode('utf-8'), address)
                     return
             else:
-                self.transport.write(json.dumps({"OK":user_pwd.pw_name+":"+service}).encode('utf-8'), address)
+                self.transport.write(json.dumps({"OK":service}).encode('utf-8'), address)
                 return
         else:
             #root service
