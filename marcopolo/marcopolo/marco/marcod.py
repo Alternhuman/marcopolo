@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from twisted.internet import reactor, defer
@@ -39,3 +39,4 @@ def main(args=None):
 
 if __name__ == "__main__":
     main(sys.argv)
+

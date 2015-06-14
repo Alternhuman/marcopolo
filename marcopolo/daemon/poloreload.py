@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8
 from os import kill, remove
 import signal
@@ -14,3 +14,4 @@ try:
 	exit(0)
 except Exception as e:
 	print(e)
+

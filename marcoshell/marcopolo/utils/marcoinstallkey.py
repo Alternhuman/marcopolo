@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #This is a simple utility to deploy a public key to a set of willing nodes
 #without the hassle of previously knowing their IPs/hostnames or doing one
@@ -31,3 +31,4 @@ print(args)
            not os.path.isdir(os.path.join(path, program)):
             return os.path.join(path, program)
     return None"""
+
