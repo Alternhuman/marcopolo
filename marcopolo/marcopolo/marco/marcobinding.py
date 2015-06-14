@@ -1,14 +1,18 @@
+from __future__ import absolute_import
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 
 import socket, sys, json, logging, os
 from os import path
 from copy import copy
+import six
 
 #sys.path.append('/opt/marcopolo/')
 from marcopolo.marco_conf import utils, conf
 
 from marcopolo.marco.marco import Marco, MarcoException
+
+
 
 class MarcoBinding(DatagramProtocol):
     """
@@ -48,7 +52,7 @@ class MarcoBinding(DatagramProtocol):
         if len(nodes) > 0:
             self.transport.write(bytes(json.dumps([{"Address": n.address, "Params": n.params} for n in nodes]).encode('utf-8')), address)
         else:
-            self.transport.write(bytes(json.dumps([]), 'utf-8'), address)
+            self.transport.write(bytes(json.dumps([])).encode('utf-8'), address)
     
     def servicesInThread(self, command, address):
         services = self.marco.services(addr=command.get("node", None), 

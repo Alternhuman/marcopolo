@@ -1,9 +1,13 @@
+from __future__ import division
+from __future__ import absolute_import
 import socket, sys, json, logging, os
 from os import path
 from copy import copy
 
 #sys.path.append('/opt/marcopolo/')
 from marcopolo.marco_conf import utils, conf
+
+import six
 
 class MarcoException(Exception):
     pass
@@ -64,10 +68,10 @@ class Marco:
         counter = 0
         
         #Python 2 and 3 compatibility in byte encoding
-        if sys.version_info[0] < 3:
-            discover_msg = bytes(json.dumps({'Command': 'Marco'}).encode('utf-8'))
-        else:
-            discover_msg = bytes(json.dumps({'Command': 'Marco'}), 'utf-8')
+        #if sys.version_info[0] < 3:
+        discover_msg = bytes(json.dumps({'Command': 'Marco'}).encode('utf-8'))
+        #else:
+        #    discover_msg = bytes(json.dumps({'Command': 'Marco'}), 'utf-8')
 
         #Send to group IP
         if -1 == self.socket_mcast.sendto(discover_msg, (group, conf.PORT)):
@@ -160,10 +164,10 @@ class Marco:
         if conf.DEBUG:
             debstr = ""
             for node in nodes:
-                debstr = str.format("There is a node at {0} joining the multicast group {1} with the services: ", node.address, node.multicast_group)
+                debstr = "There is a node at %s joining the multicast group %s with the services: " % (node.address, node.multicast_group))
                 
                 for service in n.services:
-                    debstr += str.format("{0}. Version: {1} ", service["id"], service["version"])
+                    debstr += "%s. Version: %s " % (service["id"], service["version"])
 
             logging.debug(debstr)
         
@@ -206,7 +210,7 @@ class Marco:
             if error:
                 raise MarcoException("Invalid timeout value")
 
-        discover_msg = bytes(json.dumps({'Command': 'Services'}))
+        discover_msg = json.dumps({'Command': 'Services'}).encode('utf-8')
         
         if -1 == self.socket_ucast.sendto(discover_msg, (addr, conf.PORT)):
             raise MarcoException("Error on multicast sending")
@@ -244,12 +248,12 @@ class Marco:
         """
         
         nodes = set()
-        if sys.version_info[0] < 3:
-            command_msg = bytes(json.dumps({'Command':'Request-For', 'Params':service}).encode('utf-8'))
-        else:
-            command_msg = bytes(json.dumps({'Command':'Request-For', 'Params':service}), 'utf-8')
+        #if sys.version_info[0] < 3:
+        command_msg = bytes(json.dumps({'Command':'Request-For', 'Params':service}).encode('utf-8'))
+        #else:
+        #    command_msg = bytes(json.dumps({'Command':'Request-For', 'Params':service}), 'utf-8')
 
-        if not isinstance(service, str):
+        if not isinstance(service, six.string_types):
             logging.info('Bad formatted request')
             raise MarcoException('Bad formatted request')
 
