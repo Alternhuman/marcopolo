@@ -1,6 +1,8 @@
+from __future__ import with_statement
+from __future__ import absolute_import
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet.error import MulticastJoinError
-
+from io import open
 import os
 from os import makedirs, path
 from os.path import isfile
@@ -11,8 +13,9 @@ import pwd, grp
 import re
 
 import socket
+import six
 
-sys.path.append('/opt/')
+#sys.path.append('/opt/')
 from marcopolo.marco_conf import conf
 
 def sanitize_path(path_str):
@@ -138,7 +141,7 @@ class PoloBinding(DatagramProtocol):
         error = False # Python does not allow throwing an exception insided an exception, so we use a flag
         reason = ""
         #Verification of services
-        if type(service) != type(''):
+        if not isinstance(service, six.string_types):
             error=True
             reason = "Service must be a string"
             return
@@ -156,7 +159,7 @@ class PoloBinding(DatagramProtocol):
         #The IP addresses must be represented in valid dot notation and belong to the range 224-239
         for ip in multicast_groups:
             #The IP must be a string
-            if type(ip) != type(''):
+            if not isinstance(ip, six.string_types):
                 error = True
                 faulty_ip = ip
                 reason = "IP must be a string"
@@ -189,7 +192,10 @@ class PoloBinding(DatagramProtocol):
                 break
 
         if error:
-            self.transport.write(self.write_error("Invalid multicast group address '%s': %s" % (str(faulty_ip), reason)).encode('utf-8'), address)
+            try:
+                self.transport.write(self.write_error("Invalid multicast group address '%s': %s" % (str(faulty_ip), reason)).encode('utf-8'), address)
+            except Exception:
+                self.transport.write(self.write_error("Invalid multicast group address").encode('utf-8'), address)
             return
         
         if type(permanent) is not bool:
@@ -334,7 +340,7 @@ class PoloBinding(DatagramProtocol):
         reason = ""
         for ip in multicast_groups:
             #The IP must be a string
-            if type(ip) != type(''):
+            if not isinstance(ip, six.string_types):
                 error = True
                 faulty_ip = ip
                 reason = "IP must be a string"
