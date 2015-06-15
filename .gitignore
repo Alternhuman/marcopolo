@@ -66,3 +66,4 @@ build
 marcopolo.egg*
 marcoshell/dist
 marcoshell/marcoutils.egg-info
+marcopolo/dist

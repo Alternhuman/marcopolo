@@ -1,33 +1,29 @@
 from twisted.internet.protocol import DatagramProtocol
-from twisted.internet import reactor, defer
+from twisted.internet import reactor
 
 import os
-from os import listdir, makedirs, path
-from os.path import isfile, join
-from io import StringIO
 
-import sys, signal, json, logging
-from twisted.internet.error import MulticastJoinError
-import time
-import pwd, grp
+from os.path import isfile
+import json, logging
+
+import pwd
 import re
 
-#sys.path.append('/opt/marcopolo')
-#sys.path.append('/opt/')
 from marcopolo.marco_conf import conf
 
 
 class Polo(DatagramProtocol):
     """
-    Twisted-inherited class in charge of receiving Marco requests on the defined multicast groups
+    Twisted-inherited class in charge of receiving Marco\
+    requests on the defined multicast groups
     """
-    
     def __init__(self, offered_services=[], user_services={}, multicast_group=conf.MULTICAST_ADDR, verify_regexp=conf.VERIFY_REGEXP):
         """
         Creates the ``Polo`` instance with the data structures to work with.
-        If defined, the ``offered_services`` and ``user_services`` variables will be treated 
-        as references to a list and dictionary respectively (i.e. the values will be modified, but
-        the object reference will never be altered).
+        If defined, the ``offered_services`` and ``user_services`` variables
+        will be treated as references to a list and dictionary respectively
+        (i.e. the values will be modified, but the object reference will 
+        never be altered).
         
         :param list offered_services: A list of dictionaries which comprises all the root services.
         
@@ -38,7 +34,7 @@ class Polo(DatagramProtocol):
         
         :param str verify_regexp: Regular expression used to verify an user service.
         """
-        #super(Polo).__init__()
+
         self.offered_services = offered_services
         self.user_services = user_services
         self.verify = re.compile(verify_regexp)#re.compile('^([\d\w]+):([\d\w]+)$')
@@ -46,7 +42,8 @@ class Polo(DatagramProtocol):
 
     def reload_services(self):
         """
-        Reloads both root and user services (calling :func:`reload_user_services`). The services stored in a file are loaded again, 
+        Reloads both root and user services (calling :func:`reload_user_services`).
+        The services stored in a file are loaded again, 
         whereas dynamic services are kept intact.
         """
         del self.offered_services[:] #http://stackoverflow.com/a/1400622/2628463
@@ -54,17 +51,17 @@ class Polo(DatagramProtocol):
         logging.info("Reloading services in polo instance for group %s" % self.multicast_group)
         
         #Load list of filenames
-        servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join('/etc/marcopolo/polo/services',f)) ]
+        servicefiles = [f for f in os.listdir(os.path.join(conf.CONF_DIR, conf.SERVICES_DIR)) if isfile(os.path.join('/etc/marcopolo/polo/services', f))]
 
         service_ids = set()
         for service_file in servicefiles:
             try:
-                with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service_file), 'r') as f:
+                with open(os.path.join(conf.CONF_DIR+conf.SERVICES_DIR, service_file), 'r') as f:
                     service = json.load(f)
                     service["permanent"] = True
                     service["params"] = service.get("params", {})
                     service["file"] = service_file
-                    groups = service.get("groups",[])
+                    groups = service.get("groups", [])
                     if self.multicast_group in groups or len(groups) == 0:
                         if not self.verify.match(service['id']):
                             if service['id'] in service_ids:
@@ -105,13 +102,13 @@ class Polo(DatagramProtocol):
             return
         
         #Check if the user home path exists
-        if path.exists(user.pw_dir):
+        if os.path.exists(user.pw_dir):
             #The services must be stored in $HOME/.polo/
-            polo_dir = path.join(user.pw_dir,conf.POLO_USER_DIR)
+            polo_dir = os.path.join(user.pw_dir,conf.POLO_USER_DIR)
             username = user.pw_name
             self.user_services[username] = [service for service in self.user_services.get(username, []) if service[1] == False]
             
-            servicefiles = [ join(polo_dir, f) for f in listdir(polo_dir) if isfile(join(polo_dir,f)) ]
+            servicefiles = [os.path.join(polo_dir, f) for f in listdir(polo_dir) if isfile(os.path.join(polo_dir, f))]
             
             fileservices = []
             for service in servicefiles:
@@ -138,13 +135,13 @@ class Polo(DatagramProtocol):
         logging.info("Loading services")
 
         #List all files in the service directory
-        services_dir = join(conf.CONF_DIR, conf.SERVICES_DIR)
-        servicefiles = [ f for f in listdir(conf.CONF_DIR + conf.SERVICES_DIR) if isfile(join(services_dir,f)) ]
+        services_dir = os.path.join(conf.CONF_DIR, conf.SERVICES_DIR)
+        servicefiles = [f for f in os.listdir(os.path.join(conf.CONF_DIR, conf.SERVICES_DIR)) if isfile(os.path.join(services_dir,f))]
         
         service_ids = set()
         for service in servicefiles:
             try:
-                with open(join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r') as f:
+                with open(os.path.join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r') as f:
                     s = json.load(f)
                     
                     s["permanent"] = True
@@ -224,7 +221,7 @@ class Polo(DatagramProtocol):
         elif command == 'Request-for' or command == 'Request-For':
             self.response_request_for(command, message_dict["Params"], address)
         elif command == 'Services':
-            response_services(command, address)
+            self.response_services(command, address)
         else:
             logging.info("Datagram received from [%s:%s]. Unknown command %s " % (address[0], address[1], datagram.decode('utf-8')))
 
@@ -241,7 +238,7 @@ class Polo(DatagramProtocol):
         response_dict["Command"] = "Polo"
         response_dict["Params"] = conf.POLO_PARAMS
         
-        json_msg = json.dumps(response_dict, separators=(',',':'))
+        json_msg = json.dumps(response_dict, separators=(',', ':'))
         msg = json_msg.encode('utf-8')
 
         self.transport.write(msg, address)

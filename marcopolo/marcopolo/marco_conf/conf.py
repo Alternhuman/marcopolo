@@ -33,3 +33,5 @@ POLO_USER_DIR = ".polo"
 POLO_PARAMS = {"hostname":socket.gethostname()}
 
 VERIFY_REGEXP = '^([\d\w]+):([\d\w]+)$'
+
+GROUP_NAME = "marcopolo"

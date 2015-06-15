@@ -1,21 +1,19 @@
 from __future__ import with_statement
 from __future__ import absolute_import
 from twisted.internet.protocol import DatagramProtocol
-from twisted.internet.error import MulticastJoinError
+
 from io import open
 import os
 from os import makedirs, path
 from os.path import isfile
-from io import StringIO
 
-import sys, json, logging
+import json, logging
 import pwd, grp
 import re
 
 import socket
 import six
 
-#sys.path.append('/opt/')
 from marcopolo.marco_conf import conf
 
 def sanitize_path(path_str):
@@ -84,7 +82,7 @@ class PoloBinding(DatagramProtocol):
             self.transport.write(json.dumps({"Error":"Missing command"}).encode('utf-8'), address)
             logging.debug("Missing command")
             return
-        command = datos_dict["Command"];
+        command = datos_dict["Command"]
         if command == 'Register':
             logging.debug("Register service")
             args = datos_dict.get("Args", {})
@@ -143,7 +141,7 @@ class PoloBinding(DatagramProtocol):
         reason = ""
         #Verification of services
         if not isinstance(service, six.string_types):
-            error=True
+            error = True
             reason = "Service must be a string"
 
         #The service must be something larger than 1 character
@@ -176,7 +174,7 @@ class PoloBinding(DatagramProtocol):
                 break
             
             try:
-                first_byte = int(re.search("\d{3}", ip).group(0))
+                first_byte = int(re.search(r"\d{3}", ip).group(0))
                 if first_byte < 224 or first_byte > 239:
                     error = True
                     faulty_ip = ip
@@ -217,7 +215,7 @@ class PoloBinding(DatagramProtocol):
         #Final entry with all service parameters
         service_dict = {}
         service_dict["id"] = service
-        #TODOservice_dict["params"] ={}
+        #TODOservice_dict["params"] ={} Add parameters
         service_dict["groups"] = multicast_groups
         
         #Root service
@@ -232,9 +230,9 @@ class PoloBinding(DatagramProtocol):
                 #Only root or members of the `marcopolo` group can publish root services
                 
                 if service in [s['id'] for s in self.offered_services[group]]:
-                    error_reason = self.write_error("Service %s already exists" % service);
+                    error_reason = self.write_error("Service %s already exists" % service)
                     #self.transport.write(self.write_error("Service %s already exists" % service).encode('utf-8'), address)
-                    error=True
+                    error = True
                     continue
                 
                 if permanent is True:
@@ -242,13 +240,13 @@ class PoloBinding(DatagramProtocol):
                     services_dir = path.join(conf.CONF_DIR, conf.SERVICES_DIR)
                     if not path.exists(services_dir):
                         makedirs(services_dir)
-                        os.chown(services_dir, 0, grp.getgrnam(name).gr_gid)
+                        os.chown(services_dir, 0, grp.getgrnam(conf.GROUP_NAME).gr_gid)
 
                     service_file = sanitize_path(service)
                     if path.isfile(path.join(services_dir, service_file)):
                         error_reason = self.write_error("Permanent service %s already exists" % service)
                         #self.transport.write(self.write_error("Permanent service %s already exists" % service).encode('utf-8'), address)
-                        error=True
+                        error = True
                         continue
 
                     try:
@@ -260,7 +258,7 @@ class PoloBinding(DatagramProtocol):
                     except Exception as e:
                         error_reason = self.write_error("Could not write file")
                         #self.transport.write(self.write_error("Could not write file").encode('utf-8'), address)
-                        error=True
+                        error = True
                         continue
 
                 
@@ -296,7 +294,7 @@ class PoloBinding(DatagramProtocol):
                     if path.isfile(path.join(deploy_folder, service_file)):
                         self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
                         #TODO: if unpublished and not deleted, this will be true
-                        error=True
+                        error = True
                         continue
                     
                     try:
@@ -307,7 +305,7 @@ class PoloBinding(DatagramProtocol):
                     except Exception as e:
                         logging.debug(e)
                         self.transport.write(self.write_error("Could not write service file").encode('utf-8'), address)
-                        error=True
+                        error = True
                         continue
 
                 if self.user_services[group].get(user.pw_name, None) is None:
@@ -355,24 +353,24 @@ class PoloBinding(DatagramProtocol):
             except socket.error:
                 error = True
                 faulty_ip = ip
-                reason="Wrong IP format"
+                reason = "Wrong IP format"
                 break
             
             try:
-                first_byte = int(re.search("\d{3}", ip).group(0))
+                first_byte = int(re.search(r"\d{3}", ip).group(0))
                 if first_byte < 224 or first_byte > 239:
                     error = True
                     faulty_ip = ip
             except (AttributeError, ValueError):
                 error = True
                 faulty_ip = ip
-                reason="IP is not of type multicast"
+                reason = "IP is not of type multicast"
                 break
 
             if ip not in self.multicast_groups:
                 error = True
                 faulty_ip = ip
-                reason="The instance is not a member of this group"
+                reason = "The instance is not a member of this group"
                 break
 
         if error is not None:
@@ -394,13 +392,13 @@ class PoloBinding(DatagramProtocol):
             #user service
             try:
                 user, service_name = self.verify.match(service).groups()
-		user_pwd = pwd.getpwnam(user)
+                user_pwd = pwd.getpwnam(user)
             except (IndexError, ValueError):
                 self.transport.write(self.write_error("Invalid formatting").encode('utf-8'), address)
                 return
             if user_pwd is None:
-		self.transport.write(self.write_error("Invalid user").encode('utf-8'), address)
-		return
+                self.transport.write(self.write_error("Invalid user").encode('utf-8'), address)
+                return
             for group in multicast_groups:
                 if self.user_services[group].get(user, None) is not None:
                     match = next((s for s in self.user_services[group][user] if s['id'] == service_name), None)
@@ -495,7 +493,7 @@ class PoloBinding(DatagramProtocol):
                                             groups.remove(group)
                                         except ValueError:
                                             pass
-                                    f.seek(0,0)
+                                    f.seek(0, 0)
                                     f.truncate()
                                     json.dump(file_dict, f)
                     
