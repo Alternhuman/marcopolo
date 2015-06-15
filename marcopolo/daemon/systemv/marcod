@@ -21,7 +21,7 @@
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 TWISTED_NAME="marcod"
 DESC="The marcopolo discoverer"
-DAEMON=/usr/bin/twistd
+DAEMON=$(which twistd)
 SERVICE_NAME="/etc/marcopolo/daemon/marco_twistd.tac"
 #SERVICE_DIR=/home/user/twistedplugin
 
