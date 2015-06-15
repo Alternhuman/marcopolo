@@ -72,8 +72,8 @@ class PoloBinding(DatagramProtocol):
 
         :param tuple address: A tuple with the requesting address and port
         """
+        logging.debug("Datagram received")        
         datos = datagram.decode('utf-8')
-        
         try:
             datos_dict = json.loads(datos)
         except ValueError:
@@ -86,6 +86,7 @@ class PoloBinding(DatagramProtocol):
             return
         command = datos_dict["Command"];
         if command == 'Register':
+            logging.debug("Register service")
             args = datos_dict.get("Args", {})
             self.publish_service(address,
                                 args.get("service", ''), 
@@ -144,13 +145,14 @@ class PoloBinding(DatagramProtocol):
         if not isinstance(service, six.string_types):
             error=True
             reason = "Service must be a string"
-        
+
         #The service must be something larger than 1 character
         if service is None or len(service) < 1:
             error = True
             reason = "Must be larger than 1"
 
         if error:
+            logging.debug(error)
             self.transport.write(self.write_error("The name of the service %s is invalid: %s" % (service, reason)).encode('utf-8'), address)
             return
         error = False
@@ -191,6 +193,7 @@ class PoloBinding(DatagramProtocol):
                 break
 
         if error:
+            logging.debug(reason)
             try:
                 self.transport.write(self.write_error("Invalid multicast group address '%s': %s" % (str(faulty_ip), reason)).encode('utf-8'), address)
             except Exception:
@@ -198,6 +201,7 @@ class PoloBinding(DatagramProtocol):
             return
         
         if type(permanent) is not bool:
+            logging.debug("Permanent must be boolean")
             self.transport.write(self.write_error("permanent must be boolean").encode('utf-8'), address)
             return
         

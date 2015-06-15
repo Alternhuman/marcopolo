@@ -81,7 +81,7 @@ def start_binding():
                                   conf.MULTICAST_ADDRS
                             )
     
-    internet.UDPServer(conf.POLO_BINDING_PORT, polobinding, interface='127.0.1.1').setServiceParent(application)
+    internet.UDPServer(conf.POLO_BINDING_PORT, polobinding, interface='127.0.0.1').setServiceParent(application)
 
 signal.signal(signal.SIGUSR1, reload_services)
 

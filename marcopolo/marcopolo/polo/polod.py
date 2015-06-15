@@ -113,6 +113,8 @@ def main(args=None):
     reactor.run()
 
 if __name__ == "__main__":
+    main(args=sys.argv[1:]) 
+    sys.exit(0)
     pid = os.getpid()
     
     if not path.exists('/var/run/marcopolo'):
