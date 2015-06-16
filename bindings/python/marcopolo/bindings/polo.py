@@ -16,7 +16,7 @@ HOST, PORT = "127.0.0.1", BINDING_PORT
 
 class Polo(object):
     def __init__(self):
-        self.polo_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.polo_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.polo_socket.settimeout(TIMEOUT/1000.0)
         self.wrappedSocket = ssl.wrap_socket(self.polo_socket, ssl_version=ssl.PROTOCOL_SSLv23)#, ciphers="ADH-AES256-SHA")
         
