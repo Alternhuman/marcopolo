@@ -79,13 +79,6 @@ Polo::Polo(int timeout){
         perror("Error: Could not build a SSL session");
     
     this->wrappedSocket = ssl;
-
-    /*SSL_write(ssl, "Hola", sizeof("Hola"));
-    char buf_recv[500];
-    SSL_read(ssl, buf_recv, 500);
-
-    
-    printf("%s\n", buf_recv);*/
 }
 
 Polo::~Polo(){

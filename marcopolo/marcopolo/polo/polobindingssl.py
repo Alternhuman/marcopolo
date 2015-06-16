@@ -51,7 +51,6 @@ class PoloBindingSSL(Protocol):
 
         self.secret = secret
         self.offered_services = offered_services
-        print(user_services)
         self.user_services = user_services
         self.verify = re.compile(verify_regexp)#re.compile('^([\d\w]+):([\d\w]+)$')
         self.multicast_groups = multicast_groups
@@ -373,11 +372,12 @@ class PoloBindingSSL(Protocol):
                     self.user_services[group][user.pw_name] = []
 
                 self.user_services[group][user.pw_name].append({"id":service, "permanent":permanent})
-                print(self.user_services[group][user.pw_name])
                 logging.debug("Publishing user service %s in group %s" % (service, group))
             else:
                 if not error:
                     self.write_ok(user.pw_name+":"+service)
+                else:
+                    self.write_error("Service already exists")
     
     def unpublish_service(self, service, token, multicast_groups=conf.MULTICAST_ADDRS, delete_file=False):
         """
