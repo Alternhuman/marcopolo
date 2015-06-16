@@ -362,7 +362,8 @@ class PoloBindingSSL(Protocol):
                         f.close()
                     except Exception as e:
                         logging.debug(e)
-                        self.transport.write(self._write_error("Could not write service file").encode('utf-8'), address)
+                        #self.transport.write(self._write_error("Could not write service file").encode('utf-8'), address)
+                        self.write_error("Could not write service file")
                         error = True
                         continue
 
