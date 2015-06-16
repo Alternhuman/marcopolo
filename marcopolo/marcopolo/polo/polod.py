@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from twisted.internet import reactor, defer
+from twisted.internet import reactor, defer, ssl
 from twisted.internet.error import MulticastJoinError
+from twisted.internet.protocol import Factory, Protocol
+from OpenSSL import SSL
 
 import os
 
 import sys, signal, logging
 
 from marcopolo.marco_conf import conf
-from marcopolo.polo.polobinding import PoloBinding
+from marcopolo.polo.polobindingssl import PoloBindingSSL
 from marcopolo.polo.polo import Polo
 
 __author__ = 'Diego Martín'
@@ -74,18 +76,56 @@ def start_multicast():
                                 interface=group)
 
 
+def verifyCallback():
+    print("Not verified")
+
+class SuperAwesomeProtocolYay(Factory):
+    def __init__(self, secret, offered_services, user_services, multicast_addrs):
+        #super(SuperAwesomeProtocolYay, self).__init__()
+        self.secret = secret
+        self.offered_services = offered_services
+        self.user_services = user_services
+        self.multicast_addrs = multicast_addrs
+
+    def buildProtocol(self, addr):
+        p =  self.protocol(self.secret, self.offered_services, self.user_services, self.multicast_addrs)
+        p.factory = self
+        return p
 
 def start_binding():
     """
     Starts the :class:`PoloBinding`
     """
-    polobinding = PoloBinding(offered_services,
-                                  user_services,
-                                  conf.MULTICAST_ADDRS
-                            )
-    reactor.listenUDP(conf.POLO_BINDING_PORT,
-                      polobinding,
-                      interface="127.0.0.1")
+    secret = 'V33YJFtywVmSKDvbQQsz6ZEmDkhleWEJ'
+    polobinding = PoloBindingSSL
+    # (secret,
+    #                              offered_services,
+    #                              user_services,
+    #                              conf.MULTICAST_ADDRS
+    #                         )
+
+    factory = SuperAwesomeProtocolYay(secret, offered_services, user_services, conf.MULTICAST_ADDRS)
+    factory.protocol = polobinding
+    
+    myContextFactory = ssl.DefaultOpenSSLContextFactory(
+        '/opt/certs/server.key', '/opt/certs/server.crt'
+        )
+
+    ctx = myContextFactory.getContext()
+
+    #ctx.set_verify(SSL.VERIFY_PEER | SSL.VERIFY_FAIL_IF_NO_PEER_CERT,
+    #    verifyCallback
+    #)
+
+    ctx.load_verify_locations("/opt/certs/rootCA.pem")
+
+    reactor.listenSSL(conf.POLO_BINDING_PORT,
+                        factory,
+                        myContextFactory,
+                        interface='127.0.0.1')
+    #reactor.listenUDP(conf.POLO_BINDING_PORT,
+    #                  polobinding,
+    #                  interface="127.0.0.1")
 
 def main(args=None):
     """
