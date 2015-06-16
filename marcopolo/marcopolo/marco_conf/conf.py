@@ -35,3 +35,4 @@ POLO_PARAMS = {"hostname":socket.gethostname()}
 VERIFY_REGEXP = '^([\d\w]+):([\d\w]+)$'
 
 GROUP_NAME = "marcopolo"
+SECRET = 'V33YJFtywVmSKDvbQQsz6ZEmDkhleWEJ'

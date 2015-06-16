@@ -2,22 +2,18 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 
 import os
-
 from os.path import isfile
-import json, logging
-
+import json, logging, re
 import pwd
-import re
 
 from marcopolo.marco_conf import conf
-
 
 class Polo(DatagramProtocol):
     """
     Twisted-inherited class in charge of receiving Marco\
     requests on the defined multicast groups
     """
-    def __init__(self, offered_services=[], user_services={}, multicast_group=conf.MULTICAST_ADDR, verify_regexp=conf.VERIFY_REGEXP):
+    def __init__(self, offered_services=None, user_services=None, multicast_group=None, verify_regexp=None):
         """
         Creates the ``Polo`` instance with the data structures to work with.
         If defined, the ``offered_services`` and ``user_services`` variables
@@ -35,10 +31,10 @@ class Polo(DatagramProtocol):
         :param str verify_regexp: Regular expression used to verify an user service.
         """
 
-        self.offered_services = offered_services
-        self.user_services = user_services
-        self.verify = re.compile(verify_regexp)#re.compile('^([\d\w]+):([\d\w]+)$')
-        self.multicast_group = multicast_group
+        self.offered_services = offered_services or {}
+        self.user_services = user_services or []
+        self.verify = re.compile(verify_regexp or conf.VERIFY_REGEXP)
+        self.multicast_group = multicast_group or conf.MULTICAST_ADDR
 
     def reload_services(self):
         """

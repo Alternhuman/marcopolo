@@ -96,13 +96,8 @@ def start_binding():
     """
     Starts the :class:`PoloBinding`
     """
-    secret = 'V33YJFtywVmSKDvbQQsz6ZEmDkhleWEJ'
+    secret = conf.SECRET
     polobinding = PoloBindingSSL
-    # (secret,
-    #                              offered_services,
-    #                              user_services,
-    #                              conf.MULTICAST_ADDRS
-    #                         )
 
     factory = SuperAwesomeProtocolYay(secret, offered_services, user_services, conf.MULTICAST_ADDRS)
     factory.protocol = polobinding
@@ -113,19 +108,12 @@ def start_binding():
 
     ctx = myContextFactory.getContext()
 
-    #ctx.set_verify(SSL.VERIFY_PEER | SSL.VERIFY_FAIL_IF_NO_PEER_CERT,
-    #    verifyCallback
-    #)
-
     ctx.load_verify_locations("/opt/certs/rootCA.pem")
 
     reactor.listenSSL(conf.POLO_BINDING_PORT,
                         factory,
                         myContextFactory,
                         interface='127.0.0.1')
-    #reactor.listenUDP(conf.POLO_BINDING_PORT,
-    #                  polobinding,
-    #                  interface="127.0.0.1")
 
 def main(args=None):
     """

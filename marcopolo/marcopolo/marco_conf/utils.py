@@ -1,5 +1,45 @@
 __author__ = 'martin'
+import socket, six
 
+def verify_ip(self, ip):
+    error = False
+    faulty_ip = None
+    reason = None
+    if not isinstance(ip, six.string_types):
+        error = True
+        faulty_ip = ip
+        reason = "IP must be a string"
+        return (error, faulty_ip, reason)
+
+    #Instead of parsing we ask the socket module
+    try:
+        socket.inet_aton(ip)
+    except socket.error:
+        error = True
+        faulty_ip = ip
+        reason = "Wrong IP format"
+        return (error, faulty_ip, reason)
+    
+    try:
+        first_byte = int(re.search(r"\d{3}", ip).group(0))
+        if first_byte < 224 or first_byte > 239:
+            error = True
+            faulty_ip = ip
+            reason = "The IP is not in the multicast range"
+            return (error, faulty_ip, reason)
+    except (AttributeError, ValueError):
+        error = True
+        faulty_ip = ip
+        reason = "IP is not of class D"
+        return (error, faulty_ip, reason)
+
+    if ip not in self.multicast_groups:
+        error = True
+        faulty_ip = ip
+        reason = "The instance is not a member of this group"
+        return (error, faulty_ip, reason)
+
+    return (error, faulty_ip, reason)
 
 class Node:
     def __init__(self, address=None, services=[], multicast_group = None):
