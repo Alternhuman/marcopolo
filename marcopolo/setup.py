@@ -146,8 +146,8 @@ if __name__ == "__main__":
         packages=find_packages(),
         install_requires=[
             'Twisted==15.1.0',
-            'pyOpenSSL',
-            'service_identity',
+            'pyOpenSSL==0.13',
+            'service_identity==14.0.0',
             'six==1.9.0'
         ],
         zip_safe=False,
