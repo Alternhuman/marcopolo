@@ -4,8 +4,8 @@ import socket, sys, json, logging, os
 from os import path
 from copy import copy
 
-#sys.path.append('/opt/marcopolo/')
-from marcopolo.marco_conf import utils, conf
+from marcopolo.marco_conf import utils
+from marcopolo.marco import conf
 
 import six
 
