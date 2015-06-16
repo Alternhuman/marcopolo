@@ -4,10 +4,7 @@
 #include <string>
 #include <map>
 
-typedef struct parameter{
-	int type;
-	std::string value;
-}parameter;
+#include "parameter.h"
 
 class Node{
 public:

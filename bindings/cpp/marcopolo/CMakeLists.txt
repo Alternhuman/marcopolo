@@ -5,17 +5,37 @@ find_package(RapidJSON)
 
 SET( MARCOCPPBINDING_SRC
   ${CMAKE_SOURCE_DIR}/src/marco.cpp
+  ${CMAKE_SOURCE_DIR}/src/polo.cpp
+)
+
+SET(POLOTEST_SRC
+	${CMAKE_SOURCE_DIR}/src/main.cpp
 )
 
 INCLUDE_DIRECTORIES( "${CMAKE_SOURCE_DIR}/include" )
 INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
 
 
+find_package(PkgConfig REQUIRED)
+
+pkg_search_module(OPENSSL REQUIRED openssl)
+
+if( OPENSSL_FOUND )
+    include_directories(${OPENSSL_INCLUDE_DIRS})
+    message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
+else()
+    # Error; with REQUIRED, pkg_search_module() will throw an error by it's own
+endif() #http://stackoverflow.com/a/26534464/2628463
+
+
 SET(CMAKE_EXE_LINKER_FLAGS "-Wall -O2 -s")
 ADD_DEFINITIONS(${CMAKE_EXE_LINKER_FLAGS})
 
 ADD_LIBRARY( marcopolo SHARED ${MARCOCPPBINDING_SRC})
-TARGET_LINK_LIBRARIES( marcopolo ${RAPIDJSON_LIBRARIES})
+TARGET_LINK_LIBRARIES( marcopolo ${RAPIDJSON_LIBRARIES} ${OPENSSL_LIBRARIES})
+
+ADD_EXECUTABLE(polotest ${POLOTEST_SRC})
+TARGET_LINK_LIBRARIES(polotest marcopolo)
 
 INSTALL(TARGETS marcopolo EXPORT marcopolo DESTINATION /usr/lib PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 INSTALL(EXPORT marcopolo NAMESPACE marcopolo_ DESTINATION /usr/lib/marcopolo)
