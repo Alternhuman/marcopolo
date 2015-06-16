@@ -30,7 +30,7 @@ def sanitize_path(path_str):
 
 class PoloBindingSSL(Protocol):
 
-    def __init__(self, secret, offered_services={}, user_services={}, multicast_groups=conf.MULTICAST_ADDRS, verify_regexp=conf.VERIFY_REGEXP):
+    def __init__(self, secret, offered_services, user_services, multicast_groups=conf.MULTICAST_ADDRS, verify_regexp=conf.VERIFY_REGEXP):
         """
         Creates the ``PoloBinding`` instance with the data structures to work with.
         If defined, the ``offered_services`` and ``user_services`` variables will be treated 
@@ -51,6 +51,7 @@ class PoloBindingSSL(Protocol):
 
         self.secret = secret
         self.offered_services = offered_services
+        print(user_services)
         self.user_services = user_services
         self.verify = re.compile(verify_regexp)#re.compile('^([\d\w]+):([\d\w]+)$')
         self.multicast_groups = multicast_groups
@@ -149,7 +150,7 @@ class PoloBindingSSL(Protocol):
 
         :param dict args: The arguments to pass to :method:publish_service
         """
-        logging.debug("Unpublish service")
+        logging.debug("Publish service")
         self.publish_service(args.get("service", ''), 
                             args.get("token", ""),
                             multicast_groups=args.get("multicast_groups", conf.MULTICAST_ADDRS),
@@ -249,7 +250,7 @@ class PoloBindingSSL(Protocol):
         #The IP addresses must be represented in valid dot notation and belong to the range 224-239
         for ip in multicast_groups:
             #The IP must be a string
-            error, faulty_ip, reason = utils.verify_ip(ip)
+            error, faulty_ip, reason = utils.verify_ip(ip, multicast_groups)
 
             if error == True:
                 logging.debug(reason)
@@ -283,6 +284,10 @@ class PoloBindingSSL(Protocol):
         #Root service
         error = False
         error_reason = ""
+
+        if (len(multicast_groups) < 1):
+            multicast_groups = conf.MULTICAST_ADDRS
+
         if root is True:
             if not self.is_superuser(user):
                 self.write_error("Permission denied")
@@ -368,6 +373,7 @@ class PoloBindingSSL(Protocol):
                     self.user_services[group][user.pw_name] = []
 
                 self.user_services[group][user.pw_name].append({"id":service, "permanent":permanent})
+                print(self.user_services[group][user.pw_name])
                 logging.debug("Publishing user service %s in group %s" % (service, group))
             else:
                 if not error:
@@ -411,7 +417,7 @@ class PoloBindingSSL(Protocol):
         
         for ip in multicast_groups:
             #The IP must be a string
-            error, faulty_ip, reason = utils.verify_ip(ip)
+            error, faulty_ip, reason = utils.verify_ip(ip, multicast_groups)
             print(error, ip)
             if error == True:
                 logging.debug(reason)

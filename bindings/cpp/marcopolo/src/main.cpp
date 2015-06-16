@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include <iostream>
 #include "polo.hpp"
 int main(int argc, char* argv[]){
 	Polo p;
-	p.publish_service("hola");
+	std::cout << p.publish_service("patatata1212") << std::endl;
 	return 0;
 }

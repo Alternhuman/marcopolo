@@ -25,7 +25,7 @@
 #include <pwd.h>
 #include <unistd.h>
 #include <fstream>
-#include <iostream>
+//#include <iostream>
 //#include <sys/types.h>
 
 
@@ -95,8 +95,7 @@ Polo::~Polo(){
 
 std::string Polo::publish_service(std::string service, std::vector<std::string> multicast_groups, bool permanent, bool root){
     std::string token = this->get_token();
-    std::cout << token << std::endl;
-    return "";
+    
 
     if(service.length() <= 1){
         throw PoloException("The name of the service" + service+ "is invalid");
@@ -117,7 +116,7 @@ std::string Polo::publish_service(std::string service, std::vector<std::string> 
 
     writer.StartObject();
     writer.String("Command");
-    writer.String("Register");
+    writer.String("Publish");
 
     writer.String("Args");
     writer.StartObject();
@@ -155,12 +154,12 @@ std::string Polo::publish_service(std::string service, std::vector<std::string> 
     wchar_to_utf8(wcs, output, str_size);
     //TODO: watch length
 
-    SSL_write(this->wrappedSocket, output, str_size);
+    SSL_write(this->wrappedSocket, output, str_len);
 
     char recv_response[2048];
 
     size_t response = SSL_read(this->wrappedSocket, recv_response, 2048);
-    if(response != 0){
+    if(response <= 0){
         switch(SSL_get_error(this->wrappedSocket, response)){
             case SSL_ERROR_ZERO_RETURN:
                 perror("The TLS/SSL connection has been closed");
@@ -205,7 +204,7 @@ std::string Polo::publish_service(std::string service, std::vector<std::string> 
     
     assert(document.IsObject());
 
-    if(document["Error"] != document.Size()){
+    if(document.HasMember("Error")){
         perror(std::string(document["Error"].GetString()).c_str());
         throw PoloException("Error in publishing");
     }
@@ -297,12 +296,15 @@ std::string Polo::request_token(const struct passwd *pw_user){
     
     assert(document.IsObject());
 
-    /*if(document["Error"] != document.Size()){
-        perror(std::string(document["Error"].GetString()).c_str());
-        //throw PoloException("Error in publishing");
-    }*/
-    return "OK";
-    return document["OK"].GetString();
+    
+    if(document.HasMember("OK")){
+        return document["OK"].GetString();
+    }else{
+        if(document.HasMember("Error"))
+            perror(std::string(document["Error"].GetString()).c_str());
+        return "";
+    }
+    
     
 }
 

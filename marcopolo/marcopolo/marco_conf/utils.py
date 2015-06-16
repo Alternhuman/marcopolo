@@ -1,7 +1,7 @@
 __author__ = 'martin'
-import socket, six
+import socket, six, re
 
-def verify_ip(self, ip):
+def verify_ip(ip, multicast_groups):
     error = False
     faulty_ip = None
     reason = None
@@ -33,7 +33,7 @@ def verify_ip(self, ip):
         reason = "IP is not of class D"
         return (error, faulty_ip, reason)
 
-    if ip not in self.multicast_groups:
+    if ip not in multicast_groups:
         error = True
         faulty_ip = ip
         reason = "The instance is not a member of this group"

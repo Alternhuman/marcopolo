@@ -31,8 +31,9 @@ class Polo(DatagramProtocol):
         :param str verify_regexp: Regular expression used to verify an user service.
         """
 
-        self.offered_services = offered_services or {}
-        self.user_services = user_services or []
+        self.offered_services = offered_services if offered_services is not None else []
+        self.user_services = user_services if user_services is not None else {}
+        print(self.user_services)
         self.verify = re.compile(verify_regexp or conf.VERIFY_REGEXP)
         self.multicast_group = multicast_group or conf.MULTICAST_ADDR
 
@@ -104,7 +105,7 @@ class Polo(DatagramProtocol):
             username = user.pw_name
             self.user_services[username] = [service for service in self.user_services.get(username, []) if service[1] == False]
             
-            servicefiles = [os.path.join(polo_dir, f) for f in listdir(polo_dir) if isfile(os.path.join(polo_dir, f))]
+            servicefiles = [os.path.join(polo_dir, f) for f in os.listdir(polo_dir) if isfile(os.path.join(polo_dir, f))]
             
             fileservices = []
             for service in servicefiles:
@@ -262,15 +263,19 @@ class Polo(DatagramProtocol):
         If the user has not been added to the list of services before this request,
         reload_user_services_iter(user) is called
         """
-        if self.user_services.get(user, None) is None:
+        #print(user)
+        #print(self.user_services.get(user, None))
+        if self.user_services.get(user, None) is None: #TODO: reload anyway?
             self.reload_user_services_iter(user)
-
+        print(self.user_services.get(user, []))
         match = next((s for s in self.user_services.get(user, []) if s['id'] == service), None)
         
         if match:
             command_msg = json.dumps({'Command':'OK', 'Params': match.get("params", {})})
             self.transport.write(command_msg.encode('utf-8'), address)
             return
+        else:
+            pass ## reload and retry!
 
     def response_request_for(self, command, service, address):
         """
