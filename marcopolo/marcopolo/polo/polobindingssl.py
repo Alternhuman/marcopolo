@@ -85,8 +85,9 @@ class PoloBindingSSL(Protocol):
         except ValueError:
             self.write_error("Malformed JSON")
             logging.debug("Malformed JSON")
+            return
         
-        if datos_dict.get("Command") is None:
+        if datos_dict.get("Command", None) is None:
             self.write_error("Missing command")
             logging.debug("Missing command")
             return
