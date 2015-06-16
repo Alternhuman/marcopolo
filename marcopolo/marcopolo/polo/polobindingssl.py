@@ -159,6 +159,44 @@ class PoloBindingSSL(Protocol):
         """
         return json.dumps({"Error": error})
 
+    def verify_ip(ip):
+        error = False
+        faulty_ip = None
+        reason = None
+        if not isinstance(ip, six.string_types):
+            error = True
+            faulty_ip = ip
+            reason = "IP must be a string"
+            return (error, faulty_ip, reason)
+
+        #Instead of parsing we ask the socket module
+        try:
+            socket.inet_aton(ip)
+        except socket.error:
+            error = True
+            faulty_ip = ip
+            reason = "Wrong IP format"
+            return (error, faulty_ip, reason)
+        
+        try:
+            first_byte = int(re.search(r"\d{3}", ip).group(0))
+            if first_byte < 224 or first_byte > 239:
+                error = True
+                faulty_ip = ip
+                reason = "The IP is not in the multicast range"
+                return (error, faulty_ip, reason)
+        except (AttributeError, ValueError):
+            error = True
+            faulty_ip = ip
+            reason = "IP is not of class D"
+            return (error, faulty_ip, reason)
+
+        if ip not in self.multicast_groups:
+            error = True
+            faulty_ip = ip
+            reason = "The instance is not a member of this group"
+            return (error, faulty_ip, reason)
+
     def publish_service(self, service, token, multicast_groups=conf.MULTICAST_ADDRS, permanent=False, root=False):
         """
         Registers a service during execution time.
@@ -192,6 +230,7 @@ class PoloBindingSSL(Protocol):
 
         error = False # Python does not allow throwing an exception insided an exception, so we use a flag
         reason = ""
+        
         #Verification of services
         if not isinstance(service, six.string_types):
             error = True
@@ -206,50 +245,21 @@ class PoloBindingSSL(Protocol):
             logging.debug(error)
             self.transport.write(self._write_error("The name of the service %s is invalid: %s" % (service, reason)).encode('utf-8'), address)
             return
+        
         error = False
         faulty_ip = ''
         #The IP addresses must be represented in valid dot notation and belong to the range 224-239
         for ip in multicast_groups:
             #The IP must be a string
-            if not isinstance(ip, six.string_types):
-                error = True
-                faulty_ip = ip
-                reason = "IP must be a string"
-                break
+            error, faulty_ip, reason = self.verify_ip(ip)
 
-            #Instead of parsing we ask the socket module
-            try:
-                socket.inet_aton(ip)
-            except socket.error:
-                error = True
-                faulty_ip = ip
-                reason = "Wrong IP format"
-                break
-            
-            try:
-                first_byte = int(re.search(r"\d{3}", ip).group(0))
-                if first_byte < 224 or first_byte > 239:
-                    error = True
-                    faulty_ip = ip
-            except (AttributeError, ValueError):
-                error = True
-                faulty_ip = ip
-                reason = "IP is not of class D"
-                break
-
-            if ip not in self.multicast_groups:
-                error = True
-                faulty_ip = ip
-                reason = "The instance is not a member of this group"
-                break
-
-        if error:
-            logging.debug(reason)
-            try:
-                self.write_error("Invalid multicast group address '%s': %s" % (str(faulty_ip), reason))
-            except Exception:
-                self.write_error("Invalid multicast group address")
-            return
+            if error == True:
+                logging.debug(reason)
+                try:
+                    self.write_error("Invalid multicast group address '%s': %s" % (str(faulty_ip), reason))
+                except Exception:
+                    self.write_error("Invalid multicast group address")
+                return
         
         if type(permanent) is not bool:
             logging.debug("Permanent must be boolean")
@@ -259,6 +269,7 @@ class PoloBindingSSL(Protocol):
         if type(root) is not bool:
             self.write_error("root must be boolean")
             return
+        
         #UID verification
         user = self.validate_user(uid)
         if user is None:
