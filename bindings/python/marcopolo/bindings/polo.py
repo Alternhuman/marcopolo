@@ -29,7 +29,7 @@ class Polo(object):
         pw_user = pwd.getpwuid(os.geteuid())
 
         if not os.path.isfile(os.path.join(pw_user.pw_dir, ".polo/token")):
-            ok, error = self.request_token()
+            ok, error = self.request_token(pw_user)
             if error is not None:
                 return ""
 
@@ -39,8 +39,7 @@ class Polo(object):
         except IOError:
             return ""
 
-    def request_token(self):
-        pw_user = pwd.getpwuid(os.geteuid())
+    def request_token(self, pw_user):
         
         if not os.path.isfile(os.path.join(pw_user.pw_dir, ".polo/token")):
 
@@ -144,8 +143,7 @@ class Polo(object):
                                 "service": service, 
                                 "multicast_groups":[g for g in multicast_groups], 
                                 "permanent": permanent, 
-                                "root":root,
-                                "uid": os.geteuid()}
+                                "root":root}
         
         error = False
         try:

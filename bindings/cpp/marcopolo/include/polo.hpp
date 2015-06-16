@@ -1,31 +1,41 @@
 #ifndef _POLO_HPP
 #define _POLO_HPP
 
+#include <stdio.h>
+
 #include <string>
 #include <vector>
 #include <exception>
 #include <openssl/ssl.h>
 
 #include "service.hpp"
+#include "convert.hpp"
 
 
 #define INVALID_NAME_SERVICE 1
 
-/*class PoloException: public exception
+class PoloException: public std::exception
 {
+public:
+  PoloException(std::string msg){
+    this->msg = msg;
+  }
+  ~PoloException() throw(){}
   virtual const char* what() const throw()
   {
-    return "My exception happened";
+    return this->msg.c_str();
   }
-} PoloException;*/
+private:
+    std::string msg;
+};
 
 class Polo{
 public:
-    Polo();
+    Polo(int timeout=0);
     ~Polo();
     
-    /*std::string publish_service(std::string service, std::vector<std::string> multicast_groups, bool permanent=false, bool root=false);
-    int unpublish_service(std::string service, std::vector<std::string> multicast_groups, bool delete_file=false);
+    std::string publish_service(std::string service, std::vector<std::string> multicast_groups=std::vector<std::string>(), bool permanent=false, bool root=false);
+    /*int unpublish_service(std::string service, std::vector<std::string> multicast_groups, bool delete_file=false);
     Service service_info(std::string service);
     bool has_service(service);
 
@@ -36,9 +46,11 @@ public:
 private:
     int polo_socket;
     SSL *wrappedSocket;
-    /*get_token();
-    request_token();
-    verify_parameters(std::string service, std::vector<std::string> multicast_groups)*/
+    std::string get_token();
+    std::string request_token(const struct passwd*);
+    int verify_ip(std::string, std::string&);
+    
+    /*verify_parameters(std::string service, std::vector<std::string> multicast_groups)*/
 };
 
 #endif

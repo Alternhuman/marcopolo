@@ -6,6 +6,7 @@ find_package(RapidJSON)
 SET( MARCOCPPBINDING_SRC
   ${CMAKE_SOURCE_DIR}/src/marco.cpp
   ${CMAKE_SOURCE_DIR}/src/polo.cpp
+  ${CMAKE_SOURCE_DIR}/src/convert.cpp
 )
 
 SET(POLOTEST_SRC
@@ -28,7 +29,8 @@ else()
 endif() #http://stackoverflow.com/a/26534464/2628463
 
 
-SET(CMAKE_EXE_LINKER_FLAGS "-Wall -O2 -s")
+#SET(CMAKE_EXE_LINKER_FLAGS "-Wall -O2 -s")
+SET(CMAKE_EXE_LINKER_FLAGS "-g -Wall")
 ADD_DEFINITIONS(${CMAKE_EXE_LINKER_FLAGS})
 
 ADD_LIBRARY( marcopolo SHARED ${MARCOCPPBINDING_SRC})
