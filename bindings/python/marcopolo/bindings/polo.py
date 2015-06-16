@@ -1,18 +1,62 @@
 from __future__ import division
 from __future__ import absolute_import
 import json, socket, sys, os
-import socket, re # Address validation
+import socket, ssl, re # Address validation
+import pwd
 
 from marcopolo.bindings import conf
 import six
+
+from utils import verify_ip
 BINDING_PORT = conf.POLO_BINDING_PORT
 
 TIMEOUT = 4000
+
+HOST, PORT = "127.0.0.1", BINDING_PORT
 
 class Polo(object):
     def __init__(self):
         self.polo_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.polo_socket.settimeout(TIMEOUT/1000.0)
+        self.wrappedSocket = ssl.wrap_socket(self.polo_socket, ssl_version=ssl.PROTOCOL_SSLv23)#, ciphers="ADH-AES256-SHA")
+        
+
+    def get_token(self):
+        pw_user = pwd.getpwuid(os.geteuid())
+
+        if not os.path.isfile(os.path.join(pw_user.pw_dir, ".polo/token")):
+            ok, error = self.request_token()
+            if error is not None:
+                return ""
+
+        try:
+            with open(os.path.join(pw_user.pw_dir, ".polo/token")) as f:
+                return f.read()
+        except IOError:
+            return ""
+
+    def request_token(self):
+        pw_user = pwd.getpwuid(os.geteuid())
+        
+        if not os.path.isfile(os.path.join(pw_user.pw_dir, ".polo/token")):
+
+            message_dict = {}
+            message_dict["Command"] = "Request-token"
+            message_dict["Args"] = {"uid":os.geteuid()}
+            json_str = json.dumps(message_dict)
+            self.wrappedSocket.connect((HOST, PORT))
+            wrappedSocket.send(json_str.encode('utf-8'))
+            data = wrappedSocket.recv()
+            wrappedSocket.close()
+
+            data_dic = json.loads(data.decode('utf-8'))
+
+            ok = data_dic.get("OK", None)
+            error = data_dic.get("Error", None)
+            
+            return (ok, error)
+        else:
+            return ("", None)
 
     def publish_service(self, service, multicast_groups=conf.MULTICAST_ADDRS, permanent=False, root=False):
         """
@@ -41,6 +85,9 @@ class Polo(object):
         
         :rvalue: str
         """
+
+        token = self.get_token()
+
         #Verify user input. TODO: multicast_groups can be an array or an IP
         error = False
         if not isinstance(service, six.string_types):
@@ -90,7 +137,8 @@ class Polo(object):
         
         message_dict = {}
         message_dict["Command"]= "Register"
-        message_dict["Args"] = {"service": service, 
+        message_dict["Args"] = {"token":token,
+                                "service": service, 
                                 "multicast_groups":[g for g in multicast_groups], 
                                 "permanent": permanent, 
                                 "root":root,
@@ -116,7 +164,8 @@ class Polo(object):
 
         error = False
         try:
-            if -1 == self.polo_socket.sendto(unicode_msg, ('127.0.0.1', BINDING_PORT)):
+            self.wrappedSocket.connect((HOST, BINDING_PORT))
+            if -1 == self.wrappedSocket.send(unicode_msg):
                 error = True
         except Exception:
             error = True
@@ -126,7 +175,7 @@ class Polo(object):
 
         error = False
         try:
-            data = self.polo_socket.recv(2048)
+            data = self.wrappedSocket.recv()
         except socket.timeout:
             error = True
 
@@ -233,6 +282,8 @@ class Polo(object):
         :param boolean delete_file: Removes the file service if the service is `permanent`. Otherwise it is ignored.
         
         """
+        token = self.get_token()
+
         self.verify_parameters(service, multicast_groups)
 
         if type(delete_file) is not bool:
@@ -240,7 +291,8 @@ class Polo(object):
 
         message_dict = {}
         message_dict["Command"]= "Unpublish"
-        message_dict["Args"] = {"service": service, 
+        message_dict["Args"] = {"token":token,
+                                "service": service, 
                                 "multicast_groups":[g for g in multicast_groups], 
                                 "delete_file": delete_file,
                                 "uid": os.geteuid()}
@@ -265,7 +317,8 @@ class Polo(object):
         error = False
         
         try:
-            if -1 == self.polo_socket.sendto(unicode_msg, ('127.0.0.1', BINDING_PORT)):
+            self.wrappedSocket.connect((HOST, BINDING_PORT))
+            if -1 == self.wrappedSocket.send(unicode_msg):
                 error = True
         except Exception:
             error = True
@@ -275,7 +328,7 @@ class Polo(object):
 
         error = False
         try:
-            data = self.polo_socket.recv(2048)
+            data = self.wrappedSocket.recv()
         except socket.timeout:
             error = True
 
