@@ -81,7 +81,7 @@ def verifyCallback():
 
 class SuperAwesomeProtocolYay(Factory):
     def __init__(self, secret, offered_services, user_services, multicast_addrs):
-        #super(SuperAwesomeProtocolYay, self).__init__()
+        
         self.secret = secret
         self.offered_services = offered_services
         self.user_services = user_services

@@ -59,7 +59,38 @@ class PoloBindingSSL(Protocol):
         self.user_services = user_services
         self.verify = re.compile(verify_regexp)#re.compile('^([\d\w]+):([\d\w]+)$')
         self.multicast_groups = multicast_groups
+        
+        self.router = {}
+        self.router["Register"] = self.publish_service_wrapper
+        self.router["Publish"] = self.publish_service_wrapper
+        self.router["Unpublish"] = self.unpublish_service_wrapper
+        self.router["Request-token"] = self.request_token_service_wrapper
 
+    def publish_service_wrapper(self, command, args):
+        logging.debug("Unpublish service")
+        #args = datos_dict.get("Args", {})
+        self.publish_service(args.get("service", ''), 
+                            args.get("token", ""),
+                            multicast_groups=args.get("multicast_groups", conf.MULTICAST_ADDRS),
+                            permanent=args.get("permanent", False),
+                            root=args.get("root", False))
+
+    def unpublish_service_wrapper(self, command, args):
+        #args = datos_dict.get("Args", {})
+        print("Unpublishing")
+        logging.debug("Unpublish service")
+        self.unpublish_service(args.get("service", ''),
+                                args.get("token", ""),
+                                multicast_groups=args.get("multicast_groups", set()),
+                                delete_file=args.get("delete_file", False)
+                                )
+
+    def request_token_service_wrapper(self, command, args):
+        #args = datos_dict.get("Args", {})
+        self.request_secret(args.get("uid", -1))
+
+    def unknown_command_handler(self, command, args):
+        self.transport.write(self.write_error("Malformed request. Commands missing"))
 
     def startProtocol(self):
         """
@@ -77,46 +108,26 @@ class PoloBindingSSL(Protocol):
 
         :param bytes datagram: The byte stream with the message
         """
-        #:param tuple address: A tuple with the requesting address and port
         
         logging.debug("Datagram received")        
         datos = datagram.decode('utf-8')
         try:
             datos_dict = json.loads(datos)
         except ValueError:
-            self.transport.write(json.dumps({"Error":"Malformed JSON"}).encode('utf-8'), address)
+            self.write_error("Malformed JSON")
             logging.debug("Malformed JSON")
         
         if datos_dict.get("Command") is None:
-            self.transport.write(json.dumps({"Error":"Missing command"}).encode('utf-8'), address)
+            self.write_error("Missing command")
             logging.debug("Missing command")
             return
+        
         command = datos_dict["Command"]
-        #register as dictionary of callables
-        if command == 'Register' or command == 'Publish':
-            logging.debug("Register service")
-            args = datos_dict.get("Args", {})
-            self.publish_service(args.get("service", ''), 
-                                args.get("token", -1),
-                                multicast_groups=args.get("multicast_groups", conf.MULTICAST_ADDRS),
-                                permanent=args.get("permanent", False),
-                                root=args.get("root", False))
+        
+        method = self.router.get(command, self.unknown_command_handler)
 
-        elif command == 'Unpublish':
-            args = datos_dict.get("Args", {})
-            self.unpublish_service(args.get("service", ''),
-                                    args.get("uid", -1),
-                                    multicast_groups=args.get("multicast_groups", set()),
-                                    delete_file=args.get("delete_file", False)
-                                    )
-        elif command == 'Request-token':
-            args = datos_dict.get("Args", {})
-            self.request_secret(args.get("uid", -1))
-
-        else:
-            #If any of the previous conditions is satisfied, the request is considered malformed
-            self.transport.write(self.write_error("Malformed request. Commands missing"))
-
+        method(command, datos_dict.get("Args", {}))
+ 
     def request_secret(self, uid):
         pw_user = pwd.getpwuid(uid)
         if pw_user == None:
@@ -221,13 +232,17 @@ class PoloBindingSSL(Protocol):
         
             This feature is only available to privileged users, by default root and users in the marcopolo group.
         """
+        if len(str(token)) == 0:
+            self.write_error("Bad token")
+            return
+
         uid = tokenprovider.decrypt_token(token, self.secret)
         try:
             if uid is None or int(uid) < 0:
-                self.write_error("Wrong token")
+                self.write_error("Bad token")
                 return
         except ValueError as e:
-            self.write_error("Wrong token")
+            self.write_error("Bad token")
             return
 
         error = False # Python does not allow throwing an exception insided an exception, so we use a flag
@@ -245,7 +260,7 @@ class PoloBindingSSL(Protocol):
 
         if error:
             logging.debug(error)
-            self.transport.write(self._write_error("The name of the service %s is invalid: %s" % (service, reason)).encode('utf-8'), address)
+            self.write_error("The name of the service %s is invalid: %s" % (service, reason))
             return
         
         error = False
@@ -285,7 +300,7 @@ class PoloBindingSSL(Protocol):
         service_dict["groups"] = multicast_groups
         
         #Root service
-        error = None
+        error = False
         error_reason = ""
         if root is True:
             if not self.is_superuser(user):
@@ -347,7 +362,8 @@ class PoloBindingSSL(Protocol):
                 if self.user_services[group].get(user.pw_name, None):
                     if service in [s['id'] for s in  self.user_services[group][user.pw_name]]:
                         #self.transport.write(self._write_error("Service already exists").encode('utf-8'), address)
-                        self.write_error("Service already exists")
+                        #self.write_error("Service already exists")
+                        
                         error = True
                         continue
 
@@ -363,7 +379,7 @@ class PoloBindingSSL(Protocol):
                     if path.isfile(path.join(deploy_folder, service_file)):
                         
                         #self.transport.write(self._write_error("Service already exists").encode('utf-8'), address)
-                        self.write_error("Service already exists")
+                        #self.write_error("Service already exists")
                         #TODO: if unpublished and not deleted, this will be true
                         error = True
                         continue
@@ -376,9 +392,9 @@ class PoloBindingSSL(Protocol):
                     except Exception as e:
                         logging.debug(e)
                         #self.transport.write(self._write_error("Could not write service file").encode('utf-8'), address)
-                        self.write_error("Could not write service file")
+                        self.write_error("Could not write service file %s" % str(e))
                         error = True
-                        continue
+                        return
 
                 if self.user_services[group].get(user.pw_name, None) is None:
                     self.user_services[group][user.pw_name] = []
@@ -389,7 +405,8 @@ class PoloBindingSSL(Protocol):
                 if not error:
                     #self.transport.write(json.dumps({"OK":user.pw_name+":"+service}).encode('utf-8'), address)
                     self.write_ok(user.pw_name+":"+service)
-    def unpublish_service(self, address, service, uid, multicast_groups=conf.MULTICAST_ADDRS, delete_file=False):
+    
+    def unpublish_service(self, service, token, multicast_groups=conf.MULTICAST_ADDRS, delete_file=False):
         """
         Removes a service from the offered services structures and all associated files, upon request.
 
@@ -405,59 +422,51 @@ class PoloBindingSSL(Protocol):
         :param bool delete_file: If set to ``True`` and the service is of type permanent,\
          the service file is deleted. If the service is not permanent the parameter is ignored. 
         """
+        if len(str(token)) == 0:
+            self.write_error("Bad token")
+            return
+
+        uid = tokenprovider.decrypt_token(token, self.secret)
+        try:
+            if uid is None or int(uid) < 0:
+                self.write_error("Bad token")
+                return
+        except ValueError as e:
+            self.write_error("Bad token")
+            return
+
         if len(multicast_groups) < 1:
             multicast_groups = conf.MULTICAST_ADDRS
         #Determine whether it is a root or a user service
         #The IP addresses must be represented in valid dot notation and belong to the range 224-239
-        error = None
+        error = False
         reason = ""
+        
         for ip in multicast_groups:
             #The IP must be a string
-            if not isinstance(ip, six.string_types):
-                error = True
-                faulty_ip = ip
-                reason = "IP must be a string"
-                break
-            
-            #Instead of parsing we ask the socket module
-            try:
-                socket.inet_aton(ip)
-            except socket.error:
-                error = True
-                faulty_ip = ip
-                reason = "Wrong IP format"
-                break
-            
-            try:
-                first_byte = int(re.search(r"\d{3}", ip).group(0))
-                if first_byte < 224 or first_byte > 239:
-                    error = True
-                    faulty_ip = ip
-            except (AttributeError, ValueError):
-                error = True
-                faulty_ip = ip
-                reason = "IP is not of type multicast"
-                break
+            error, faulty_ip, reason = self.verify_ip(ip)
+            print(error, ip)
+            if error == True:
+                logging.debug(reason)
+                try:
+                    self.write_error("Invalid multicast group address '%s': %s" % (str(faulty_ip), reason))
+                except Exception:
+                    self.write_error("Invalid multicast group address")
+                return
 
-            if ip not in self.multicast_groups:
-                error = True
-                faulty_ip = ip
-                reason = "The instance is not a member of this group"
-                break
-
-        if error is not None:
-            self.transport.write(self._write_error("Invalid multicast group address '%s': %s" % (str(faulty_ip), reason)).encode('utf-8'), address)
+        if error != False:
+            self.write_error("Invalid multicast group address '%s': %s" % (str(faulty_ip), reason))
             return
         #self.transport
 
         if len(set(multicast_groups) - (set(conf.MULTICAST_ADDRS) & set(multicast_groups))) > 0:
-            self.transport.write(self._write_error("The group %s is not available" % multicast_groups[0]).encode('utf-8'), address)
+            self.write_error("The group %s is not available" % multicast_groups[0])
             return
 
         user = self.validate_user(uid)
 
         if user is None:
-            self.transport.write(self._write_error("wrong user").encode('utf-8'), address)
+            self.write_error("wrong user")
             return
         
         if self.verify.match(service):
@@ -466,10 +475,10 @@ class PoloBindingSSL(Protocol):
                 user, service_name = self.verify.match(service).groups()
                 user_pwd = pwd.getpwnam(user)
             except (IndexError, ValueError):
-                self.transport.write(self._write_error("Invalid formatting").encode('utf-8'), address)
+                self.write_error("Invalid formatting")
                 return
             if user_pwd is None:
-                self.transport.write(self._write_error("Invalid user").encode('utf-8'), address)
+                self.write_error("Invalid user")
                 return
             for group in multicast_groups:
                 if self.user_services[group].get(user, None) is not None:
@@ -487,19 +496,19 @@ class PoloBindingSSL(Protocol):
                                 except Exception as e:
                                     pass
                             else:
-                                self.transport.write(self._write_error("Could not find service file").encode('utf-8'), address)
+                                self.write_error("Could not find service file")
                         try:
                             self.user_services[group][user].remove(match)
                         except ValueError:
                             pass
                     else:
-                        self.transport.write(self._write_error("Could not find service").encode('utf-8'), address)
+                        self.write_error("Could not find service")
                         return
                 else:
-                    self.transport.write(self._write_error("Could not find service").encode('utf-8'), address)
+                    self.write_error("Could not find service")
                     return
             else:
-                self.transport.write(json.dumps({"OK":service}).encode('utf-8'), address)
+                self.write_ok(service)
                 return
         else:
             #root service
@@ -520,7 +529,7 @@ class PoloBindingSSL(Protocol):
                                         f.close()
                                         os.remove(path.join(folder, service))
                                     except Exception as e:
-                                        self.transport.write(self._write_error("Internal error during processing of file").encode('utf-8'), address)
+                                        self.write_error("Internal error during processing of file")
                                 else:
                                     groups = file_dict.get("groups", [])
                                     if len(groups) > 0:
@@ -534,14 +543,14 @@ class PoloBindingSSL(Protocol):
                                             f.close()
                                             os.remove(path.join(folder, service))
                                         except Exception as e:
-                                            self.transport.write(self._write_error("Internal error during processing of file").encode('utf-8'), address)
+                                            self.write_error("Internal error during processing of file")
                                     else:
                                         f.seek(0, 0)
                                         f.truncate()
                                         json.dump(file_dict, f)
 
                         else:
-                            self.transport.write(self._write_error("Could not find service file").encode('utf-8'), address)
+                            self.write_error("Could not find service file")
                     try:
                         self.offered_services[group].remove(match)
                     except ValueError:
@@ -557,7 +566,7 @@ class PoloBindingSSL(Protocol):
                                         f.close()
                                         os.remove(path.join(folder, service))
                                     except Exception as e:
-                                        self.transport.write(self._write_error("Internal error during processing of file").encode('utf-8'), address)
+                                        self.write_error("Internal error during processing of file")
                                 else:
                                     groups = file_dict.get("groups", [])
                                     if len(groups) > 0:
@@ -570,7 +579,7 @@ class PoloBindingSSL(Protocol):
                                     json.dump(file_dict, f)
                     
                         else:
-                            self.transport.write(self._write_error("Could not find service").encode('utf-8'), address)
+                            self.write_error("Could not find service")
                             return
                 try:
                     self.offered_services[group].remove(match)
@@ -578,7 +587,7 @@ class PoloBindingSSL(Protocol):
                     pass
             else:
                 try:
-                    self.transport.write(json.dumps({"OK":0}).encode('utf-8'), address)
+                    self.write_ok(0)
                 except ValueError:
                     pass
     
