@@ -7,7 +7,7 @@ import pwd
 from marcopolo.bindings import conf
 import six
 
-from utils import verify_ip
+from marcopolo.bindings.utils import verify_ip
 BINDING_PORT = conf.POLO_BINDING_PORT
 
 TIMEOUT = 4000
@@ -19,7 +19,11 @@ class Polo(object):
         self.polo_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.polo_socket.settimeout(TIMEOUT/1000.0)
         self.wrappedSocket = ssl.wrap_socket(self.polo_socket, ssl_version=ssl.PROTOCOL_SSLv23)#, ciphers="ADH-AES256-SHA")
-        
+        self.wrappedSocket.connect((HOST, PORT))
+
+    def __del__(self):
+        self.wrappedSocket.close()
+
 
     def get_token(self):
         pw_user = pwd.getpwuid(os.geteuid())
@@ -44,10 +48,9 @@ class Polo(object):
             message_dict["Command"] = "Request-token"
             message_dict["Args"] = {"uid":os.geteuid()}
             json_str = json.dumps(message_dict)
-            self.wrappedSocket.connect((HOST, PORT))
-            wrappedSocket.send(json_str.encode('utf-8'))
-            data = wrappedSocket.recv()
-            wrappedSocket.close()
+            self.wrappedSocket.send(json_str.encode('utf-8'))
+            data = self.wrappedSocket.recv()
+            
 
             data_dic = json.loads(data.decode('utf-8'))
 
@@ -164,14 +167,15 @@ class Polo(object):
 
         error = False
         try:
-            self.wrappedSocket.connect((HOST, BINDING_PORT))
             if -1 == self.wrappedSocket.send(unicode_msg):
                 error = True
-        except Exception:
+                reason = "Error on sending"
+        except Exception as e:
             error = True
+            reason = e
 
         if error:
-            raise PoloInternalException("Error during internal communication")
+            raise PoloInternalException("Error during internal communication %s " % reason)
 
         error = False
         try:
@@ -317,7 +321,6 @@ class Polo(object):
         error = False
         
         try:
-            self.wrappedSocket.connect((HOST, BINDING_PORT))
             if -1 == self.wrappedSocket.send(unicode_msg):
                 error = True
         except Exception:

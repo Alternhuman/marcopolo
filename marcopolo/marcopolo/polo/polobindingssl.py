@@ -159,7 +159,7 @@ class PoloBindingSSL(Protocol):
         """
         return json.dumps({"Error": error})
 
-    def verify_ip(ip):
+    def verify_ip(self, ip):
         error = False
         faulty_ip = None
         reason = None
@@ -196,6 +196,8 @@ class PoloBindingSSL(Protocol):
             faulty_ip = ip
             reason = "The instance is not a member of this group"
             return (error, faulty_ip, reason)
+
+        return (error, faulty_ip, reason)
 
     def publish_service(self, service, token, multicast_groups=conf.MULTICAST_ADDRS, permanent=False, root=False):
         """
