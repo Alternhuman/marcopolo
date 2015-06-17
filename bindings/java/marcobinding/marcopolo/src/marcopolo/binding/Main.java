@@ -18,7 +18,7 @@ public class Main {
 			e.printStackTrace();
 		}
 		try {
-			System.out.println(p.publish_service("hola"));
+			System.out.println(p.publish_service("hola300"));
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
