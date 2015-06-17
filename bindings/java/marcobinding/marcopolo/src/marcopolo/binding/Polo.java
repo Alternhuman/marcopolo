@@ -98,7 +98,7 @@ public class Polo{
 	public String publish_service(String service, List<String> multicast_groups, boolean permanent, boolean root) throws JSONException, PoloException, PoloInternalException{
 		String reason = new String();
 		String responseString = null;
-		this.verify_common_parameters(service, multicast_groups, reason);
+		this.verify_common_parameters(service, multicast_groups);
 		
 		JSONObject send_object = new JSONObject();
 		JSONObject recv_object = null;
@@ -163,19 +163,58 @@ public class Polo{
 		return "";
 	}
 	
-	public int unpublish_service(String service, List <String> multicast_groups, boolean delete_file){
-		throw new UnsupportedOperationException();
+	public int unpublish_service(String service) throws PoloInternalException, PoloException{
+		return this.unpublish_service(service, new ArrayList<String>(), false);
+	}
+	
+	public int unpublish_service(String service, List<String> multicast_groups) throws PoloInternalException, PoloException{
+		return this.unpublish_service(service, multicast_groups, false);
+	}
+	
+	public int unpublish_service(String service, List <String> multicast_groups, boolean delete_file) throws PoloInternalException, PoloException{
+		String token = this.get_token();
+		System.out.println(token);
+		JSONObject recv_object;
+		
+		this.verify_common_parameters(service, multicast_groups);
+		
+		JSONObject send_object = new JSONObject();
+		send_object.put("Command", "Unpublish");
+		
+		JSONObject args = new JSONObject();
+		args.put("token", token);
+		args.put("service", service);
+		JSONArray json_multicast_groups = new JSONArray((String[]) multicast_groups.toArray(new String[0]));
+
+		args.put("multicast_groups", json_multicast_groups);
+		args.put("delete_file", delete_file);
+		
+		send_object.put("Args", args);
+		
+		try {
+			recv_object = this.sendAndReceive(send_object);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new PoloInternalException("Error during internal communication");
+		}
+		
+		if(recv_object.has("OK")){
+			return recv_object.getInt("OK");
+		}else if(recv_object.has("Error")){
+			throw new PoloException(recv_object.getString("Error"));
+		}else{
+			throw new PoloInternalException("Bad received message");
+		}
+		
+		
 	}
 	
 	private String get_token() throws PoloInternalException{
 		int uid = this.getUserUID();
 
-
-
 		File f = new File(home, ".polo/token");
 		JSONObject token;
 		if(f.exists() && !f.isDirectory()){
-			
 			try{
 				token = this.request_token(uid);
 
@@ -247,10 +286,11 @@ public class Polo{
 				String line = bf.readLine();
 				JSONObject aux = new JSONObject();
 				aux.put("OK", line);
+				bf.close();
+				fr.close();
 				return aux;
 				
 			} catch (FileNotFoundException e) {} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return null;	
@@ -283,7 +323,7 @@ public class Polo{
 		return -1;
 	}
 
-	private JSONObject sendAndReceive(JSONObject send_object) throws IOException{
+	private JSONObject sendAndReceive(JSONObject send_object) throws IOException, PoloInternalException{
 		os.write(send_object.toString().getBytes(Charset.forName("utf-8")));
 		os.flush();
 
@@ -295,6 +335,10 @@ public class Polo{
 
 		String port_s="";
 
+		if(bytes_read < 0){
+			throw new PoloInternalException("Error in internal communication");
+		}
+		
 		if(bytes_read > 0) {
 			port_s = new String(buffer, 0, bytes_read, "UTF-8");
 		}
@@ -320,7 +364,7 @@ public class Polo{
 	private static final String PATTERN = 
 	        "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
 
-	public boolean verify_common_parameters(String service, List<String >multicast_groups, String reason) throws PoloInternalException{
+	public boolean verify_common_parameters(String service, List<String >multicast_groups) throws PoloInternalException{
 		if(service.length() < 1){
 			throw new PoloInternalException(String.format("The name of the service %s is invalid", service));
 		}

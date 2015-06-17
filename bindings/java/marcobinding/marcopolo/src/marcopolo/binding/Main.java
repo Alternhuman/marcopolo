@@ -12,13 +12,15 @@ import org.json.JSONException;
 public class Main {
 	public static void main(String[] args){
 		Polo p = null;
+		String id="";
 		try {
 			p = new Polo(0);
 		} catch (IOException | KeyManagementException | NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
 		try {
-			System.out.println(p.publish_service("hola300"));
+			id = p.publish_service("hola300");
+			System.out.println(id);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -26,6 +28,15 @@ public class Main {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (PoloInternalException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			if(id.length() == 0){
+				id = "martin:hola300";
+			}
+			p.unpublish_service(id);
+		} catch (PoloInternalException | PoloException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
