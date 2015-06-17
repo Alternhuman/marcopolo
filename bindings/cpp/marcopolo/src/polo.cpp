@@ -31,6 +31,8 @@
 
 #define PORT 1390
 #define ADDRESS "127.0.0.1"
+#define BUFF_LEN 4096
+#define TOKEN_PATH "/.polo/token"
 
 Polo::Polo(int timeout){
     /*TODO  self.polo_socket.settimeout(TIMEOUT/1000.0)*/
@@ -87,6 +89,8 @@ Polo::~Polo(){
 }
 
 std::string Polo::publish_service(std::string service, std::vector<std::string> multicast_groups, bool permanent, bool root){
+    
+    //The user token is requested
     std::string token = this->get_token();
     
 
@@ -104,6 +108,7 @@ std::string Polo::publish_service(std::string service, std::vector<std::string> 
         }
     }
 
+    //JSON encoding of the data
     rapidjson::StringBuffer stringbuffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(stringbuffer);
 
@@ -136,9 +141,11 @@ std::string Polo::publish_service(std::string service, std::vector<std::string> 
     std::wstring json_array;
 
     json_array = std::wstring(json_array_tmp.begin(), json_array_tmp.end());
+    
     if(json_array.length() == 0){
         throw PoloException("Error in JSON encoder");
     }
+
     wchar_t *wcs = (wchar_t*) json_array.c_str();
     size_t str_size = wcslen(wcs)*sizeof(wchar_t);
     int str_len = wcslen(wcs);
@@ -149,9 +156,10 @@ std::string Polo::publish_service(std::string service, std::vector<std::string> 
 
     SSL_write(this->wrappedSocket, output, str_len);
 
-    char recv_response[2048];
+    char recv_response[BUFF_LEN];
 
-    size_t response = SSL_read(this->wrappedSocket, recv_response, 2048);
+    size_t response = SSL_read(this->wrappedSocket, recv_response, BUFF_LEN);
+    
     if(response <= 0){
         switch(SSL_get_error(this->wrappedSocket, response)){
             case SSL_ERROR_ZERO_RETURN:
@@ -171,6 +179,8 @@ std::string Polo::publish_service(std::string service, std::vector<std::string> 
             case SSL_ERROR_SSL:
                 perror("Failure in the SSL library");
                 break;
+            case SSL_ERROR_NONE:
+                break;
             default:
                 perror("Unknown error");
                 break;
@@ -181,6 +191,7 @@ std::string Polo::publish_service(std::string service, std::vector<std::string> 
     char to_arr_aux[response];
     strncpy(to_arr_aux, recv_response, response);
     
+    //TODO: It should suffice with the response length
     if(-1 == utf8_to_wchar(to_arr_aux, to_arr, response)){
         perror("Error on conversion");
     }
@@ -202,38 +213,60 @@ std::string Polo::publish_service(std::string service, std::vector<std::string> 
         throw PoloException("Error in publishing");
     }
 
-    return document["OK"].GetString();
+    if(document.HasMember("OK"))
+        return document["OK"].GetString();
+    else
+        return "";
 }
-
+    
+//! Request the user identification token
+/*!
+    Returns the user token, reading it from the file or 
+    requesting it to the binder.
+    \return The token
+*/
 std::string Polo::get_token(){
+
     uid_t uid = geteuid();
     struct passwd *pw_user = getpwuid(uid);
-    char dir[strlen(pw_user->pw_dir)+strlen("/.polo/token")];
+    std::string token;
+
+    char dir[strlen(pw_user->pw_dir)+strlen(TOKEN_PATH)];
     dir[0] = '\0';
     strcat(dir, pw_user->pw_dir);
-    strcat(dir, "/.polo/token");
+    strcat(dir, TOKEN_PATH);
 
     std::ifstream infile(dir);
-    std::string token;
+    
     if(!infile.good()){
         token = this->request_token(pw_user);
-        if(token.length() == 0)    return "";
-        
+        if(token.length() == 0)    
+            return "";
     }
 
     FILE *f = fopen(dir, "r");
     if(f == NULL)
         perror(dir);
+        return "";
 
     char read_buffer[50];
-    if(NULL == fgets(read_buffer, 50, f)){
+    if(NULL == fgets(read_buffer, 50, f))
         return "";
-    }
-    return std::string(read_buffer);
+    
 
+    return std::string(read_buffer);
 }
 
+//! Requests a token to the Polo binder
+/*!
+    Sends a requests to the Polo binding requesting a token for the user
+    If the request is sucessful, the token will be written on the user 
+    ~/.polo/token file, and it will also be returned by the function
+    \param pw_user The passwd structure with the information of the user
+    whose token is to be requested.
+*/
 std::string Polo::request_token(const struct passwd *pw_user){
+    
     rapidjson::StringBuffer stringbuffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(stringbuffer);
     
@@ -265,9 +298,9 @@ std::string Polo::request_token(const struct passwd *pw_user){
 
     SSL_write(this->wrappedSocket, output, str_len);
     
-    char recv_response[2048];
+    char recv_response[BUFF_LEN];
 
-    size_t response = SSL_read(this->wrappedSocket, recv_response, 2048);
+    size_t response = SSL_read(this->wrappedSocket, recv_response, BUFF_LEN);
 
     wchar_t to_arr[response];
     char to_arr_aux[response];
@@ -297,11 +330,31 @@ std::string Polo::request_token(const struct passwd *pw_user){
             perror(std::string(document["Error"].GetString()).c_str());
         return "";
     }
-    
-    
 }
 
+//! IP verification
+/*!
+    Asserts if the IP meets the following requirements
+    - Checks that the ip parameter is a dot-notation-formatted IP
+    - Checks that the IP is in the multicast range.
+    On success it returns 0. If unsuccessful, it returns 1 and reason is
+    set to a verbose explanation of the failure.
 
-int Polo::verify_ip(std::string ip, std::string& reason){
+    \param ip The ip to verify
+    \param reason The reason why the assertion failed
+*/
+int Polo::verify_ip(const std::string ip, std::string& reason){
+    struct sockaddr_in sa;
+    int result = inet_pton(AF_INET, ip.c_str(), &(sa.sin_addr));
+    if(result != 1){
+        reason = "The string cannot be parsed as an IPv4 string";
+        return 1;
+    }
+    uint32_t ip_u = parseIPV4string(ip.c_str());
+    bool isMulti = ((ip_u >> 28) == 14);
+    if(!isMulti){
+        reason = "The IP is not in the multicast range";
+        return 1;
+    }
     return 0;
 }

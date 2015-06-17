@@ -6,7 +6,6 @@ find_package(RapidJSON)
 SET( MARCOCPPBINDING_SRC
   ${CMAKE_SOURCE_DIR}/src/marco.cpp
   ${CMAKE_SOURCE_DIR}/src/polo.cpp
-  ${CMAKE_SOURCE_DIR}/src/convert.cpp
 )
 
 SET(POLOTEST_SRC

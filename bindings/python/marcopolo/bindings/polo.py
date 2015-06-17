@@ -105,6 +105,7 @@ class Polo(object):
         faulty_ip = ""
         reason = ""
         for ip in multicast_groups:
+            #TODO: Use verify_ip
             if not isinstance(ip, six.string_types):
                 error = True
                 faulty_ip = ip
