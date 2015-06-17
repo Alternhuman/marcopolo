@@ -217,13 +217,13 @@ class PoloBindingSSL(Protocol):
             This feature is only available to privileged users, by default root and users in the marcopolo group.
         """
         if len(str(token)) == 0:
-            self.write_error("Bad token")
+            self.write_error("Need a token")
             return
 
         uid = tokenprovider.decrypt_token(token, self.secret)
         try:
             if uid is None or int(uid) < 0:
-                self.write_error("Bad token")
+                self.write_error("Bad token. Could not find user")
                 return
         except ValueError as e:
             self.write_error("Bad token")
@@ -485,7 +485,7 @@ class PoloBindingSSL(Protocol):
                     self.write_error("Could not find service")
                     return
             else:
-                self.write_ok(service)
+                self.write_ok(0)
                 return
         else:
             #root service
