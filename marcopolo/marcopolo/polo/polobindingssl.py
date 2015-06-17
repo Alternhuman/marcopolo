@@ -139,6 +139,7 @@ class PoloBindingSSL(Protocol):
 
         :param str error: The error reason
         """
+        logging.debug(error)
         self.transport.write(json.dumps({"Error": error}).encode('utf-8'))
 
     def publish_service_wrapper(self, command, args):
@@ -395,7 +396,9 @@ class PoloBindingSSL(Protocol):
         :param bool delete_file: If set to ``True`` and the service is of type permanent,\
          the service file is deleted. If the service is not permanent the parameter is ignored. 
         """
+        logging.debug("Unpublishing service")
         if len(str(token)) == 0:
+
             self.write_error("Bad token")
             return
 

@@ -25,8 +25,6 @@
 #include <pwd.h>
 #include <unistd.h>
 #include <fstream>
-//#include <iostream>
-//#include <sys/types.h>
 
 
 #define PORT 1390
@@ -93,6 +91,9 @@ std::string Polo::publish_service(std::string service, std::vector<std::string> 
     //The user token is requested
     std::string token = this->get_token();
     
+    if(token.length() < 1){
+        return "";
+    }
 
     if(service.length() <= 1){
         throw PoloException("The name of the service" + service+ "is invalid");
@@ -218,6 +219,126 @@ std::string Polo::publish_service(std::string service, std::vector<std::string> 
     else
         return "";
 }
+
+int Polo::unpublish_service(std::string service, std::vector<std::string> multicast_groups, bool delete_file){
+    std::string token = this->get_token();
+    std::string reason;
+    if(verify_common_parameters(service, multicast_groups, reason) != 0){
+        throw PoloException(reason);
+    }
+
+    
+    //JSON encoding of the data
+    rapidjson::StringBuffer stringbuffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(stringbuffer);
+
+    writer.StartObject();
+        writer.String("Command");
+        writer.String("Unpublish");
+
+        writer.String("Args");
+        writer.StartObject();
+            writer.String("token");
+            writer.String(token.c_str());
+            writer.String("service");
+            writer.String(service.c_str());
+            writer.String("multicast_groups");
+            writer.StartArray();
+                for (std::vector<std::string>::iterator it = multicast_groups.begin(); 
+                    it != multicast_groups.end();
+                    it++){
+                    writer.String((*it).c_str());
+                }
+            writer.EndArray();
+            writer.String("delete_file");
+            writer.Bool(delete_file);
+        writer.EndObject();
+    
+    writer.EndObject();
+
+    std::string json_array_tmp = stringbuffer.GetString();
+    std::wstring json_array;
+
+    json_array = std::wstring(json_array_tmp.begin(), json_array_tmp.end());
+    
+    if(json_array.length() == 0){
+        throw PoloException("Error in JSON encoder");
+    }
+
+    wchar_t *wcs = (wchar_t*) json_array.c_str();
+    size_t str_size = wcslen(wcs)*sizeof(wchar_t);
+    int str_len = wcslen(wcs);
+    char output[str_len];
+
+    wchar_to_utf8(wcs, output, str_size);
+    //TODO: watch length
+
+    SSL_write(this->wrappedSocket, output, str_len);
+
+    char recv_response[BUFF_LEN];
+
+    size_t response = SSL_read(this->wrappedSocket, recv_response, BUFF_LEN);
+    
+    if(response <= 0){
+        switch(SSL_get_error(this->wrappedSocket, response)){
+            case SSL_ERROR_ZERO_RETURN:
+                perror("The TLS/SSL connection has been closed");
+                break;
+            case SSL_ERROR_WANT_READ:
+            case SSL_ERROR_WANT_WRITE:
+                perror("WANT_WRITE");
+                break;
+            case SSL_ERROR_WANT_CONNECT:
+            case SSL_ERROR_WANT_ACCEPT:
+                perror("The operation did not complete");
+                break;
+            case SSL_ERROR_SYSCALL:
+                perror("I/O error");
+                break;
+            case SSL_ERROR_SSL:
+                perror("Failure in the SSL library");
+                break;
+            case SSL_ERROR_NONE:
+                break;
+            default:
+                perror("Unknown error");
+                break;
+        }
+    }
+
+    wchar_t to_arr[response];
+    char to_arr_aux[response];
+    strncpy(to_arr_aux, recv_response, response);
+    
+    //TODO: It should suffice with the response length
+    if(-1 == utf8_to_wchar(to_arr_aux, to_arr, response)){
+        perror("Error on conversion");
+    }
+    
+    std::wstring ws(to_arr);
+    
+    std::string str(ws.begin(), ws.end());
+    
+    rapidjson::Document document;
+    
+    if(document.Parse<0>(str.c_str()).HasParseError()){
+        perror("Internal parsing error");
+    }
+    
+    assert(document.IsObject());
+
+    if(document.HasMember("Error")){
+        perror(std::string(document["Error"].GetString()).c_str());
+        throw PoloException("Error in publishing");
+    }
+
+    if(document.HasMember("OK"))
+        return 0;
+    else
+        return 1;
+
+}
+
     
 //! Request the user identification token
 /*!
@@ -245,9 +366,10 @@ std::string Polo::get_token(){
     }
 
     FILE *f = fopen(dir, "r");
-    if(f == NULL)
+    if(f == NULL){
         perror(dir);
         return "";
+    }
 
     char read_buffer[50];
     if(NULL == fgets(read_buffer, 50, f))
@@ -356,5 +478,33 @@ int Polo::verify_ip(const std::string ip, std::string& reason){
         reason = "The IP is not in the multicast range";
         return 1;
     }
+    return 0;
+}
+//! Verifies compliance to a set of rules
+/*!
+Verifies that the parameters are compliant with the following rules:
+
+    - The service must be a string.
+    - The multicast_groups parameter must be a list of valid IPv4 addresses.
+    \param service: The service identifier.
+    \param multicast_groups: The list of IPv4 addresses. 
+    \returns 0 if the parameters are valid and a positive integer otherwise.
+*/
+int Polo::verify_common_parameters(const std::string service, const std::vector<std::string> multicast_groups, std::string &reason){
+    std::vector<std::string> multicast_groups_copy(multicast_groups);
+
+    if(service.length() < 1){
+        reason = "The service must be a string";
+    }
+
+    for (std::vector<std::string>::iterator it = multicast_groups_copy.begin();
+         it != multicast_groups_copy.end(); 
+         it++)
+    {
+        if(0 != this->verify_ip(*it, reason)){
+            return 1;
+        }
+    }
+
     return 0;
 }

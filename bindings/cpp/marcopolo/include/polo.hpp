@@ -35,8 +35,8 @@ public:
     ~Polo();
     
     std::string publish_service(std::string service, std::vector<std::string> multicast_groups=std::vector<std::string>(), bool permanent=false, bool root=false);
-    /*int unpublish_service(std::string service, std::vector<std::string> multicast_groups, bool delete_file=false);
-    Service service_info(std::string service);
+    int unpublish_service(std::string service, std::vector<std::string> multicast_groups=std::vector<std::string>(), bool delete_file=false);
+    /*Service service_info(std::string service);
     bool has_service(service);
 
     int set_permanent(std::string service, bool permanent=true);
@@ -49,6 +49,7 @@ private:
     std::string get_token();
     std::string request_token(const struct passwd*);
     int verify_ip(std::string, std::string&);
+    int verify_common_parameters(const std::string service, const std::vector<std::string> multicast_groups, std::string &reason);
     
     /*verify_parameters(std::string service, std::vector<std::string> multicast_groups)*/
 };

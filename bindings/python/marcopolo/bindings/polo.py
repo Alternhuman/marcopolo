@@ -298,7 +298,7 @@ class Polo(object):
                                 "service": service, 
                                 "multicast_groups":[g for g in multicast_groups], 
                                 "delete_file": delete_file,
-                                "uid": os.geteuid()}
+                                "uid": os.geteuid()} #TODO: Delete UID
 
         error = False
         try:
