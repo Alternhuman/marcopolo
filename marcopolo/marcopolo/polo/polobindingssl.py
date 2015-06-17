@@ -68,7 +68,7 @@ class PoloBindingSSL(Protocol):
         logging.info("Starting binding")
 
     def connectionMade(self):
-        pass
+        print("A connection was made!")
 
     def dataReceived(self, datagram):
         """
@@ -78,8 +78,10 @@ class PoloBindingSSL(Protocol):
         :param bytes datagram: The byte stream with the message
         """
         
-        logging.debug("Datagram received")        
+             
         datos = datagram.decode('utf-8')
+        logging.debug("Datagram received: %s" % datos)
+    
         try:
             datos_dict = json.loads(datos)
         except ValueError:

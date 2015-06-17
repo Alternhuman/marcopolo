@@ -1,4 +1,4 @@
-package marcobinding;
+package marcopolo.binding;
 
 public class Parameter {
 	int type;

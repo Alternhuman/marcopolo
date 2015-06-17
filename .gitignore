@@ -67,3 +67,5 @@ marcopolo.egg*
 marcoshell/dist
 marcoshell/marcoutils.egg-info
 marcopolo/dist
+marcopolo/bindings/java/marcobinding/.metadata
+marcopolo/bindings/java/marcobinding/RemoteSystemsTempFiles

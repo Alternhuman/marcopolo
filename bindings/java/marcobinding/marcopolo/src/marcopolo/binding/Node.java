@@ -1,4 +1,4 @@
-package marcobinding;
+package marcopolo.binding;
 
 import java.util.HashMap;
 

@@ -1,4 +1,4 @@
-package marcobinding;
+package marcopolo.binding;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
