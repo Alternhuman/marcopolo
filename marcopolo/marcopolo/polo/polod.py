@@ -79,18 +79,6 @@ def start_multicast():
 def verifyCallback():
     print("Not verified")
 
-class SuperAwesomeProtocolYay(Factory):
-    def __init__(self, secret, offered_services, user_services, multicast_addrs):
-        
-        self.secret = secret
-        self.offered_services = offered_services
-        self.user_services = user_services
-        self.multicast_addrs = multicast_addrs
-
-    def buildProtocol(self, addr):
-        p =  self.protocol(self.secret, self.offered_services, self.user_services, self.multicast_addrs)
-        p.factory = self
-        return p
 
 def start_binding():
     """
@@ -99,7 +87,7 @@ def start_binding():
     secret = conf.SECRET
     polobinding = PoloBindingSSL
 
-    factory = SuperAwesomeProtocolYay(secret, offered_services, user_services, conf.MULTICAST_ADDRS)
+    factory = PoloBindingSSLFactory(secret, offered_services, user_services, conf.MULTICAST_ADDRS)
     factory.protocol = polobinding
     
     myContextFactory = ssl.DefaultOpenSSLContextFactory(

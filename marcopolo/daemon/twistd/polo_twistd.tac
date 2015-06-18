@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 import twisted.application
 from twisted.application import internet
+from twisted.internet import ssl
+from twisted.internet.protocol import Factory
 from marcopolo.marco_conf import utils, conf
+
+from OpenSSL import SSL
 
 
 from twisted.internet.protocol import DatagramProtocol
@@ -21,6 +25,7 @@ import re
 from marcopolo.marco_conf import conf
 
 from marcopolo.polo.polobinding import PoloBinding
+from marcopolo.polo.polobindingssl import PoloBindingSSL, PoloBindingSSLFactory
 from marcopolo.polo.polo import Polo
 __author__ = 'Diego Martín'
 
@@ -83,7 +88,29 @@ def start_binding():
     
     internet.UDPServer(conf.POLO_BINDING_PORT, polobinding, interface='127.0.0.1').setServiceParent(application)
 
+def start_binding_ssl():
+    """
+    Starts the :class:`PoloBinding`
+    """
+    secret = conf.SECRET
+
+    factory = PoloBindingSSLFactory(secret, offered_services, user_services, conf.MULTICAST_ADDRS)
+    factory.protocol = PoloBindingSSL
+    
+    myContextFactory = ssl.DefaultOpenSSLContextFactory(
+        '/opt/certs/server.key', '/opt/certs/server.crt'
+        )
+
+    ctx = myContextFactory.getContext()
+
+    ctx.load_verify_locations("/opt/certs/rootCA.pem")
+
+    reactor.listenSSL(conf.POLO_BINDING_PORT,
+                        factory,
+                        myContextFactory,
+                        interface='127.0.0.1')
+
 signal.signal(signal.SIGUSR1, reload_services)
 
 start_multicast()
-start_binding()
+start_binding_ssl()

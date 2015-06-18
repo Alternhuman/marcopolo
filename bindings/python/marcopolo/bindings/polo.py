@@ -8,6 +8,8 @@ from marcopolo.bindings import conf
 import six
 
 from marcopolo.bindings.utils import verify_ip
+from marcopolo.bindings.types import Service
+
 BINDING_PORT = conf.POLO_BINDING_PORT
 
 TIMEOUT = 4000
@@ -222,7 +224,7 @@ class Polo(object):
         if error is not None:
             raise error
 
-    def verify_parameters(self, service, multicast_groups):
+    def verify_parameters(self, service, multicast_groups=[]):
         """
         Verifies that the parameters are compliant with the following rules:
 
@@ -363,10 +365,6 @@ class Polo(object):
         else:
             raise PoloInternalException("Error during internal communication")
 
-        return None
-
-
-
         return 0
 
 
@@ -375,8 +373,81 @@ class Polo(object):
         Returns a dictionary with all the information from a service
         
         :param string service: The name of the service
-
         """
+
+        self.verify_parameters(service)
+
+        message_dict = {}
+        message_dict["Command"] = "Service-info"
+        message_dict["Args"] = {"service":service}
+        encoder = json.JSONEncoder(allow_nan=False)
+        
+        error = False
+        try:
+            message_str = encoder.encode(message_dict) # https://docs.python.org/2/library/json.html#infinite-and-nan-number-values
+        except Exception:
+            error = True
+
+        if error:
+            raise PoloInternalException("Error in JSON Encoder")
+        
+        error  = False
+        try:
+            if -1 == self.wrappedSocket.send(unicode_msg):
+                error = True
+        except Exception:
+            error = True
+
+        if error:
+            raise PoloInternalException("Error on send")
+
+        error = False
+        try:
+            data = self.wrappedSocket.recv()
+        except socket.timeout:
+            error = True
+
+        if error or data == -1:
+            raise PoloInternalException("Timeout for reception")
+
+        try:
+            data_dec = data.decode('utf-8')
+        except Exception:
+            error = True
+
+        if error:
+            raise PoloInternalException("Error on decoding")
+
+        try:
+            parsed_data = json.loads(data_dec)
+        except ValueError:
+            error = True
+
+        if error:
+            raise PoloInternalException("Error during internal communication")
+
+
+        if parsed_data.get("Error", None) is not None:
+            return None
+
+        elif parsed_data.get("OK", None) is not None:
+            data = parsed_data.get("OK")
+            service = Service()
+            service.identifier = data.get("identifier", None)
+            if service.identifier is None:
+                raise PoloInternalException("identifier missing in return")
+
+            service.params = data.get("params", None)
+
+            service.multicast_groups = data.get("multicast_groups", [])
+
+            service.disabled = data.get("disabled", False)
+
+            return service
+
+        else:
+
+            raise PoloInternalException("The return value is not valid")
 
     def has_service(self, service):
         """

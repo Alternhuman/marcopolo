@@ -1,6 +1,6 @@
 from __future__ import with_statement
 from __future__ import absolute_import
-from twisted.internet.protocol import DatagramProtocol, Protocol
+from twisted.internet.protocol import DatagramProtocol, Protocol, Factory
 
 from io import open
 import os
@@ -27,6 +27,20 @@ def sanitize_path(path_str):
     :rtype: str
     """
     return path.normpath("/"+path_str).lstrip('/')
+
+
+class PoloBindingSSLFactory(Factory):
+    def __init__(self, secret, offered_services, user_services, multicast_addrs):
+        
+        self.secret = secret
+        self.offered_services = offered_services
+        self.user_services = user_services
+        self.multicast_addrs = multicast_addrs
+
+    def buildProtocol(self, addr):
+        p =  self.protocol(self.secret, self.offered_services, self.user_services, self.multicast_addrs)
+        p.factory = self
+        return p
 
 class PoloBindingSSL(Protocol):
 
