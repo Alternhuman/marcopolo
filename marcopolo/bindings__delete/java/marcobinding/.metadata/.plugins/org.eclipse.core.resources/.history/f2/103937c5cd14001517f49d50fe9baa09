@@ -1,0 +1,6 @@
+package marcopolo;
+
+public class Parameter {
+	int type;
+	String value;
+}

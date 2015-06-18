@@ -1,0 +1,10 @@
+package marcopolo.binding;
+
+public class PoloException extends Exception{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -860519340467123187L;
+
+}
