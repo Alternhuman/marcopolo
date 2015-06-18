@@ -1,0 +1,55 @@
+digraph "packages_No_Name" {
+charset="utf-8"
+rankdir=BT
+"0" [label="marcopolo", shape="box"];
+"1" [label="marcopolo.marco", shape="box"];
+"2" [label="marcopolo.marco.conf", shape="box"];
+"3" [label="marcopolo.marco.marco", shape="box"];
+"4" [label="marcopolo.marco.marcobinding", shape="box"];
+"5" [label="marcopolo.marco.marcod", shape="box"];
+"6" [label="marcopolo.marco_conf", shape="box"];
+"7" [label="marcopolo.marco_conf.conf", shape="box"];
+"8" [label="marcopolo.marco_conf.utils", shape="box"];
+"9" [label="marcopolo.polo", shape="box"];
+"10" [label="marcopolo.polo.__main__", shape="box"];
+"11" [label="marcopolo.polo.polo", shape="box"];
+"12" [label="marcopolo.polo.polobinding", shape="box"];
+"13" [label="marcopolo.polo.polobindingssl", shape="box"];
+"14" [label="marcopolo.polo.polod", shape="box"];
+"15" [label="marcopolo.polo.tokenprovider", shape="box"];
+"16" [label="marcopolo.tests", shape="box"];
+"17" [label="marcopolo.tests.test", shape="box"];
+"18" [label="marcopolo.tests.test_marco", shape="box"];
+"19" [label="marcopolo.tests.test_marco_binding", shape="box"];
+"20" [label="marcopolo.tests.test_polo", shape="box"];
+"21" [label="marcopolo.tests.test_polo_binding", shape="box"];
+"3" -> "1" [arrowhead="open", arrowtail="none"];
+"3" -> "2" [arrowhead="open", arrowtail="none"];
+"3" -> "6" [arrowhead="open", arrowtail="none"];
+"3" -> "8" [arrowhead="open", arrowtail="none"];
+"4" -> "3" [arrowhead="open", arrowtail="none"];
+"4" -> "6" [arrowhead="open", arrowtail="none"];
+"4" -> "7" [arrowhead="open", arrowtail="none"];
+"4" -> "8" [arrowhead="open", arrowtail="none"];
+"5" -> "4" [arrowhead="open", arrowtail="none"];
+"5" -> "6" [arrowhead="open", arrowtail="none"];
+"5" -> "7" [arrowhead="open", arrowtail="none"];
+"5" -> "8" [arrowhead="open", arrowtail="none"];
+"10" -> "14" [arrowhead="open", arrowtail="none"];
+"11" -> "6" [arrowhead="open", arrowtail="none"];
+"11" -> "7" [arrowhead="open", arrowtail="none"];
+"12" -> "6" [arrowhead="open", arrowtail="none"];
+"12" -> "7" [arrowhead="open", arrowtail="none"];
+"13" -> "6" [arrowhead="open", arrowtail="none"];
+"13" -> "7" [arrowhead="open", arrowtail="none"];
+"13" -> "8" [arrowhead="open", arrowtail="none"];
+"13" -> "9" [arrowhead="open", arrowtail="none"];
+"13" -> "15" [arrowhead="open", arrowtail="none"];
+"14" -> "6" [arrowhead="open", arrowtail="none"];
+"14" -> "7" [arrowhead="open", arrowtail="none"];
+"14" -> "11" [arrowhead="open", arrowtail="none"];
+"14" -> "13" [arrowhead="open", arrowtail="none"];
+"20" -> "9" [arrowhead="open", arrowtail="none"];
+"20" -> "14" [arrowhead="open", arrowtail="none"];
+"20" -> "15" [arrowhead="open", arrowtail="none"];
+}
