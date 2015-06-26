@@ -122,7 +122,7 @@ class PoloBindingSSL(Protocol):
 
         polo_dir = os.path.join(pw_user.pw_dir, ".polo")
         
-        if not os.stat(polo_dir):
+        if not os.path.exists(polo_dir):
             os.mkdir(polo_dir)
             os.chown(polo_dir, pw_user.pw_uid, pw_user.pw_gid)
 
