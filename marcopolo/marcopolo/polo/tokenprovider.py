@@ -41,5 +41,5 @@ def decrypt_token(token, secret):
 
     cipher = AES.new(secret)
     # decode the encoded string
-    return int(DecodeAES(cipher, token))
+    return int(DecodeAES(cipher, token.encode('utf-8')))
 
