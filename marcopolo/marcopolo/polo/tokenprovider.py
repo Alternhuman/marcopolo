@@ -15,8 +15,14 @@ pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 # one-liners to encrypt/encode and decrypt/decode a string
 # encrypt with AES, encode with base64
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
-DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
+DecodeAES2 = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 
+def DecodeAES(c,e):
+    e = bytes(e, 'UTF-8')
+    c = bytes(c, 'UTF-8')
+    PADDING = bytes(PADDING 'UTF-8')
+
+    return c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 
 def generate_secret(BLOCK_SIZE=32):
     if BLOCK_SIZE not in  (16, 24, 32):
@@ -41,5 +47,5 @@ def decrypt_token(token, secret):
 
     cipher = AES.new(secret)
     # decode the encoded string
-    return int(DecodeAES(cipher, bytes(token, 'UTF-8')))
+    return int(DecodeAES(cipher, token))
 
