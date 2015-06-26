@@ -15,6 +15,7 @@ from distutils.command.install import install
 import os, sys
 import subprocess
 import glob
+import stat
 
 custom_marcopolo_params = [
                             "--marcopolo-disable-daemons",
