@@ -72,6 +72,7 @@ if __name__ == "__main__":
                  ('/etc/marcopolo/polo/', ["etc/marcopolo/polo/polo.conf"]),
                  ('/etc/marcopolo/polo/services', [os.path.join("etc/marcopolo/polo/services/", d) for d in os.listdir("etc/marcopolo/polo/services/")]),
                  ('/etc/marcopolo', ["etc/marcopolo/marcopolo.conf"]),
+                 ('/etc/marcopolo/certs', [os.path.join("etc/marcopolo/certs", f) for f in os.listdir("etc/marcopolo/certs/")]),
                  ]
 
     if "--marcopolo-disable-daemons" not in marcopolo_params:
@@ -83,7 +84,7 @@ if __name__ == "__main__":
                                ]
 
             else:
-                daemon_files = [('/etc/systemd/system/', ["daemon/marco.service", "daemon/polo.service"]),
+                daemon_files = [('/etc/systemd/system/', ["daemon/marcod.service", "daemon/polod.service"]),
                                  ('/usr/local/bin/', glob.glob("daemon/*.py"))
                                ]
             
@@ -101,13 +102,11 @@ if __name__ == "__main__":
                                ]
 
             else:
-                daemon_files = [('/etc/systemd/system/', ["daemon/python3/marco.service", "daemon/python3/polo.service"]),
+                daemon_files = [('/etc/systemd/system/', ["daemon/python3/marcod.service", "daemon/python3/polod.service"]),
                                  ('/usr/local/bin/', glob.glob("daemon/python3/*.py"))
                                ]
             
             data_files.extend(daemon_files)
-
-        
 
     setup(
         name='marcopolo',
@@ -146,9 +145,10 @@ if __name__ == "__main__":
         packages=find_packages(),
         install_requires=[
             'Twisted==15.1.0',
-            'pyOpenSSL==0.13',
+            'pyOpenSSL==0.14',
             'service_identity==14.0.0',
-            'six==1.9.0'
+            'six==1.9.0',
+            'pycrypto==2.6.1'
         ],
         zip_safe=False,
         data_files=data_files,

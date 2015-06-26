@@ -11,7 +11,7 @@ import os
 import sys, signal, logging
 
 from marcopolo.marco_conf import conf
-from marcopolo.polo.polobindingssl import PoloBindingSSL
+from marcopolo.polo.polobindingssl import PoloBindingSSL, PoloBindingSSLFactory
 from marcopolo.polo.polo import Polo
 
 __author__ = 'Diego Martín'

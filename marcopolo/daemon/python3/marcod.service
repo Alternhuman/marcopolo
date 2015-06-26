@@ -5,7 +5,7 @@ After=network.target network-online.target
 After=sys-subsystem-net-devices-net0.device
 
 [Service]
-ExecStart=/usr/local/bin/marcod &>/dev/null
+ExecStart=/usr/bin/marcod &>/dev/null
 
 Type=simple
 User=root

@@ -5,8 +5,8 @@ After=network.target network-online.target
 After=sys-subsystem-net-devices-net0.device
 
 [Service]
-ExecStart=/usr/local/bin/polod &>/dev/null
-ExecReload=/usr/local/bin/poloreload.py &> /dev/null
+ExecStart=/usr/bin/polod &>/dev/null
+ExecReload=/usr/bin/poloreload.py &> /dev/null
 
 Type=simple
 User=root
