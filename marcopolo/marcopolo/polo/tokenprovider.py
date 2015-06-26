@@ -32,7 +32,7 @@ def create_token(uid, secret):
 
     # create a cipher object using the random secret
     cipher = AES.new(secret)
-    return unicode(EncodeAES(cipher, uid))
+    return six.u(EncodeAES(cipher, uid))
     
 
 def decrypt_token(token, secret):
