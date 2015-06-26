@@ -128,7 +128,7 @@ class PoloBindingSSL(Protocol):
 
         if not os.path.isfile(os.path.join(polo_dir, "token")):
             try:
-                f = open(os.path.join(polo_dir, "token"), 'w')
+                f = open(os.path.join(polo_dir, "token"), 'wb')
                 os.fchmod(f.fileno(), stat.S_IRUSR | stat.S_IWUSR | stat.S_IRUSR)
                 os.fchown(f.fileno(), pw_user.pw_uid, pw_user.pw_gid)
                 f.write(tokenprovider.create_token(uid, self.secret))
