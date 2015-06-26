@@ -8,7 +8,7 @@ BLOCK_SIZE = 32
 # the character used for padding--with a block cipher such as AES, the value
 # you encrypt must be a multiple of BLOCK_SIZE in length.  This character is
 # used to ensure that your value is always a multiple of BLOCK_SIZE
-PADDING = '#'
+PADDING = '#'.encode('UTF-8')
 # one-liner to sufficiently pad the text to be encrypted
 
 pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
@@ -18,9 +18,8 @@ EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
 DecodeAES2 = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 
 def DecodeAES(c,e):
-    e = bytes(e, 'UTF-8')
-    c = bytes(c, 'UTF-8')
-    PADDING = bytes(PADDING 'UTF-8')
+    #e = bytes(e, 'UTF-8')
+    #PADDING = bytes(PADDING, 'UTF-8')
 
     return c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 
@@ -47,5 +46,5 @@ def decrypt_token(token, secret):
 
     cipher = AES.new(secret)
     # decode the encoded string
-    return int(DecodeAES(cipher, token))
+    return int(DecodeAES(cipher, token.encode('UTF-8')))
 
