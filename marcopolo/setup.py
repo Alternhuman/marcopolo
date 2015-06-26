@@ -51,9 +51,9 @@ def start_service(service):
 
 def set_cert_permissions():
     for cert in os.listdir("/etc/marcopolo/certs"):
-        chmod(os.path.join("/etc/marcopolo/certs", cert), stat.S_IREAD | stat.S_IWRITE)
+        os.chmod(os.path.join("/etc/marcopolo/certs", cert), stat.S_IREAD | stat.S_IWRITE)
 
-    chmod("/etc/marcopolo/certs", stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC)
+    os.chmod("/etc/marcopolo/certs", stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC)
 
 
 if __name__ == "__main__":
