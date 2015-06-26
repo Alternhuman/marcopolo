@@ -91,7 +91,7 @@ def start_binding():
     factory.protocol = polobinding
     
     myContextFactory = ssl.DefaultOpenSSLContextFactory(
-        '/etc/marcopolo/certs/polossl.key', '/etc/marcopolo/polossl.crt'
+        '/etc/marcopolo/certs/polossl.key', '/etc/marcopolo/certs/polossl.crt'
         )
 
     ctx = myContextFactory.getContext()
