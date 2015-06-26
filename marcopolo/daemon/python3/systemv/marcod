@@ -46,7 +46,7 @@ fi
 
 start_service() {
   echo -n " * Starting $NAME... "
-  start-stop-daemon -Sq -p $PIDFILE -x $DAEMON -- $DAEMON_OPTS &> /dev/null
+  start-stop-daemon -Sq -p $PIDFILE -x $DAEMON --make-pidfile -- $DAEMON_OPTS &> /dev/null
   e=$?
   if [ $e -eq 1 ]; then
     echo "already running"

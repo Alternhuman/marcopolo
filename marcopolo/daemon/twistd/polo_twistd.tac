@@ -98,17 +98,18 @@ def start_binding_ssl():
     factory.protocol = PoloBindingSSL
     
     myContextFactory = ssl.DefaultOpenSSLContextFactory(
-        '/opt/certs/server.key', '/opt/certs/server.crt'
+        '/etc/marcopolo/certs/polossl.key', '/etc/marcopolo/certs/polossl.crt'
         )
 
     ctx = myContextFactory.getContext()
 
-    ctx.load_verify_locations("/opt/certs/rootCA.pem")
+    #ctx.load_verify_locations("/opt/certs/rootCA.pem")
 
     reactor.listenSSL(conf.POLO_BINDING_PORT,
                         factory,
                         myContextFactory,
                         interface='127.0.0.1')
+
 
 signal.signal(signal.SIGUSR1, reload_services)
 
