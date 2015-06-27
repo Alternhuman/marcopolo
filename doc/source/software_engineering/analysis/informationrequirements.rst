@@ -1,3 +1,0 @@
-Requisitos de información
--------------------------
-

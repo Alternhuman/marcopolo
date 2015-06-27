@@ -1,2 +1,0 @@
-MarcoPolo bindings
-==================
