@@ -120,13 +120,14 @@ if __name__ == "__main__":
         name='marcopolo',
         namespace_packages=['marcopolo'],
         provides=["marcopolo.marco", "marcopolo.polo"],
-        version='0.0.1',
+        version='0.0.2',
 
         description='The reference implementation for MarcoPolo',
 
         long_description=long_description,
 
         url='marcopolo.martinarroyo.net',
+        download_url='https://github.com/peterldowns/mypackage/tarball/0.1'
 
         author='Diego Martín',
 
@@ -138,14 +139,15 @@ if __name__ == "__main__":
             'Development Status :: 3 - Alpha',
 
             'Intended Audience :: Developers',
+            'Intended Audience :: System Administrators',
 
             'Topic :: Software Development :: Build Tools',
-
-            'License :: OSI Approved :: MIT License',
+            'Topic :: System :: Networking',
+            'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
 
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3.4',
-
+            'Natural Language :: English',
         ],
 
         keywords="marcopolo discovery binding",
@@ -166,19 +168,21 @@ if __name__ == "__main__":
                                 'marcod = marcopolo.marco.marcod:main'],
         },
     )
+    
+    if "install" in sys.argv:
+    
+        if "--marcopolo-disable-daemons" not in marcopolo_params:
+            if "--marcopolo-disable-marco" not in marcopolo_params:
+                enable_service("marcod")
+                if "--marcopolo-no-start" not in marcopolo_params:
+                    start_service("marcod")
 
-    if "--marcopolo-disable-daemons" not in marcopolo_params:
-        if "--marcopolo-disable-marco" not in marcopolo_params:
-            enable_service("marcod")
-            if "--marcopolo-no-start" not in marcopolo_params:
-                start_service("marcod")
+            if "--marcopolo-enable-polo" in marcopolo_params:
+                enable_service("polod")
+                if "--marcopolo-no-start" not in marcopolo_params:
+                    start_service("polod")
 
-        if "--marcopolo-enable-polo" in marcopolo_params:
-            enable_service("polod")
-            if "--marcopolo-no-start" not in marcopolo_params:
-                start_service("polod")
+        if not os.path.exists("/var/log/marcopolo"):
+            os.makedirs('/var/log/marcopolo')
 
-    if not os.path.exists("/var/log/marcopolo"):
-        os.makedirs('/var/log/marcopolo')
-
-    set_cert_permissions()
+        set_cert_permissions()

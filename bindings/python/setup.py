@@ -23,8 +23,7 @@ if __name__ == "__main__":
         long_description = f.read()
 
     setup(
-        name='marcopolobindings',
-        #cmdclass={'install': MyInstall},
+        name='marcopolo.bindings',
         namespace_packages=['marcopolo'],
         provides=["marcopolo.bindings"],
         version='0.0.1',
@@ -45,29 +44,18 @@ if __name__ == "__main__":
             'Development Status :: 3 - Alpha',
 
             'Intended Audience :: Developers',
+            'Intended Audience :: System Administrators',
 
-            'Topic :: Software Development :: Build Tools',
+            'Topic :: Software Development :: Libraries :: Python Modules',
 
-            'License :: OSI Approved :: MIT License',
+            'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
 
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3.4',
-
+            'Natural Language :: English',
         ],
 
         keywords="marcopolo discovery binding",
 
-        #packages=['marcopolo.bindings.marco', 'marcopolo.bindings.polo', 'marcopolo.bindings.marco_conf'],
         packages=find_packages(),
-        #install_requires=[''],
-        #package_data={
-        #    'sample': ['package_data.dat'],
-        #},
-        #data_files=[('my_data', ['data/data_file'])],
-
-        # entry_points={
-        #     'console_scripts': [
-        #         'marcopolobindings=marcopolobindings:main',
-        #     ],
-        # },
     ) 

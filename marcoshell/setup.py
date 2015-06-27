@@ -42,7 +42,7 @@ if __name__ == "__main__":
             'Intended Audience :: Developers',
 
             'Topic :: Software Development :: Build Tools',
-            'Operating System :: Linux',
+            'Operating System :: POSIX :: Linux',
             'License :: OSI Approved :: MIT License',
 
             'Programming Language :: Python :: 2.7',
@@ -64,7 +64,5 @@ if __name__ == "__main__":
                                 'marcoinstallkey = marcopolo.utils.marcoinstallkey:main'
                                 ],
         },
-
-       
 
     )
