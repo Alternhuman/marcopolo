@@ -120,14 +120,14 @@ if __name__ == "__main__":
         name='marcopolo',
         namespace_packages=['marcopolo'],
         provides=["marcopolo.marco", "marcopolo.polo"],
-        version='0.0.2',
+        version='0.0.5',
 
         description='The reference implementation for MarcoPolo',
 
         long_description=long_description,
 
         url='marcopolo.martinarroyo.net',
-        download_url='https://github.com/peterldowns/mypackage/tarball/0.1'
+        download_url='https://bitbucket.org/Alternhuman/marcopolo/get/v0.0.5.tar.gz',
 
         author='Diego Martín',
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
         packages=find_packages(),
         install_requires=[
             'Twisted==15.1.0',
-            'pyOpenSSL==0.14',
+            'pyOpenSSL==0.15.1',
             'service_identity==14.0.0',
             'six==1.9.0',
             'pycrypto==2.6.1'

@@ -1,1 +1,7 @@
 include DESCRIPTION.rst
+
+# Configuration files
+recursive-include etc *
+
+# Daemon files
+recursive-include daemon *
