@@ -33,7 +33,7 @@ def create_token(uid, secret):
     if not isinstance(uid, int):
         raise ValueError("uid must be integer")
 
-    uid = str(uid)
+    uid = str(uid).encode('UTF-8')
 
     # create a cipher object using the random secret
     cipher = AES.new(secret)
