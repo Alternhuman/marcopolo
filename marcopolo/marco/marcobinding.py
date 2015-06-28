@@ -41,7 +41,7 @@ class MarcoBinding(DatagramProtocol):
                                  group=command.get("group", conf.MULTICAST_ADDR)
                                  )
 
-        self.transport.write(bytes(json.dumps([{"Address":n.address, "Params": n.params} for n in nodes]).encode('utf-8')), address)
+        self.transport.write(json.dumps([{"Address":n.address, "Params": n.params} for n in nodes]).encode('utf-8'), address)
 
     def requestForInThread(self, command, address):
         nodes = self.marco.request_for(command["Params"],
@@ -50,16 +50,18 @@ class MarcoBinding(DatagramProtocol):
                                         params=command.get("params", {}),
                                         timeout=command.get("timeout", None))
         if len(nodes) > 0:
-            self.transport.write(bytes(json.dumps([{"Address": n.address, "Params": n.params} for n in nodes]).encode('utf-8')), address)
+            self.transport.write(json.dumps(
+                [{"Address": n.address, "Params": n.params} for n in nodes]).encode('utf-8'), 
+            address)
         else:
-            self.transport.write(bytes(json.dumps([])).encode('utf-8'), address)
+            self.transport.write(json.dumps([]).encode('utf-8'), address)
     
     def servicesInThread(self, command, address):
         services = self.marco.services(addr=command.get("node", None), 
                                        timeout=command.get("timeout", 0)
                                        )
         
-        self.transport.write(bytes(json.dumps([service for service in services]).encode('utf-8')), address)
+        self.transport.write(json.dumps([service for service in services]).encode('utf-8'), address)
     
     def datagramReceived(self, data, address):
         
@@ -68,7 +70,7 @@ class MarcoBinding(DatagramProtocol):
         except ValueError:
             return
         if command.get("Command", None) == None:
-            self.transport.write(bytes(json.dumps({"Error": True}).encode('utf-8')), address)
+            self.transport.write(json.dumps({"Error": True}).encode('utf-8'), address)
 
         else:
             if command["Command"] == "Marco":
@@ -81,5 +83,5 @@ class MarcoBinding(DatagramProtocol):
                 reactor.callInThread(self.servicesInThread, command, address)
             
             else:
-                self.transport.write(bytes(json.dumps({"Error": True}).encode('utf-8')), address)
+                self.transport.write(json.dumps({"Error": True}).encode('utf-8'), address)
         

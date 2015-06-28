@@ -69,7 +69,7 @@ class Marco:
         
         #Python 2 and 3 compatibility in byte encoding
         #if sys.version_info[0] < 3:
-        discover_msg = bytes(json.dumps({'Command': 'Marco'}).encode('utf-8'))
+        discover_msg = json.dumps({'Command': 'Marco'}).encode('utf-8')
         #else:
         #    discover_msg = bytes(json.dumps({'Command': 'Marco'}), 'utf-8')
 
@@ -249,7 +249,7 @@ class Marco:
         
         nodes = set()
         #if sys.version_info[0] < 3:
-        command_msg = bytes(json.dumps({'Command':'Request-For', 'Params':service}).encode('utf-8'))
+        command_msg = json.dumps({'Command':'Request-For', 'Params':service}).encode('utf-8')
         #else:
         #    command_msg = bytes(json.dumps({'Command':'Request-For', 'Params':service}), 'utf-8')
 
