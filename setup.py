@@ -56,6 +56,8 @@ def set_cert_permissions():
 
     os.chmod("/etc/marcopolo/certs", stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC)
 
+    os.chmod('/etc/marcopolo/polo/secret', stat.S_IREAD | stat.S_IWRITE )
+
 marcopolo_params = []
 
 python_version = int(sys.version[0])
@@ -73,8 +75,9 @@ with open(os.path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
 
 
 data_files = [
-             ('/etc/marcopolo/marco', ["etc/marcopolo/marco/marco.conf"]),
-             ('/etc/marcopolo/polo/', ["etc/marcopolo/polo/polo.conf"]),
+             ('/etc/marcopolo/marco', glob.glob("etc/marcopolo/marco/*.*")),
+             ('/etc/marcopolo/polo/', glob.glob("etc/marcopolo/polo/*.*")),
+             ('/etc/marcopolo/polo/', ["etc/marcopolo/polo/secret"]),
              ('/etc/marcopolo/polo/services', [os.path.join("etc/marcopolo/polo/services/", d) for d in os.listdir("etc/marcopolo/polo/services/")]),
              ('/etc/marcopolo', ["etc/marcopolo/marcopolo.conf"]),
              ('/etc/marcopolo/certs', [os.path.join("etc/marcopolo/certs", f) for f in os.listdir("etc/marcopolo/certs/")]),

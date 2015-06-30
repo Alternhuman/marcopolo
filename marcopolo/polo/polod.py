@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from __future__ import with_statement
 from twisted.internet import reactor, defer, ssl
 from twisted.internet.error import MulticastJoinError
 from twisted.internet.protocol import Factory, Protocol
@@ -10,7 +10,7 @@ import os
 
 import sys, signal, logging
 
-from marcopolo.marco_conf import conf
+from marcopolo.polo import conf
 from marcopolo.polo.polobindingssl import PoloBindingSSL, PoloBindingSSLFactory
 from marcopolo.polo.polo import Polo
 
@@ -84,7 +84,13 @@ def start_binding():
     """
     Starts the :class:`PoloBinding`
     """
-    secret = conf.SECRET
+    try:
+        with open(conf.SECRET_FILE, 'r') as sf:
+            secret = sf.read()
+    except Exception:
+        logging.error("Could not parse secret file: %s. Binding will not start" % s)
+        return
+
     polobinding = PoloBindingSSL
 
     factory = PoloBindingSSLFactory(secret, offered_services, user_services, conf.MULTICAST_ADDRS)
@@ -95,8 +101,6 @@ def start_binding():
         )
 
     ctx = myContextFactory.getContext()
-
-    #ctx.load_verify_locations("/opt/certs/rootCA.pem")
 
     reactor.listenSSL(conf.POLO_BINDING_PORT,
                         factory,
@@ -117,13 +121,13 @@ def main(args=None):
                         level=conf.LOGGING_LEVEL.upper(),
                         format=conf.LOGGING_FORMAT)
 
-    try:
-        f = open(conf.PIDFILE_POLO, 'w')
-        f.write(str(pid))
-        f.close()
-    except Exception as e:
-        logging.error(e)
-        sys.exit(1)
+    #try:
+    #    f = open(conf.PIDFILE_POLO, 'w')
+    #    f.write(str(pid))
+    #    f.close()
+    #except Exception as e:
+    #    logging.error(e)
+    #    sys.exit(1)
 
     signal.signal(signal.SIGHUP, signal.SIG_IGN)
     signal.signal(signal.SIGUSR1, reload_services)

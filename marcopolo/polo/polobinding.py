@@ -14,7 +14,7 @@ import re
 import socket
 import six
 
-from marcopolo.marco_conf import conf
+from marcopolo.polo import conf
 
 def sanitize_path(path_str):
     """

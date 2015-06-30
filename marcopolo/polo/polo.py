@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from __future__ import with_statement
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 
@@ -6,7 +8,7 @@ from os.path import isfile
 import json, logging, re
 import pwd
 
-from marcopolo.marco_conf import conf
+from marcopolo.polo import conf
 
 class Polo(DatagramProtocol):
     """
@@ -33,9 +35,9 @@ class Polo(DatagramProtocol):
 
         self.offered_services = offered_services if offered_services is not None else []
         self.user_services = user_services if user_services is not None else {}
-        print(self.user_services)
+        #TODOprint(self.user_services)
         self.verify = re.compile(verify_regexp or conf.VERIFY_REGEXP)
-        self.multicast_group = multicast_group or conf.MULTICAST_ADDR
+        self.multicast_group = multicast_group or conf.MULTICAST_ADDR_FALLBACK
 
     def reload_services(self):
         """
@@ -53,7 +55,7 @@ class Polo(DatagramProtocol):
         service_ids = set()
         for service_file in servicefiles:
             try:
-                with open(os.path.join(conf.CONF_DIR+conf.SERVICES_DIR, service_file), 'r') as f:
+                with open(os.path.join(os.path.join(conf.CONF_DIR, conf.SERVICES_DIR), service_file), 'r') as f:
                     service = json.load(f)
                     service["permanent"] = True
                     service["params"] = service.get("params", {})
@@ -69,7 +71,7 @@ class Polo(DatagramProtocol):
                                 self.offered_services.append(service)
 
             except ValueError as e:
-                logging.debug(str.format("The file {0} does not have a valid JSON structure", conf.SERVICES_DIR+service_file))
+                logging.debug(str.format("The file {0} does not have a valid JSON structure", os.path.join(conf.SERVICES_DIR, service_file)))
             except Exception as e:
                 logging.warning("Unknown error: %s" % e)
 
@@ -119,7 +121,7 @@ class Polo(DatagramProtocol):
                             fileservices.append(s)
                 except ValueError:
                     logging.warning(str.format("The file {0} does not have a valid JSON structure", 
-                                             conf.SERVICES_DIR+service))
+                                             os.path.join(conf.SERVICES_DIR, service)))
 
             self.user_services[username] = self.user_services[username] + fileservices
 
@@ -133,12 +135,13 @@ class Polo(DatagramProtocol):
 
         #List all files in the service directory
         services_dir = os.path.join(conf.CONF_DIR, conf.SERVICES_DIR)
-        servicefiles = [f for f in os.listdir(os.path.join(conf.CONF_DIR, conf.SERVICES_DIR)) if isfile(os.path.join(services_dir,f))]
+        #TODOprint(conf.CONF_DIR, conf.SERVICES_DIR)
+        servicefiles = [f for f in os.listdir(services_dir) if isfile(os.path.join(services_dir,f))]
         
         service_ids = set()
         for service in servicefiles:
             try:
-                with open(os.path.join(conf.CONF_DIR+conf.SERVICES_DIR, service), 'r') as f:
+                with open(os.path.join(os.path.join(conf.CONF_DIR, conf.SERVICES_DIR), service), 'r') as f:
                     s = json.load(f)
                     
                     s["permanent"] = True
@@ -157,7 +160,7 @@ class Polo(DatagramProtocol):
                         else:
                             logging.warning("The service %s does not have a valid id", s['id'])
             except ValueError:
-                logging.warning(str.format("The file {0} does not have a valid JSON structure", conf.SERVICES_DIR+service))
+                logging.warning(str.format("The file {0} does not have a valid JSON structure", os.path.join(conf.SERVICES_DIR, service)))
             except Exception as e:
                 logging.error("Unknown error %s", e)
         
@@ -267,7 +270,7 @@ class Polo(DatagramProtocol):
         #print(self.user_services.get(user, None))
         if self.user_services.get(user, None) is None: #TODO: reload anyway?
             self.reload_user_services_iter(user)
-        print(self.user_services.get(user, []))
+        #TODOprint(self.user_services.get(user, []))
         match = next((s for s in self.user_services.get(user, []) if s['id'] == service), None)
         
         if match:

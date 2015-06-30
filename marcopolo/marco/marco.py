@@ -74,7 +74,7 @@ class Marco:
         #    discover_msg = bytes(json.dumps({'Command': 'Marco'}), 'utf-8')
 
         #Send to group IP
-        if -1 == self.socket_mcast.sendto(discover_msg, (group, conf.PORT)):
+        if -1 == self.socket_mcast.sendto(discover_msg, (group, conf.POLOPORT)):
             raise MarcoException("Error on multicast sending")
         
         #Timeout check
@@ -212,7 +212,7 @@ class Marco:
 
         discover_msg = json.dumps({'Command': 'Services'}).encode('utf-8')
         
-        if -1 == self.socket_ucast.sendto(discover_msg, (addr, conf.PORT)):
+        if -1 == self.socket_ucast.sendto(discover_msg, (addr, conf.POLOPORT)):
             raise MarcoException("Error on multicast sending")
 
         try:
@@ -316,7 +316,7 @@ class Marco:
                 raise MarcoException("Invalud exclude value. Must be instance of array or set()")
 
             
-            self.socket_mcast.sendto(command_msg, (group, conf.PORT))
+            self.socket_mcast.sendto(command_msg, (group, conf.POLOPORT))
             counter = 0
             while True:
                 try:

@@ -13,8 +13,8 @@ import pwd, grp, stat
 import socket
 import six
 
-from marcopolo.marco_conf import conf, utils
-from marcopolo.polo import tokenprovider
+from marcopolo.marco_conf import utils
+from marcopolo.polo import conf, tokenprovider
 
 def sanitize_path(path_str):
     """
