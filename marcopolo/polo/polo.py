@@ -184,7 +184,7 @@ class Polo(DatagramProtocol):
 
         """
         #TODO: http://stackoverflow.com/questions/808560/how-to-detect-the-physical-connected-state-of-a-network-cable-connector
-        logging.error("Error on joining the multicast group, %s. %d retries" % (conf.MULTICAST_ADDR, self.attempts))
+        logging.error("Error on joining the multicast group %s. %d retries" % (self.multicast_group, self.attempts))
         self.attempts += 1
         reactor.callLater(3, self.retry)
         
