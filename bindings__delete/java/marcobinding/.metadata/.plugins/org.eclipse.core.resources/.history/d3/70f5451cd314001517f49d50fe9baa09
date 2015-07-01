@@ -1,7 +1,0 @@
-package marcopolo.binding;
-
-public class PoloInternalException extends Exception {
-	public PoloInternalException(String msg){
-		super(msg);
-	}
-}

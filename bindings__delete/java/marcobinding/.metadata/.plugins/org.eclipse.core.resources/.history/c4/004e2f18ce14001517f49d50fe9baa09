@@ -1,5 +1,0 @@
-package marcopolo.binding;
-
-public class PoloException extends Exception{
-
-}
