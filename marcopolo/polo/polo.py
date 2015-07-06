@@ -35,7 +35,7 @@ class Polo(DatagramProtocol):
 
         self.offered_services = offered_services if offered_services is not None else []
         self.user_services = user_services if user_services is not None else {}
-        #TODOprint(self.user_services)
+        
         self.verify = re.compile(verify_regexp or conf.VERIFY_REGEXP)
         self.multicast_group = multicast_group or conf.MULTICAST_ADDR_FALLBACK
 
@@ -143,22 +143,22 @@ class Polo(DatagramProtocol):
             try:
                 with open(os.path.join(os.path.join(conf.CONF_DIR, conf.SERVICES_DIR), service), 'r') as f:
                     s = json.load(f)
-                    
-                    s["permanent"] = True
-                    s["params"] = s.get("params", {})
-                    s["file"] = service
-                    groups = s.get("groups",[])
-                    if self.multicast_group in groups or len(groups) == 0:
-                        if not self.verify.match(s['id']):
-                            if s['id'] in service_ids:
-                                logging.warning("Service %s already published. The service in the file %s will not be published" % (s['id'], service))
+                    if not s["disabled"] == True:
+                        s["permanent"] = True
+                        s["params"] = s.get("params", {})
+                        s["file"] = service
+                        groups = s.get("groups",[])
+                        if self.multicast_group in groups or len(groups) == 0:
+                            if not self.verify.match(s['id']):
+                                if s['id'] in service_ids:
+                                    logging.warning("Service %s already published. The service in the file %s will not be published" % (s['id'], service))
+                                else:
+                                    service_ids.add(s['id'])
+                                    self.offered_services.append(s)
+                        #if not self.verify.match(s['id']):
+                        #   self.offered_services.append(s)
                             else:
-                                service_ids.add(s['id'])
-                                self.offered_services.append(s)
-                    #if not self.verify.match(s['id']):
-                    #   self.offered_services.append(s)
-                        else:
-                            logging.warning("The service %s does not have a valid id", s['id'])
+                                logging.warning("The service %s does not have a valid id", s['id'])
             except ValueError:
                 logging.warning(str.format("The file {0} does not have a valid JSON structure", os.path.join(conf.SERVICES_DIR, service)))
             except Exception as e:
@@ -183,7 +183,7 @@ class Polo(DatagramProtocol):
         :param object arg: The arg passed in the addErrback() call
 
         """
-        #TODO: http://stackoverflow.com/questions/808560/how-to-detect-the-physical-connected-state-of-a-network-cable-connector
+        
         logging.error("Error on joining the multicast group %s. %d retries" % (self.multicast_group, self.attempts))
         self.attempts += 1
         reactor.callLater(3, self.retry)
@@ -266,11 +266,9 @@ class Polo(DatagramProtocol):
         If the user has not been added to the list of services before this request,
         reload_user_services_iter(user) is called
         """
-        #print(user)
-        #print(self.user_services.get(user, None))
-        if self.user_services.get(user, None) is None: #TODO: reload anyway?
-            self.reload_user_services_iter(user)
-        #TODOprint(self.user_services.get(user, []))
+        
+        self.reload_user_services_iter(user)
+        
         match = next((s for s in self.user_services.get(user, []) if s['id'] == service), None)
         
         if match:
