@@ -29,13 +29,13 @@ class Marco:
             
             self.socket_ucast = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM, proto=socket.IPPROTO_UDP)
             self.socket_ucast.settimeout(conf.TIMEOUT/1000.0) #https://docs.python.org/2/library/socket.html#socket.socket.settimeout
-            #TODO binding exception
             self.nodes = set()
         
         except Exception as e:
             error = True
 
         if error:
+            logging.error("Error in initialization: %s" % e)
             raise MarcoException("Error in initialization: %s" % e)
 
     def __del__(self):
@@ -257,7 +257,7 @@ class Marco:
             logging.info('Bad formatted request')
             raise MarcoException('Bad formatted request')
 
-        if(node): ##If node is defined only that node is requested TODO: Really necessary?
+        if(node):
             if timeout:
                 try:
                     self.socket_ucast.settimeout(int(timeout)/1000.0)

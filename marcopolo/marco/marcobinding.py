@@ -7,7 +7,6 @@ from os import path
 from copy import copy
 import six
 
-#sys.path.append('/opt/marcopolo/')
 from marcopolo.marco_conf import utils
 from marcopolo.marco import conf
 
