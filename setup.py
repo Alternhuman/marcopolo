@@ -115,7 +115,7 @@ if "--marcopolo-disable-daemons" not in marcopolo_params:
                            ]
         
         data_files.extend(daemon_files)
-version = '0.0.9'
+version = '0.0.10'
 setup(
     name='marcopolo',
     namespace_packages=['marcopolo'],

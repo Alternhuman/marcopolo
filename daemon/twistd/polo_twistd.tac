@@ -3,7 +3,7 @@ import twisted.application
 from twisted.application import internet
 from twisted.internet import ssl
 from twisted.internet.protocol import Factory
-from marcopolo.marco_conf import utils, conf
+from marcopolo.marco_conf import utils
 
 from OpenSSL import SSL
 
@@ -22,7 +22,7 @@ import time
 import pwd, grp
 import re
 
-from marcopolo.marco_conf import conf
+from marcopolo.polo import conf
 
 from marcopolo.polo.polobinding import PoloBinding
 from marcopolo.polo.polobindingssl import PoloBindingSSL, PoloBindingSSLFactory
@@ -92,7 +92,7 @@ def start_binding_ssl():
     """
     Starts the :class:`PoloBinding`
     """
-    secret = conf.SECRET
+    secret = conf.SECRET_FILE
 
     factory = PoloBindingSSLFactory(secret, offered_services, user_services, conf.MULTICAST_ADDRS)
     factory.protocol = PoloBindingSSL

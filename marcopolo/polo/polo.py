@@ -135,7 +135,7 @@ class Polo(DatagramProtocol):
 
         #List all files in the service directory
         services_dir = os.path.join(conf.CONF_DIR, conf.SERVICES_DIR)
-        #TODOprint(conf.CONF_DIR, conf.SERVICES_DIR)
+        
         servicefiles = [f for f in os.listdir(services_dir) if isfile(os.path.join(services_dir,f))]
         
         service_ids = set()
