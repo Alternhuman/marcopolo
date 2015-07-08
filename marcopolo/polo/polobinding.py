@@ -215,7 +215,7 @@ class PoloBinding(DatagramProtocol):
         #Final entry with all service parameters
         service_dict = {}
         service_dict["id"] = service
-        #TODOservice_dict["params"] ={} Add parameters
+        
         service_dict["groups"] = multicast_groups
         
         #Root service
@@ -293,7 +293,7 @@ class PoloBinding(DatagramProtocol):
                     service_file = sanitize_path(service)
                     if path.isfile(path.join(deploy_folder, service_file)):
                         self.transport.write(self.write_error("Service already exists").encode('utf-8'), address)
-                        #TODO: if unpublished and not deleted, this will be true
+                        
                         error = True
                         continue
                     

@@ -15,11 +15,8 @@ pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 # one-liners to encrypt/encode and decrypt/decode a string
 # encrypt with AES, encode with base64
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
-DecodeAES2 = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 
 def DecodeAES(c,e):
-    #e = bytes(e, 'UTF-8')
-    #PADDING = bytes(PADDING, 'UTF-8')
 
     return c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 
@@ -34,7 +31,7 @@ def create_token(uid, secret):
         raise ValueError("uid must be integer")
 
     uid = str(uid).encode('UTF-8')
-
+    
     # create a cipher object using the random secret
     cipher = AES.new(secret)
     return six.u(EncodeAES(cipher, uid))

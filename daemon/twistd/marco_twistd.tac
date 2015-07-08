@@ -1,7 +1,8 @@
 import twisted.application
 from twisted.application import internet
 from marcopolo.marco.marcobinding import MarcoBinding
-from marcopolo.marco_conf import utils, conf
+from marcopolo.marco_conf import utils
+from marcopolo.marco import conf
 import logging
 from os import path
 

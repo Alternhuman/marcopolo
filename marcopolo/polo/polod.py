@@ -77,8 +77,8 @@ def start_multicast():
 
 
 def verifyCallback():
-    print("Not verified")
-
+    pass
+    
 
 def start_binding():
     """

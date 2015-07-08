@@ -82,7 +82,7 @@ class PoloBindingSSL(Protocol):
         logging.info("Starting binding")
 
     def connectionMade(self):
-        print("A connection was made!")
+        pass
 
     def dataReceived(self, datagram):
         """
@@ -208,7 +208,7 @@ class PoloBindingSSL(Protocol):
         """
         self.transport.write(self.write_error("Malformed request. Commands missing"))
 
-    def publish_service(self, service, token, multicast_groups=conf.MULTICAST_ADDRS, permanent=False, root=False):
+    def publish_service(self, service, token, params={}, multicast_groups=conf.MULTICAST_ADDRS, permanent=False, root=False):
         """
         Registers a service during execution time.
 
@@ -294,8 +294,9 @@ class PoloBindingSSL(Protocol):
         #Final entry with all service parameters
         service_dict = {}
         service_dict["id"] = service
-        #TODOservice_dict["params"] ={} Add parameters
+        service_dict["params"] = params
         service_dict["groups"] = multicast_groups
+        service_dict["disabled"] = False
         
         #Root service
         error = False
@@ -342,7 +343,7 @@ class PoloBindingSSL(Protocol):
                         continue
 
                 
-                self.offered_services[group].append({"id":service, "permanent":permanent})
+                self.offered_services[group].append({"id":service, "permanent":permanent, "disabled":False, "params":params})
             else:
                 service_dict["permanent"] = permanent
                 if not error:
@@ -370,7 +371,7 @@ class PoloBindingSSL(Protocol):
                     
                     service_file = sanitize_path(service)
                     if path.isfile(path.join(deploy_folder, service_file)):
-                        #TODO: if unpublished and not deleted, this will be true
+                        
                         error = True
                         continue
                     
@@ -388,7 +389,7 @@ class PoloBindingSSL(Protocol):
                 if self.user_services[group].get(user.pw_name, None) is None:
                     self.user_services[group][user.pw_name] = []
 
-                self.user_services[group][user.pw_name].append({"id":service, "permanent":permanent})
+                self.user_services[group][user.pw_name].append({"id":service, "permanent":permanent, "disabled":False, "params":params})
                 logging.debug("Publishing user service %s in group %s" % (service, group))
             else:
                 if not error:
@@ -437,7 +438,7 @@ class PoloBindingSSL(Protocol):
         for ip in multicast_groups:
             #The IP must be a string
             error, faulty_ip, reason = utils.verify_ip(ip, multicast_groups)
-            print(error, ip)
+            
             if error == True:
                 logging.debug(reason)
                 try:

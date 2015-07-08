@@ -92,8 +92,10 @@ def start_binding_ssl():
     """
     Starts the :class:`PoloBinding`
     """
-    secret = conf.SECRET_FILE
+    #secret = conf.SECRET_FILE
 
+    with open(conf.SECRET_FILE, 'r') as sf:
+        secret = sf.read()
     factory = PoloBindingSSLFactory(secret, offered_services, user_services, conf.MULTICAST_ADDRS)
     factory.protocol = PoloBindingSSL
     

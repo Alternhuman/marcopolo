@@ -105,7 +105,7 @@ class Polo(DatagramProtocol):
             #The services must be stored in $HOME/.polo/
             polo_dir = os.path.join(user.pw_dir,conf.POLO_USER_DIR)
             username = user.pw_name
-            self.user_services[username] = [service for service in self.user_services.get(username, []) if service[1] == False]
+            self.user_services[username] = [service for service in self.user_services.get(username, []) if service.get('disabled') == False]
             
             servicefiles = [os.path.join(polo_dir, f) for f in os.listdir(polo_dir) if isfile(os.path.join(polo_dir, f))]
             
@@ -143,7 +143,7 @@ class Polo(DatagramProtocol):
             try:
                 with open(os.path.join(os.path.join(conf.CONF_DIR, conf.SERVICES_DIR), service), 'r') as f:
                     s = json.load(f)
-                    if not s["disabled"] == True:
+                    if not s.get("disabled", False) == True:
                         s["permanent"] = True
                         s["params"] = s.get("params", {})
                         s["file"] = service
@@ -173,7 +173,7 @@ class Polo(DatagramProtocol):
 
         self.transport.joinGroup(self.multicast_group).addErrback(self.handler)
         
-        self.transport.setTTL(conf.HOPS) #Go beyond the network. TODO
+        self.transport.setTTL(conf.HOPS) #Go beyond the network.
     
     def handler(self, arg):
         """
@@ -250,7 +250,11 @@ class Polo(DatagramProtocol):
 
         response_services = []
         for service in self.offered_services:
-            response_services.append(service['id'])
+            send_service = {}
+            send_service['id'] = service['id']
+            send_service['params'] = service['params']
+
+            response_services.append(send_service)
 
         self.transport.write(json.dumps({'Command': 'OK', 'Services': response_services}).encode('utf-8'), address)
     

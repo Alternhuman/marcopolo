@@ -217,9 +217,8 @@ class Marco:
 
         try:
             msg, address = self.socket_ucast.recvfrom(conf.FRAME_SIZE)
-        
         except socket.timeout:
-            pass
+            return 
 
         try:
             json_data = json.loads(msg.decode('utf-8'))

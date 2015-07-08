@@ -69,6 +69,7 @@ class MarcoBinding(DatagramProtocol):
             command = json.loads(data.decode('utf-8'))
         except ValueError:
             return
+        
         if command.get("Command", None) == None:
             self.transport.write(json.dumps({"Error": True}).encode('utf-8'), address)
 
