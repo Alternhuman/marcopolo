@@ -28,8 +28,7 @@ class TestRequestFor(unittest.TestCase):
         n.services = ["service"]
         s.add(n)
         self.assertEqual(self.marco.request_for("deployer").pop().address, n.address)
-        #TODO: self.assertEqual(self.marco.request_for("deployer").pop().services, n.services)
-    
+        
     def test_timeout(self):
 
         self.marco.marco_socket.recvfrom.side_effect = socket.timeout()

@@ -49,7 +49,7 @@ def reload_services(sig, frame):
 
     :param signal sig: The signal identifier
 
-    :param object frame: TODO
+    :param object frame: The current stack frame
     """
     signal.signal(signal.SIGUSR1, signal.SIG_IGN)
     logging.info("Broadcasting reload")
